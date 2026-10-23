@@ -1,0 +1,593 @@
+@import "tailwindcss";
+
+@layer base {
+  .font-pixel {
+    font-family: 'Press Start 2P', monospace;
+  }
+  .font-fantasy {
+    font-family: 'Cinzel', serif;
+  }
+  .font-modern {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* SoulDolls Palette Variables */
+:root {
+  --sd-ink: #14101C;
+  --sd-wood: #2A1F2D;
+  --sd-bronze: #8A6A3B;
+  --sd-gold: #E8B84A;
+  --sd-ki: #5FE3D2;
+  --sd-soul: #9B6BFF;
+  --sd-rift: #C2234B;
+  --sd-spirit-pink: #FF8FB8;
+}
+
+@layer components {
+  /* Panels & Containers */
+  .sd-panel {
+    background-color: var(--sd-wood);
+    border: 2px solid var(--sd-bronze);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 4px 6px rgba(0,0,0,0.3);
+  }
+
+
+  /* Text & Headers */
+  .sd-gold-text { color: var(--sd-gold); text-shadow: 1px 1px 2px black; }
+  .sd-soul-text { color: var(--sd-soul); text-shadow: 0 0 8px rgba(155, 107, 255, 0.4); }
+  .sd-ki-text { color: var(--sd-ki); text-shadow: 0 0 8px rgba(95, 227, 210, 0.4); }
+
+  /* Elemental Affinity Badge */
+  .sd-badge-affinity {
+    border: 1px solid var(--sd-bronze);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Ornate RPG Battle Card Frame */
+  .sd-battle-frame {
+    background: linear-gradient(180deg, rgba(24, 18, 34, 0.96) 0%, rgba(16, 12, 24, 0.98) 100%);
+    border: 2px solid var(--sd-bronze);
+    outline: 1.5px solid rgba(232, 184, 74, 0.55);
+    outline-offset: -4px;
+    box-shadow: 
+      0 0 0 1px #14101c,
+      0 8px 24px rgba(0, 0, 0, 0.85),
+      inset 0 0 12px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* HP & EXP Bars */
+  .sd-bar-track {
+    background: #08070d;
+    border: 1.5px solid #3d2f24;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.95);
+  }
+
+  .sd-bar-hp-ki {
+    background: linear-gradient(90deg, #0d9488 0%, #14b8a6 30%, #5fe3d2 80%, #a7f3d0 100%);
+    box-shadow: 0 0 12px rgba(95, 227, 210, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sd-bar-hp-caution {
+    background: linear-gradient(90deg, #b45309 0%, #d97706 40%, #f59e0b 80%, #fef08a 100%);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sd-bar-hp-critical {
+    background: linear-gradient(90deg, #881337 0%, #be123c 40%, #c2234b 80%, #fecdd3 100%);
+    box-shadow: 0 0 12px rgba(194, 35, 75, 0.7);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sd-bar-exp-soul {
+    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 50%, #9b6bff 100%);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: width 0.4s ease-out;
+  }
+
+  /* Ornate Dialogue Box */
+  .sd-dialog-ornate {
+    background: linear-gradient(180deg, rgba(24, 18, 34, 0.98) 0%, rgba(16, 12, 22, 0.98) 100%);
+    border: 2px solid var(--sd-bronze);
+    outline: 1.5px solid rgba(232, 184, 74, 0.55);
+    outline-offset: -4px;
+    box-shadow: 
+      0 0 0 1px #14101c,
+      0 8px 28px rgba(0, 0, 0, 0.9),
+      inset 0 0 18px rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: relative;
+  }
+
+  /* Thematic Antique Metal Action Buttons */
+  .sd-action-btn {
+    position: relative;
+    border: 2px solid var(--sd-bronze);
+    outline: 1.5px solid rgba(232, 184, 74, 0.45);
+    outline-offset: -3px;
+    border-radius: 0.85rem;
+    font-family: 'Press Start 2P', monospace;
+    font-weight: 700;
+    transition: all 0.1s ease;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 
+      0 4px 0 #0d0a14,
+      0 6px 14px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .sd-action-btn:hover:not(:disabled) {
+    border-color: var(--sd-gold);
+    outline-color: var(--sd-gold);
+    filter: brightness(1.12);
+  }
+
+  .sd-action-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sd-gold), 0 0 14px rgba(232, 184, 74, 0.7);
+  }
+
+  .sd-action-btn:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 
+      0 1px 0 #0d0a14,
+      inset 0 2px 5px rgba(0, 0, 0, 0.6);
+  }
+
+  .sd-action-btn:disabled {
+    opacity: 0.45;
+    filter: grayscale(0.85);
+    cursor: not-allowed;
+  }
+
+  /* Specific Action Button Colorways */
+  .sd-btn-fight {
+    background: radial-gradient(circle at center, #991b1b 0%, #7f1d1d 60%, #450a0a 100%);
+    color: #fecdd3;
+    text-shadow: 1px 1px 2px #450a0a;
+  }
+  .sd-btn-fight.active-tab {
+    background: radial-gradient(circle at center, #c2234b 0%, #991b1b 70%, #450a0a 100%);
+    border-color: var(--sd-gold);
+    outline-color: #fecdd3;
+    box-shadow: 0 0 16px rgba(194, 35, 75, 0.8), inset 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .sd-btn-travel {
+    background: radial-gradient(circle at center, #92400e 0%, #78350f 60%, #381a04 100%);
+    color: #fef08a;
+    text-shadow: 1px 1px 2px #261102;
+  }
+  .sd-btn-travel.active-tab {
+    background: radial-gradient(circle at center, #d97706 0%, #92400e 70%, #381a04 100%);
+    border-color: var(--sd-gold);
+    outline-color: #fef08a;
+    box-shadow: 0 0 16px rgba(232, 184, 74, 0.8), inset 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .sd-btn-souls {
+    background: radial-gradient(circle at center, #6b21a8 0%, #581c87 60%, #2e1065 100%);
+    color: #e9d5ff;
+    text-shadow: 1px 1px 2px #1e0942;
+  }
+  .sd-btn-souls.active-tab {
+    background: radial-gradient(circle at center, #9b6bff 0%, #6b21a8 70%, #2e1065 100%);
+    border-color: var(--sd-gold);
+    outline-color: #e9d5ff;
+    box-shadow: 0 0 16px rgba(155, 107, 255, 0.8), inset 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .sd-btn-flee {
+    background: radial-gradient(circle at center, #0e7490 0%, #155e75 60%, #083344 100%);
+    color: #a5f3fc;
+    text-shadow: 1px 1px 2px #041a22;
+  }
+  .sd-btn-flee:hover:not(:disabled) {
+    border-color: var(--sd-ki);
+    outline-color: var(--sd-ki);
+  }
+
+  /* Legacy Buttons for compatibility */
+  .sd-btn {
+    background: linear-gradient(180deg, #4a3a4c 0%, var(--sd-wood) 100%);
+    border: 2px solid var(--sd-bronze);
+    color: white;
+  }
+  .sd-btn:hover { border-color: var(--sd-gold); }
+  .sd-btn:disabled { opacity: 0.5; filter: grayscale(1); }
+
+  /* Dialogs */
+  .sd-dialog {
+    background-color: var(--sd-ink);
+    border: 3px double var(--sd-bronze);
+    color: #e5e7eb;
+  }
+}
+
+/* Custom retro scanline effect */
+.scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Game Dialog Box Borders */
+.pixel-box {
+  border: 4px solid #1e293b;
+  box-shadow: 
+    inset -4px -4px 0px 0px #0f172a,
+    inset 4px 4px 0px 0px #334155,
+    0px 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.pixel-btn {
+  box-shadow: 
+    inset -3px -3px 0px 0px rgba(0,0,0,0.4),
+    inset 3px 3px 0px 0px rgba(255,255,255,0.25);
+  transition: transform 0.05s ease, filter 0.1s ease;
+}
+
+.pixel-btn:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 3px 3px 0px 0px rgba(0,0,0,0.4),
+    inset -3px -3px 0px 0px rgba(255,255,255,0.2);
+}
+
+/* Classic RPG Double Border Dialogue Box */
+.rpg-dialogue-box {
+  background: rgba(10, 15, 29, 0.94);
+  border: 3px solid #334155;
+  outline: 2px solid #0f172a;
+  box-shadow: 
+    inset 0 0 0 2px #475569,
+    0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* Semi-transparent Glass Status Box */
+.battle-status-box {
+  background: rgba(10, 15, 29, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(100, 116, 139, 0.45);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Arcade 3D Depth Action Buttons */
+.arcade-btn {
+  position: relative;
+  transition: transform 0.08s ease, filter 0.1s ease, box-shadow 0.08s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.arcade-btn:active {
+  transform: translateY(2px);
+}
+
+/* Screen-Wipe Transition Keyframes */
+@keyframes battleFlashSequence {
+  0% { opacity: 0; }
+  15% { opacity: 0.9; }
+  30% { opacity: 0.1; }
+  45% { opacity: 0.95; }
+  60% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.animate-battle-flash {
+  animation: battleFlashSequence 0.6s ease-out forwards;
+}
+
+@keyframes wipeBarSlide {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  48% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  54% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
+.animate-wipe-bar {
+  animation: wipeBarSlide 1.05s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+@keyframes diamondIrisWipe {
+  0% {
+    clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);
+    opacity: 1;
+  }
+  45% {
+    clip-path: polygon(50% -20%, 120% 50%, 50% 120%, -20% 50%);
+    opacity: 1;
+  }
+  60% {
+    clip-path: polygon(50% -20%, 120% 50%, 50% 120%, -20% 50%);
+    opacity: 1;
+  }
+  100% {
+    clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);
+    opacity: 0;
+  }
+}
+
+.animate-diamond-wipe {
+  animation: diamondIrisWipe 1.1s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+/* Classic RPG Jumping Damage Numbers */
+@keyframes damageBounce {
+  0% {
+    transform: translate(-50%, 0) scale(0.3);
+    opacity: 0;
+  }
+  16% {
+    transform: translate(-50%, -46px) scale(1.32);
+    opacity: 1;
+  }
+  32% {
+    transform: translate(-50%, -64px) scale(1.12);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -36px) scale(1.0);
+    opacity: 1;
+  }
+  68% {
+    transform: translate(-50%, -45px) scale(1.0);
+    opacity: 0.95;
+  }
+  84% {
+    transform: translate(-50%, -40px) scale(0.95);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -75px) scale(0.75);
+    opacity: 0;
+  }
+}
+
+.animate-damage-bounce {
+  animation: damageBounce 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Exaggerated Critical Hit Leap with Dynamic Tilt */
+@keyframes critBounce {
+  0% {
+    transform: translate(-50%, 0) scale(0.28) rotate(-7deg);
+    opacity: 0;
+  }
+  16% {
+    transform: translate(-50%, -64px) scale(1.68) rotate(4deg);
+    opacity: 1;
+  }
+  34% {
+    transform: translate(-50%, -84px) scale(1.25) rotate(-2deg);
+    opacity: 1;
+  }
+  52% {
+    transform: translate(-50%, -44px) scale(1.1) rotate(0deg);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -54px) scale(1.05);
+    opacity: 0.95;
+  }
+  86% {
+    transform: translate(-50%, -48px) scale(1.0);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -96px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-crit-bounce {
+  animation: critBounce 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Impact Card Shake */
+@keyframes hitShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: hitShake 0.4s ease-in-out;
+}
+
+/* ========================================================
+   SOULDOLLS UI-5: Micro-Animations & Magical Interface VFX
+   ======================================================== */
+
+/* 1. Alma (Soul Violet Ambient Luminescence) */
+@keyframes soulWispGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(155, 107, 255, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(155, 107, 255, 0.85));
+  }
+}
+
+.animate-soul-glow {
+  animation: soulWispGlow 3s ease-in-out infinite;
+  will-change: filter;
+}
+
+/* 2. Ki (Turquoise Energy Stream Pulse) */
+@keyframes kiStreamPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(95, 227, 210, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(95, 227, 210, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+}
+
+.sd-bar-hp-ki {
+  animation: kiStreamPulse 2.4s ease-in-out infinite;
+}
+
+/* Ki Indicator Glow (Subtle Breathing) */
+@keyframes kiPulseSubtle {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(95, 227, 210, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(95, 227, 210, 0.85));
+  }
+}
+
+.animate-ki-pulse {
+  animation: kiPulseSubtle 2.2s ease-in-out infinite;
+  will-change: filter;
+}
+
+/* 3. Critical HP Danger Pulse */
+@keyframes hpCriticalEmergency {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(194, 35, 75, 0.65);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(225, 29, 72, 0.95);
+    filter: brightness(1.2);
+  }
+}
+
+.sd-bar-hp-critical {
+  animation: hpCriticalEmergency 1.2s ease-in-out infinite;
+}
+
+/* 4. Affinity Elemental Flash (Triggered on Combat Action) */
+@keyframes affinityFlash {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.08);
+    filter: brightness(1.4) drop-shadow(0 0 8px rgba(232, 184, 74, 0.8));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-affinity-flash {
+  animation: affinityFlash 0.4s ease-out;
+  will-change: transform, filter;
+}
+
+/* 5. Smooth Panel Entrances */
+@keyframes panelSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes panelSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sd-panel-enter-left {
+  animation: panelSlideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.sd-panel-enter-right {
+  animation: panelSlideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.sd-dialog-enter {
+  animation: dialogFadeIn 0.22s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+/* 6. Accessibility: Reduced Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .sd-bar-hp-ki,
+  .sd-bar-hp-caution,
+  .sd-bar-hp-critical,
+  .sd-bar-exp-soul,
+  .animate-soul-glow,
+  .animate-ki-pulse,
+  .animate-affinity-flash,
+  .animate-shake,
+  .sd-panel-enter-left,
+  .sd-panel-enter-right,
+  .sd-dialog-enter {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
