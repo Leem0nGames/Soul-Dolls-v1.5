@@ -5,10 +5,12 @@ import { TYPE_COLORS } from '../game/data/typesChart';
 import { sound } from '../game/audio/SoundEffects';
 import { Users, Sparkles, ArrowUpCircle } from 'lucide-react';
 import { GameCabinetModal } from './ui/GameCabinetModal';
+import { SoulDollSprite } from './ui/SoulDollSprite';
 
 export const PartyModal: React.FC = () => {
   const state = useGameStore();
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
+  const [partyMousePos, setPartyMousePos] = useState({ x: 0, y: 0 });
 
   if (state.view !== 'PARTY') return null;
 
@@ -49,7 +51,10 @@ export const PartyModal: React.FC = () => {
       {/* Body */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#241309]/90">
         {/* Left: Party Member Slots */}
-        <div className="w-full md:w-1/2 p-3 sm:p-4 border-b md:border-b-0 md:border-r border-[#8c5a2b] flex flex-col gap-2 max-h-[35vh] md:max-h-none overflow-y-auto touch-pan-y shrink-0 md:shrink scrollbar-thin">
+        <div className="w-full md:w-[40%] p-3 sm:p-4 border-b md:border-b-0 md:border-r-2 border-[#8c5a2b]/30 flex flex-col gap-2 max-h-[40vh] md:max-h-none overflow-y-auto touch-pan-y shrink-0 md:shrink scrollbar-thin bg-[#190c06]/50">
+          <div className="flex justify-between items-center mb-2 px-1">
+             <span className="font-pixel text-[10px] text-amber-300">EQUIPO (6/6)</span>
+          </div>
           {party.map((doll, idx) => {
             const dollSpecies = SOULDOLL_SPECIES[doll.speciesId] || SOULDOLL_SPECIES.ignisaur;
             const isSelected = selectedIdx === idx;
@@ -62,49 +67,28 @@ export const PartyModal: React.FC = () => {
                   sound.playSelect();
                   setSelectedIdx(idx);
                 }}
-                className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+                className={`w-full text-left p-2 rounded-xl border flex items-center gap-3 transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#4a2b16] border-emerald-400 ring-2 ring-emerald-500/30 shadow-inner'
-                    : 'bg-[#190c06]/80 hover:bg-[#2b170c] border-[#7a4921]'
+                    ? 'bg-[#4a2b16] border-emerald-400/50 shadow-inner'
+                    : 'bg-[#190c06]/60 hover:bg-[#2b170c] border-[#7a4921]/30'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center font-pixel text-sm font-bold text-white shadow-md border border-white/20"
-                    style={{ backgroundColor: dollSpecies.colorTheme.primary }}
-                  >
-                    {doll.nickname[0]}
-                  </div>
-
-                  <div>
-                    <div className="font-pixel text-xs text-amber-200 flex items-center gap-2">
-                      <span>{doll.nickname}</span>
-                      {idx === 0 && (
-                        <span className="font-pixel text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded font-bold">
-                          LÍDER
-                        </span>
-                      )}
-                    </div>
-                    <div className="font-pixel text-[9px] text-amber-100/70 mt-0.5">
-                      Nv. {doll.level} • {dollSpecies.types[0]}
-                    </div>
-                  </div>
-                </div>
-
-                {/* HP Indicator */}
-                <div className="w-28 flex flex-col items-end gap-1">
-                  <span className="font-pixel text-[9px] text-amber-200">
-                    {doll.currentHp}/{doll.maxHp} HP
-                  </span>
-                  <div className="w-full bg-[#190c06] h-2 rounded-full overflow-hidden border border-[#7a4921]">
-                    <div
-                      className={`h-full ${
-                        hpPct > 50 ? 'bg-emerald-500' : hpPct > 20 ? 'bg-amber-500' : 'bg-rose-500'
-                      }`}
-                      style={{ width: `${hpPct}%` }}
+                  <div className="w-12 h-12 rounded-lg bg-black/40 border border-[#8c5a2b]/30 p-0.5 flex items-center justify-center shrink-0">
+                    <SoulDollSprite
+                      speciesId={doll.speciesId}
+                      crop="bust"
+                      className="h-full w-auto max-w-full"
+                      alt={doll.nickname}
                     />
                   </div>
-                </div>
+
+                  <div className="flex-1 overflow-hidden">
+                    <div className="font-pixel text-[10px] text-amber-200 truncate">{doll.nickname}</div>
+                    <div className="font-pixel text-[8px] text-amber-100/60 mt-0.5">Lv. {doll.level}</div>
+                    <div className="w-full bg-black/40 h-1.5 rounded-full mt-1 overflow-hidden">
+                      <div className={`h-full ${hpPct > 50 ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ width: `${hpPct}%` }} />
+                    </div>
+                  </div>
               </button>
             );
           })}
@@ -113,40 +97,21 @@ export const PartyModal: React.FC = () => {
         {/* Right: Selected Doll Inspector & Actions (Parchment & Wood Theme) */}
         <div className="w-full md:w-1/2 p-4 sm:p-5 flex flex-col justify-between overflow-y-auto space-y-4 scrollbar-thin">
           <div className="space-y-3">
-            {/* Header profile card */}
-            <div
-              className="p-3.5 sm:p-4 rounded-2xl border-2 border-[#967853] shadow-md flex items-center gap-3.5"
-              style={{
-                background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                color: '#3d2514',
-              }}
-            >
+              {/* Sprite Focus */}
               <div
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center font-pixel text-2xl font-bold text-white border-2 border-[#8c5a2b] shadow-md shrink-0"
-                style={{ backgroundColor: species.colorTheme.primary }}
+                className="w-full aspect-square flex items-center justify-center relative bg-black/20 rounded-2xl border-2 border-[#8c5a2b]/20"
               >
-                {currentDoll.nickname[0]}
+                  <SoulDollSprite
+                    speciesId={currentDoll.speciesId}
+                    crop="full"
+                    className="h-full w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.7)]"
+                    alt={currentDoll.nickname}
+                  />
+                  {/* Elemental Orb */}
+                  <div className="absolute top-2 left-2 w-10 h-10 rounded-full border-2 border-[#8c5a2b] bg-[#1a0f08] flex items-center justify-center">
+                    <span className="font-pixel text-[10px] text-amber-300">{species.types[0]}</span>
+                  </div>
               </div>
-              <div className="overflow-hidden">
-                <h3 className="font-fantasy text-sm sm:text-base text-[#452713] font-bold truncate">
-                  {currentDoll.nickname}
-                </h3>
-                <div className="flex gap-1.5 my-1">
-                  {species.types.map(t => t && (
-                    <span
-                      key={t}
-                      className="font-pixel text-[9px] px-2 py-0.5 rounded font-bold shadow-sm"
-                      style={{ backgroundColor: TYPE_COLORS[t].bg, color: TYPE_COLORS[t].text }}
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <div className="font-pixel text-[9px] text-[#6d4323]">
-                  Fase {species.stage} • EXP: {currentDoll.currentXp}
-                </div>
-              </div>
-            </div>
 
             {/* Stats Box (Parchment card) */}
             <div

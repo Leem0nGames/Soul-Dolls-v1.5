@@ -6,6 +6,7 @@ import { sound } from '../game/audio/SoundEffects';
 import { pixelGenerator } from '../game/graphics/PixelArtGenerator';
 import { TYPE_COLORS, getTypeEffectiveness } from '../game/data/typesChart';
 import { ElementalType, SoulDollSpecies, SoulDollInstance } from '../types/game';
+import { SoulDollSprite } from './ui/SoulDollSprite';
 import {
   X,
   ChevronLeft,
@@ -161,36 +162,8 @@ export const SoulDexModal: React.FC = () => {
   const [isBackView, setIsBackView] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Removed manual canvas rendering in favor of SoulDollSprite component
 
-  // Render character on canvas - Unconditionally declared at top level
-  useEffect(() => {
-    if (state.view !== 'SOULDEX') return;
-
-    const renderSprite = () => {
-      const srcCanvas = pixelGenerator.getSpeciesCanvas(selectedSpeciesId, isBackView);
-      if (srcCanvas && canvasRef.current) {
-        const dest = canvasRef.current;
-        dest.width = srcCanvas.width;
-        dest.height = srcCanvas.height;
-        const ctx = dest.getContext('2d');
-        if (ctx) {
-          ctx.imageSmoothingEnabled = false;
-          ctx.clearRect(0, 0, dest.width, dest.height);
-          ctx.drawImage(srcCanvas, 0, 0);
-        }
-      }
-    };
-
-    renderSprite();
-    const unsub = pixelGenerator.onSoulDollSpritesheetLoaded(() => {
-      renderSprite();
-    });
-
-    return () => {
-      unsub();
-    };
-  }, [state.view, selectedSpeciesId, isBackView]);
 
   if (state.view !== 'SOULDEX') return null;
 
@@ -237,6 +210,15 @@ export const SoulDexModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 select-none touch-manipulation overflow-hidden">
+      <style>{`
+        @keyframes soulPhase {
+          0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-soul-phase {
+          animation: soulPhase 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
       {/* Outer Ornate Bronze & Engraved Wood Frame (Brave Frontier Inspired Cabinet) */}
       <div
         className="relative w-full max-w-4xl h-full max-h-[96dvh] rounded-3xl flex flex-col overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.95)] border-4 border-[#8c5a2b]"
@@ -328,9 +310,9 @@ export const SoulDexModal: React.FC = () => {
         </div>
 
         {/* 2. MAIN 2-COLUMN VIEWPORT (Parchment Profile on Left, 3D Sprite on Right) */}
-        <div className="relative z-10 flex-1 flex flex-col md:flex-row overflow-hidden">
+        <div className="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-2 overflow-hidden">
           {/* ==================== LEFT COLUMN: REAL STATS & CARDS ==================== */}
-          <div className="w-full md:w-[54%] p-3 sm:p-4 overflow-y-auto space-y-2.5 touch-pan-y scrollbar-thin">
+          <div className="w-full p-3 sm:p-4 overflow-y-auto space-y-2.5 touch-pan-y scrollbar-thin">
             {/* CARD 1: CHARACTER HEADER (Name, Stars, Element Badge, Ownership & Level) */}
             <div
               className="relative p-3 sm:p-3.5 rounded-2xl border-2 border-[#967853] shadow-md overflow-hidden"
@@ -608,9 +590,42 @@ export const SoulDexModal: React.FC = () => {
               )}
             </div>
 
-            {/* CARD 4: REAL LEARNSET & MOVES DATABASE */}
+            {/* CARD 5: REAL EVOLUTION TREE */}
+            {selectedSpecies.evolution && (
+              <div
+                className="p-3 rounded-2xl border-2 border-[#967853] shadow-md flex items-center justify-between"
+                style={{
+                  background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
+                  color: '#3d2514',
+                }}
+              >
+                <div>
+                  <div className="text-[9px] font-pixel text-[#8c5a2b]">LÍNEA EVOLUTIVA</div>
+                  <div className="font-fantasy text-sm font-bold text-[#452713] flex items-center gap-1.5 mt-0.5">
+                    <span>{selectedSpecies.name}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-amber-700" />
+                    <button
+                      onClick={() => {
+                        sound.playSelect();
+                        if (selectedSpecies.evolution) {
+                          setSelectedSpeciesId(selectedSpecies.evolution.evolvesInto);
+                        }
+                      }}
+                      className="underline text-amber-800 hover:text-amber-950 font-bold"
+                    >
+                      {SOULDOLL_SPECIES[selectedSpecies.evolution.evolvesInto]?.name || 'Forma Ascendida'}
+                    </button>
+                  </div>
+                </div>
+                <span className="font-pixel text-[9px] bg-[#4a2b16] text-amber-200 px-2 py-1 rounded-lg border border-[#a26934] shadow-sm">
+                  Nivel {selectedSpecies.evolution.level}
+                </span>
+              </div>
+            )}
+
+            {/* CARD 4: REAL LEARNSET & MOVES DATABASE (MOVED FROM RIGHT COLUMN) */}
             <div
-              className="p-3 rounded-2xl border-2 border-[#967853] shadow-md"
+              className="w-full p-3 rounded-2xl border-2 border-[#967853] shadow-md mt-2"
               style={{
                 background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
                 color: '#3d2514',
@@ -685,50 +700,17 @@ export const SoulDexModal: React.FC = () => {
                 </div>
               )}
             </div>
-
-            {/* CARD 5: REAL EVOLUTION TREE */}
-            {selectedSpecies.evolution && (
-              <div
-                className="p-3 rounded-2xl border-2 border-[#967853] shadow-md flex items-center justify-between"
-                style={{
-                  background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                  color: '#3d2514',
-                }}
-              >
-                <div>
-                  <div className="text-[9px] font-pixel text-[#8c5a2b]">LÍNEA EVOLUTIVA</div>
-                  <div className="font-fantasy text-sm font-bold text-[#452713] flex items-center gap-1.5 mt-0.5">
-                    <span>{selectedSpecies.name}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-amber-700" />
-                    <button
-                      onClick={() => {
-                        sound.playSelect();
-                        if (selectedSpecies.evolution) {
-                          setSelectedSpeciesId(selectedSpecies.evolution.evolvesInto);
-                        }
-                      }}
-                      className="underline text-amber-800 hover:text-amber-950 font-bold"
-                    >
-                      {SOULDOLL_SPECIES[selectedSpecies.evolution.evolvesInto]?.name || 'Forma Ascendida'}
-                    </button>
-                  </div>
-                </div>
-                <span className="font-pixel text-[9px] bg-[#4a2b16] text-amber-200 px-2 py-1 rounded-lg border border-[#a26934] shadow-sm">
-                  Nivel {selectedSpecies.evolution.level}
-                </span>
-              </div>
-            )}
           </div>
 
-          {/* ==================== RIGHT COLUMN: SPRITE ON STONE ALTAR ==================== */}
-          <div className="w-full md:w-[46%] p-3 sm:p-5 flex flex-col justify-between items-center relative border-t-2 md:border-t-0 md:border-l-2 border-[#8c5a2b] bg-[#241309]/80 overflow-hidden">
+          {/* ==================== RIGHT COLUMN: SPRITE DISPLAY ==================== */}
+          <div className="w-full p-3 sm:p-5 flex flex-col items-center justify-center relative border-t-2 md:border-t-0 md:border-l-2 border-[#8c5a2b]/30 bg-[#1e1008]/40 overflow-y-auto space-y-3 scrollbar-thin">
             {/* Top Bar: Navigation & Real Index Number */}
             <div className="w-full flex justify-between items-center z-10 gap-2 mb-2">
               {/* Previous / Next buttons */}
-              <div className="flex items-center gap-1 bg-[#190c06]/90 p-1.5 rounded-xl border border-[#7a4921]">
+              <div className="flex items-center gap-1 bg-[#190c06]/60 p-1 rounded-lg border border-[#7a4921]/30">
                 <button
                   onClick={handlePrev}
-                  className="p-1 rounded-lg hover:bg-[#3d2212] text-amber-300 transition-all"
+                  className="p-1 rounded-md hover:bg-[#3d2212] text-amber-300 transition-all"
                   title="Anterior SoulDoll"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -738,7 +720,7 @@ export const SoulDexModal: React.FC = () => {
                 </span>
                 <button
                   onClick={handleNext}
-                  className="p-1 rounded-lg hover:bg-[#3d2212] text-amber-300 transition-all"
+                  className="p-1 rounded-md hover:bg-[#3d2212] text-amber-300 transition-all"
                   title="Siguiente SoulDoll"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -746,7 +728,7 @@ export const SoulDexModal: React.FC = () => {
               </div>
 
               {/* Status Ribbon (Capturado / Avistado / En Equipo) */}
-              <div className="flex items-center gap-1.5 bg-black/80 px-2.5 py-1.5 rounded-xl border border-amber-600/40 text-[9px] font-pixel text-amber-300">
+              <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-lg border border-amber-600/20 text-[9px] font-pixel text-amber-300">
                 {isPartyMember ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
@@ -771,8 +753,8 @@ export const SoulDexModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Central Stage: Character Sprite Standing on Carved Celtic Stone Pedestal */}
-            <div className="relative flex-1 w-full flex flex-col items-center justify-center min-h-[220px] sm:min-h-[300px]">
+            {/* Central Sprite Display */}
+            <div className="relative flex-1 w-full flex flex-col items-center justify-center">
               {/* Front / Back View Toggle */}
               {isSeen && (
                 <button
@@ -780,7 +762,7 @@ export const SoulDexModal: React.FC = () => {
                     sound.playSelect();
                     setIsBackView(!isBackView);
                   }}
-                  className="absolute top-2 right-2 z-20 px-2.5 py-1 rounded-lg bg-[#3d2212]/90 hover:bg-[#522e18] text-amber-200 border border-[#8c5a2b] font-pixel text-[8px] flex items-center gap-1 shadow-md transition-all"
+                  className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-md bg-[#2b170c]/80 hover:bg-[#3d2212] text-amber-200 border border-[#8c5a2b]/30 font-pixel text-[8px] flex items-center gap-1 shadow-sm transition-all"
                   title="Girar vista del SoulDoll"
                 >
                   <RotateCw className="w-3 h-3 text-amber-400" />
@@ -788,101 +770,48 @@ export const SoulDexModal: React.FC = () => {
                 </button>
               )}
 
-              {/* Character Sprite Canvas */}
+              {/* Character Sprite */}
               {isSeen ? (
                 <div className="relative z-10 flex flex-col items-center justify-center">
-                  <canvas
-                    ref={canvasRef}
-                    className="pixelated max-h-[190px] sm:max-h-[250px] w-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)] filter active:scale-105 transition-transform cursor-pointer"
+                  <div
                     onClick={() => {
                       sound.playSelect();
                       setIsBackView(!isBackView);
                     }}
-                  />
-
-                  {/* Elliptical Contact Shadow */}
-                  <div className="w-28 sm:w-36 h-4 bg-black/60 rounded-full blur-[2px] -mt-2 mb-0.5" />
+                    className="cursor-pointer"
+                  >
+                    <SoulDollSprite
+                      key={selectedSpecies.id}
+                      speciesId={selectedSpecies.id}
+                      isBackView={isBackView}
+                      crop="full"
+                      className="max-h-[350px] w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] filter active:scale-105 transition-transform animate-soul-phase"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="relative z-10 flex flex-col items-center justify-center p-8 text-center text-amber-700/60">
+                <div className="relative z-10 flex flex-col items-center justify-center p-8 text-center text-amber-700/40">
                   <span className="font-fantasy text-6xl font-bold mb-2">?</span>
-                  <p className="font-pixel text-[9px] text-amber-600/80 max-w-[200px]">
-                    Alma aún no avistada en las praderas ni santuarios.
+                  <p className="font-pixel text-[9px] text-amber-600/60 max-w-[200px]">
+                    Alma aún no avistada.
                   </p>
                 </div>
               )}
-
-              {/* ================= CARVED CELTIC STONE PEDESTAL (DAIS) ================= */}
-              <div className="relative w-48 sm:w-64 h-16 sm:h-20 shrink-0 -mt-3 z-0">
-                <svg
-                  viewBox="0 0 240 80"
-                  className="w-full h-full drop-shadow-[0_10px_20px_rgba(0,0,0,0.95)]"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <linearGradient id="topStoneGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8d949c" />
-                      <stop offset="100%" stopColor="#535962" />
-                    </linearGradient>
-                    <linearGradient id="baseStoneGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#434851" />
-                      <stop offset="100%" stopColor="#252930" />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Top Pedestal Surface */}
-                  <polygon
-                    points="30,8 210,8 234,30 210,50 30,50 6,30"
-                    fill="url(#topStoneGrad)"
-                    stroke="#a0a7b0"
-                    strokeWidth="1.5"
-                  />
-
-                  {/* Carved Celtic Knot Pattern Band */}
-                  <path
-                    d="M 28 32 C 34 26, 40 38, 46 32 C 52 26, 58 38, 64 32 C 70 26, 76 38, 82 32 C 88 26, 94 38, 100 32 C 106 26, 112 38, 118 32 C 124 26, 130 38, 136 32 C 142 26, 148 38, 154 32 C 160 26, 166 38, 172 32 C 178 26, 184 38, 190 32 C 196 26, 202 38, 208 32"
-                    stroke="#22252a"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-                  <path
-                    d="M 28 32 C 34 26, 40 38, 46 32 C 52 26, 58 38, 64 32 C 70 26, 76 38, 82 32 C 88 26, 94 38, 100 32 C 106 26, 112 38, 118 32 C 124 26, 130 38, 136 32 C 142 26, 148 38, 154 32 C 160 26, 166 38, 172 32 C 178 26, 184 38, 190 32 C 196 26, 202 38, 208 32"
-                    stroke="#c5ccd6"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-
-                  {/* Stone Plinth Thickness & Base */}
-                  <polygon
-                    points="6,30 234,30 234,44 210,64 30,64 6,44"
-                    fill="url(#baseStoneGrad)"
-                    stroke="#1f2328"
-                    strokeWidth="2"
-                  />
-                  <line x1="30" y1="50" x2="30" y2="64" stroke="#181a1f" strokeWidth="2" />
-                  <line x1="210" y1="50" x2="210" y2="64" stroke="#181a1f" strokeWidth="2" />
-                </svg>
-              </div>
             </div>
 
-            {/* Bottom Real Encounter & Species Status Card */}
-            <div className="w-full bg-[#1b0e07] p-2.5 rounded-xl border border-[#7a4921] shadow-inner text-center z-10">
+            {/* Bottom Status Card */}
+            <div className="w-full bg-[#1b0e07]/40 p-2 rounded-lg border border-[#7a4921]/20 text-center z-10">
               {ownedInstance ? (
-                <div className="text-[11px] font-sans text-amber-200">
-                  <span className="text-emerald-400 font-bold">✓ Sintonizado: </span>
-                  {isPartyMember ? 'En tu equipo activo de combate' : 'En el santuario de almas'}
+                <div className="text-[11px] font-sans text-amber-200/80">
+                  <span className="text-emerald-400 font-bold">✓ Sintonizado</span>
                 </div>
               ) : isSeen ? (
-                <div className="text-[11px] font-sans text-sky-200">
-                  <span className="text-sky-400 font-bold">Avistado: </span>
-                  Habita en las zonas de hierba del mapa
+                <div className="text-[11px] font-sans text-sky-200/80">
+                  Habita en las zonas salvajes
                 </div>
               ) : (
-                <div className="text-[11px] font-sans text-slate-400">
-                  Explora el mapa para registrar esta alma
+                <div className="text-[11px] font-sans text-slate-400/60">
+                  Explora para registrar
                 </div>
               )}
             </div>
@@ -975,14 +904,22 @@ export const SoulDexModal: React.FC = () => {
                         : 'bg-[#2b170c] hover:bg-[#3d2212] border-[#7a4921]'
                     }`}
                   >
-                    {/* Species Initial / Element Color Badge */}
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center font-pixel text-xs font-bold text-white shadow shrink-0 border border-white/20"
-                      style={{
-                        backgroundColor: seen ? species.colorTheme.primary : '#334155',
-                      }}
-                    >
-                      {seen ? species.name[0] : '?'}
+                    {/* Species Authentic Sprite or Mysterious Silhouette */}
+                    <div className="w-10 h-10 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shadow shrink-0 relative overflow-hidden">
+                      {seen ? (
+                        <SoulDollSprite
+                          speciesId={species.id}
+                          className="h-full w-auto max-w-full drop-shadow"
+                          alt={species.name}
+                        />
+                      ) : (
+                        <SoulDollSprite
+                          speciesId={species.id}
+                          silhouette={true}
+                          className="h-full w-auto max-w-full opacity-40 brightness-0"
+                          alt="Desconocido"
+                        />
+                      )}
                     </div>
 
                     <div className="overflow-hidden">

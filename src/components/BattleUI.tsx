@@ -9,6 +9,7 @@ import { activeRenderer } from '../game/graphics/LuminatiRenderer';
 import { FlowchainEngine } from '../game/combat/FlowchainEngine';
 import { SOULDOLL_SPECIES } from '../game/data/souldolls';
 import { Sword, Swords, Scroll, Flame, Briefcase, Users, LogOut, Sparkles, Heart, Zap, ArrowLeft, ChevronDown, ChevronUp, Shield } from 'lucide-react';
+import { SoulDollSprite } from './ui/SoulDollSprite';
 
 interface DamageNumberPopup {
   id: string;
@@ -538,11 +539,14 @@ export const BattleUI: React.FC = () => {
             hitShakeSide === 'opponent' ? 'animate-shake' : 'sd-panel-enter-left'
           }`}
         >
-          {/* Left Diamond Sigil (Gold Flame/Emblem) */}
-          <div className="w-7 h-7 min-[360px]:w-8 min-[360px]:h-8 sm:w-9 sm:h-9 rotate-45 border-2 border-[#8a6a3b] bg-[#14101c] flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(232,184,74,0.4)]">
-            <div className="-rotate-45 text-[#e8b84a] flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#e8b84a]" />
-            </div>
+          {/* Left Mini Sprite Sigil (Opponent Doll Portrait) */}
+          <div className="w-8 h-8 min-[360px]:w-9 min-[360px]:h-9 sm:w-10 sm:h-10 rounded-xl border-2 border-[#8a6a3b] bg-[#14101c] flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(232,184,74,0.4)] p-0.5 overflow-hidden relative">
+            <SoulDollSprite
+              speciesId={opponentDoll.speciesId}
+              crop="bust"
+              className="h-full w-auto max-w-full object-contain drop-shadow"
+              alt={opponentDoll.nickname}
+            />
           </div>
 
           {/* Right Content */}
@@ -619,11 +623,20 @@ export const BattleUI: React.FC = () => {
             hitShakeSide === 'player' ? 'animate-shake' : 'sd-panel-enter-right'
           }`}
         >
-          {/* Left Diamond Sigil (Soul Violet with ambient luminescence) */}
-          <div className="w-7 h-7 min-[360px]:w-8 min-[360px]:h-8 sm:w-9 sm:h-9 rotate-45 border-2 border-[#9b6bff] bg-[#14101c] flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(155,107,255,0.45)] animate-soul-glow">
-            <div className="-rotate-45 text-[#9b6bff] flex items-center justify-center">
-              <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9b6bff] drop-shadow-[0_0_6px_#9b6bff]" />
+          {/* Left Sigil (Player Doll Portrait with ambient soul glow and floating particles) */}
+          <div className="relative shrink-0">
+            <div className="w-8 h-8 min-[360px]:w-9 min-[360px]:h-9 sm:w-10 sm:h-10 rounded-xl border-2 border-[#9b6bff] bg-[#14101c] flex items-center justify-center shadow-[0_0_10px_rgba(155,107,255,0.45)] animate-soul-glow p-0.5 overflow-hidden">
+              <SoulDollSprite
+                speciesId={playerDoll.speciesId}
+                isBackView={true}
+                crop="bust"
+                className="h-full w-auto max-w-full object-contain drop-shadow"
+                alt={playerDoll.nickname}
+              />
             </div>
+            {/* Floating Soul Particles */}
+            <div className="absolute -top-1.5 -left-1.5 w-1.5 h-1.5 rounded-full bg-purple-400 animate-float-particle pointer-events-none" />
+            <div className="absolute -bottom-1.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-indigo-300 animate-float-particle pointer-events-none" style={{ animationDelay: '1.2s' }} />
           </div>
 
           {/* Right Content */}
@@ -863,13 +876,23 @@ export const BattleUI: React.FC = () => {
                         : 'bg-[#2a1f2d] hover:bg-[#3a2b3d] border-[#8a6a3b]'
                     }`}
                   >
-                    <div>
-                      <span className="font-pixel text-[9px] min-[360px]:text-[10px] text-[#fef08a] font-bold">
-                        {doll.nickname} (Nv.{doll.level})
-                      </span>
-                      {idx === battle.playerActiveIndex && (
-                        <span className="ml-2 font-pixel text-[7.5px] text-[#5fe3d2] font-bold">[ACTIVO]</span>
-                      )}
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                        <SoulDollSprite
+                          speciesId={doll.speciesId}
+                          crop="bust"
+                          className={`h-full w-auto max-w-full drop-shadow ${doll.currentHp <= 0 ? 'grayscale opacity-40' : ''}`}
+                          alt={doll.nickname}
+                        />
+                      </div>
+                      <div>
+                        <span className="font-pixel text-[9px] min-[360px]:text-[10px] text-[#fef08a] font-bold">
+                          {doll.nickname} (Nv.{doll.level})
+                        </span>
+                        {idx === battle.playerActiveIndex && (
+                          <span className="ml-2 font-pixel text-[7.5px] text-[#5fe3d2] font-bold">[ACTIVO]</span>
+                        )}
+                      </div>
                     </div>
                     <span className="font-pixel text-[8px] sm:text-[9px] text-amber-200 font-bold">
                       {doll.currentHp}/{doll.maxHp} HP

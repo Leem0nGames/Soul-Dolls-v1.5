@@ -435,7 +435,7 @@
    SOULDOLLS UI-5: Micro-Animations & Magical Interface VFX
    ======================================================== */
 
-/* 1. Alma (Soul Violet Ambient Luminescence) */
+/* 1. Alma (Soul Violet Ambient Luminescence & Floating Particles) */
 @keyframes soulWispGlow {
   0%, 100% {
     filter: drop-shadow(0 0 4px rgba(155, 107, 255, 0.45));
@@ -448,6 +448,26 @@
 .animate-soul-glow {
   animation: soulWispGlow 3s ease-in-out infinite;
   will-change: filter;
+}
+
+@keyframes floatSoulParticle {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(0.7);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-10px) translateX(4px) scale(1.1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-20px) translateX(-3px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.animate-float-particle {
+  animation: floatSoulParticle 2.8s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 /* 2. Ki (Turquoise Energy Stream Pulse) */
@@ -580,6 +600,7 @@
   .sd-bar-hp-critical,
   .sd-bar-exp-soul,
   .animate-soul-glow,
+  .animate-float-particle,
   .animate-ki-pulse,
   .animate-affinity-flash,
   .animate-shake,

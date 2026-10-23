@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { sound } from '../game/audio/SoundEffects';
 import { BookOpen, Users, Briefcase, Heart, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
+import { SoulDollSprite } from './ui/SoulDollSprite';
 
 export const TopHUD: React.FC = () => {
   const state = useGameStore();
@@ -64,9 +65,15 @@ export const TopHUD: React.FC = () => {
           onClick={() => gameStore.setView('PARTY')}
           title="Ver equipo de SoulDolls"
           aria-label="Equipo"
-          className="pixel-btn bg-indigo-700 hover:bg-indigo-600 text-white min-w-[42px] min-h-[42px] sm:min-w-0 sm:min-h-0 sm:p-2 rounded-lg font-pixel text-[10px] flex items-center justify-center gap-1"
+          className="pixel-btn bg-indigo-700 hover:bg-indigo-600 text-white min-w-[42px] min-h-[42px] sm:min-w-0 sm:min-h-0 sm:p-2 rounded-lg font-pixel text-[10px] flex items-center justify-center gap-1.5"
         >
-          <Users className="w-4 h-4 text-indigo-200" />
+          {state.playerParty[0] ? (
+            <div className="w-5 h-5 rounded bg-black/40 border border-indigo-300/40 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
+              <SoulDollSprite speciesId={state.playerParty[0].speciesId} className="h-full w-auto max-w-full drop-shadow" />
+            </div>
+          ) : (
+            <Users className="w-4 h-4 text-indigo-200" />
+          )}
           <span className="hidden md:inline">EQUIPO ({state.playerParty.length})</span>
           <span className="md:hidden text-[9px]">({state.playerParty.length})</span>
         </button>

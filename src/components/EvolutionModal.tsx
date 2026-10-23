@@ -6,6 +6,7 @@ import { combatEngine } from '../game/combat/CombatEngine';
 import confetti from 'canvas-confetti';
 import { Sparkles, CheckCircle } from 'lucide-react';
 import { GameCabinetModal } from './ui/GameCabinetModal';
+import { SoulDollSprite } from './ui/SoulDollSprite';
 
 export const EvolutionModal: React.FC = () => {
   const state = useGameStore();
@@ -13,6 +14,7 @@ export const EvolutionModal: React.FC = () => {
 
   const [step, setStep] = useState<'anticipation' | 'ascending' | 'complete'>('anticipation');
   const [spriteToggle, setSpriteToggle] = useState(false);
+  const [evoMousePos, setEvoMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (state.view !== 'EVOLUTION' || !doll) return;
@@ -91,8 +93,21 @@ export const EvolutionModal: React.FC = () => {
           <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
         </div>
 
-        {/* Altar Stage with Pokémon-style Sprite Flash */}
-        <div className="relative w-48 h-48 sm:w-56 sm:h-56 my-3 flex items-center justify-center rounded-full bg-black/40 border-2 border-amber-600/40 shadow-inner overflow-hidden">
+        {/* Altar Stage with Pokémon-style Sprite Flash & Parallax */}
+        <div
+          className="relative w-52 h-52 sm:w-64 sm:h-64 my-3 flex items-center justify-center rounded-full bg-black/50 border-2 border-amber-600/40 shadow-inner overflow-hidden cursor-pointer"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            setEvoMousePos({ x, y });
+          }}
+          onMouseLeave={() => setEvoMousePos({ x: 0, y: 0 })}
+          style={{
+            transform: `perspective(700px) rotateX(${evoMousePos.y * -16}deg) rotateY(${evoMousePos.x * 16}deg)`,
+            transition: 'transform 0.1s ease-out',
+          }}
+        >
           {/* Glowing Aura Rings */}
           <div
             className={`absolute inset-0 rounded-full bg-gradient-to-r from-amber-500/30 via-purple-500/30 to-sky-400/30 blur-2xl transition-all duration-1000 ${
@@ -104,15 +119,18 @@ export const EvolutionModal: React.FC = () => {
           <div className="relative z-10 flex flex-col items-center justify-center">
             {step === 'anticipation' && (
               <div className="flex flex-col items-center animate-bounce">
-                <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center border-4 border-amber-300 shadow-xl"
-                  style={{ backgroundColor: currentSpecies.colorTheme.primary }}
-                >
-                  <span className="font-pixel text-3xl text-white font-bold drop-shadow">
-                    {currentSpecies.name[0]}
-                  </span>
+                <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl bg-[#14101c]/90 p-2 flex items-center justify-center border-4 border-amber-300 shadow-2xl relative">
+                  <div
+                    className="absolute inset-0 opacity-20 rounded-xl"
+                    style={{ backgroundColor: currentSpecies.colorTheme.primary }}
+                  />
+                  <SoulDollSprite
+                    speciesId={currentSpecies.id}
+                    className="h-full w-auto max-w-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] relative z-10"
+                    alt={currentSpecies.name}
+                  />
                 </div>
-                <span className="font-pixel text-[10px] sm:text-xs text-amber-200 mt-2 font-bold bg-[#190c06] px-2 py-0.5 rounded border border-[#7a4921]">
+                <span className="font-pixel text-[10px] sm:text-xs text-amber-200 mt-2 font-bold bg-[#190c06] px-2.5 py-1 rounded border border-[#7a4921]">
                   {currentSpecies.name}
                 </span>
               </div>
@@ -120,20 +138,25 @@ export const EvolutionModal: React.FC = () => {
 
             {step === 'ascending' && (
               <div className="relative flex flex-col items-center">
-                <div className="w-32 h-32 rounded-full bg-white animate-ping opacity-60 absolute" />
+                <div className="w-36 h-36 rounded-full bg-white animate-ping opacity-60 absolute" />
                 <div
-                  className={`w-28 h-28 sm:w-32 sm:h-32 rounded-2xl flex items-center justify-center border-4 border-white shadow-2xl transition-all duration-75 ${
-                    spriteToggle ? 'filter brightness-200 scale-110 rotate-3' : 'filter brightness-75 scale-95 -rotate-3'
+                  className={`w-32 h-32 sm:w-40 sm:h-40 rounded-2xl bg-[#14101c]/90 p-2 flex items-center justify-center border-4 border-white shadow-2xl transition-all duration-75 relative ${
+                    spriteToggle ? 'filter brightness-200 scale-110 rotate-3' : 'filter brightness-90 scale-95 -rotate-3'
                   }`}
-                  style={{
-                    backgroundColor: spriteToggle ? targetSpecies.colorTheme.primary : currentSpecies.colorTheme.primary,
-                  }}
                 >
-                  <span className="font-pixel text-4xl text-white font-bold drop-shadow">
-                    {spriteToggle ? targetSpecies.name[0] : currentSpecies.name[0]}
-                  </span>
+                  <div
+                    className="absolute inset-0 opacity-30 rounded-xl"
+                    style={{
+                      backgroundColor: spriteToggle ? targetSpecies.colorTheme.primary : currentSpecies.colorTheme.primary,
+                    }}
+                  />
+                  <SoulDollSprite
+                    speciesId={spriteToggle ? targetSpecies.id : currentSpecies.id}
+                    className="h-full w-auto max-w-full drop-shadow-[0_8px_20px_rgba(255,255,255,0.8)] relative z-10"
+                    alt={spriteToggle ? targetSpecies.name : currentSpecies.name}
+                  />
                 </div>
-                <span className="font-pixel text-[10px] text-amber-300 mt-2 font-bold animate-pulse">
+                <span className="font-pixel text-[10px] sm:text-xs text-amber-300 mt-2 font-bold animate-pulse">
                   {spriteToggle ? targetSpecies.name : currentSpecies.name} ...
                 </span>
               </div>
@@ -141,15 +164,18 @@ export const EvolutionModal: React.FC = () => {
 
             {step === 'complete' && (
               <div className="flex flex-col items-center animate-in zoom-in-75 duration-700">
-                <div
-                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl flex items-center justify-center border-4 border-amber-300 shadow-2xl ring-4 ring-amber-500/50"
-                  style={{ backgroundColor: targetSpecies.colorTheme.primary }}
-                >
-                  <span className="font-pixel text-3xl text-white font-bold drop-shadow">
-                    {targetSpecies.name[0]}
-                  </span>
+                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl bg-[#14101c]/90 p-2 flex items-center justify-center border-4 border-amber-300 shadow-2xl ring-4 ring-amber-500/50 relative">
+                  <div
+                    className="absolute inset-0 opacity-25 rounded-xl"
+                    style={{ backgroundColor: targetSpecies.colorTheme.primary }}
+                  />
+                  <SoulDollSprite
+                    speciesId={targetSpecies.id}
+                    className="h-full w-auto max-w-full drop-shadow-[0_10px_25px_rgba(232,184,74,0.7)] relative z-10"
+                    alt={targetSpecies.name}
+                  />
                 </div>
-                <span className="font-pixel text-xs sm:text-sm text-amber-200 mt-2 font-bold bg-[#190c06] px-3 py-1 rounded-lg border border-amber-500/60 shadow">
+                <span className="font-pixel text-xs sm:text-sm text-amber-200 mt-2.5 font-bold bg-[#190c06] px-3 py-1.5 rounded-lg border border-amber-500/60 shadow">
                   {targetSpecies.name} (Fase {targetSpecies.stage})
                 </span>
               </div>

@@ -4,6 +4,7 @@ import { sound } from '../game/audio/SoundEffects';
 import { Briefcase, Check } from 'lucide-react';
 import { ItemCategory } from '../types/game';
 import { GameCabinetModal } from './ui/GameCabinetModal';
+import { SoulDollSprite } from './ui/SoulDollSprite';
 
 export const BagModal: React.FC = () => {
   const state = useGameStore();
@@ -140,9 +141,19 @@ export const BagModal: React.FC = () => {
                             : 'bg-[#2b170c] border-[#7a4921] text-amber-200/80 hover:bg-[#3d2212]'
                         }`}
                       >
-                        <span className="font-pixel text-[10px] font-bold">
-                          {doll.nickname} (Nv.{doll.level})
-                        </span>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                            <SoulDollSprite
+                              speciesId={doll.speciesId}
+                              crop="bust"
+                              className="h-full w-auto max-w-full drop-shadow"
+                              alt={doll.nickname}
+                            />
+                          </div>
+                          <span className="font-pixel text-[10px] font-bold">
+                            {doll.nickname} (Nv.{doll.level})
+                          </span>
+                        </div>
                         <span className="font-pixel text-[9px] text-amber-300">
                           {doll.currentHp}/{doll.maxHp} HP
                         </span>
