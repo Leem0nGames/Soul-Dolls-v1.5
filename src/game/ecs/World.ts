@@ -8,7 +8,8 @@ import {
   WildZoneComponent,
   TamerChallengerComponent,
   ShrineComponent,
-  TurnCombatantComponent
+  TurnCombatantComponent,
+  ShopComponent
 } from './Components';
 
 export class ECSWorld {
@@ -23,6 +24,7 @@ export class ECSWorld {
   public wildZones: Map<EntityId, WildZoneComponent> = new Map();
   public tamers: Map<EntityId, TamerChallengerComponent> = new Map();
   public shrines: Map<EntityId, ShrineComponent> = new Map();
+  public shops: Map<EntityId, ShopComponent> = new Map();
   public combatants: Map<EntityId, TurnCombatantComponent> = new Map();
 
   // Create an entity
@@ -48,6 +50,7 @@ export class ECSWorld {
     this.wildZones.delete(id);
     this.tamers.delete(id);
     this.shrines.delete(id);
+    this.shops.delete(id);
     this.combatants.delete(id);
   }
 
@@ -62,6 +65,7 @@ export class ECSWorld {
     for (const id of this.wildZones.keys()) allIds.add(id);
     for (const id of this.tamers.keys()) allIds.add(id);
     for (const id of this.shrines.keys()) allIds.add(id);
+    for (const id of this.shops.keys()) allIds.add(id);
     for (const id of this.combatants.keys()) allIds.add(id);
 
     for (const id of allIds) {
@@ -92,6 +96,10 @@ export class ECSWorld {
 
   public getShrines(): EntityId[] {
     return Array.from(this.shrines.keys());
+  }
+
+  public getShops(): EntityId[] {
+    return Array.from(this.shops.keys());
   }
 }
 

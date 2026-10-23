@@ -20,6 +20,7 @@ export interface GameState {
   activeDialogue: { speaker: string; text: string; onDismiss?: () => void } | null;
   toastMessage: string | null;
   playerPosition: { x: number; y: number; z: number };
+  activeShopId: number | null;
 }
 
 // Initial state setup with Tomo + Aquafox starter party
@@ -56,6 +57,7 @@ let globalState: GameState = {
   activeDialogue: null,
   toastMessage: null,
   playerPosition: { x: 0, y: 0.8, z: 0 },
+  activeShopId: null,
 };
 
 const listeners = new Set<() => void>();

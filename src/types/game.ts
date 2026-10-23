@@ -165,4 +165,4 @@ export interface BattleState {
   turnMessageIndex?: number;
 }
 
-export type GameView = 'OVERWORLD' | 'BATTLE' | 'EVOLUTION' | 'PARTY' | 'BAG' | 'SOULDEX' | 'BOX';
+export type GameView = 'OVERWORLD' | 'BATTLE' | 'EVOLUTION' | 'PARTY' | 'BAG' | 'SOULDEX' | 'BOX' | 'SHOP';

@@ -7,6 +7,7 @@ import { EvolutionModal } from './components/EvolutionModal';
 import { PartyModal } from './components/PartyModal';
 import { BagModal } from './components/BagModal';
 import { SoulDexModal } from './components/SoulDexModal';
+import { ShopModal } from './components/ShopModal';
 import { DialogueBox } from './components/DialogueBox';
 import { VirtualControls } from './components/VirtualControls';
 import { ScreenWipeTransition } from './components/ScreenWipeTransition';
@@ -115,6 +116,9 @@ export default function App() {
 
       {/* Dialogue Overlay */}
       <DialogueBox />
+
+      {/* Shop Modal */}
+      <ShopModal />
 
       {/* Virtual Touch Gamepad */}
       <VirtualControls

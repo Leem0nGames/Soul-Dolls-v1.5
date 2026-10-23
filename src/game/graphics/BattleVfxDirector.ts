@@ -26,8 +26,8 @@ import { AttackVfxCommand, BattleSide, BattleVfxSink, FaintVfxRequest } from './
 // Arena layout
 // ---------------------------------------------------------------------------
 
-const ANCHOR_PLAYER = new THREE.Vector3(-2.8, 1.95, 1.4);
-const ANCHOR_OPPONENT = new THREE.Vector3(2.8, 1.95, -1.4);
+const ANCHOR_PLAYER = new THREE.Vector3(-2.8, 0.05, 1.4);
+const ANCHOR_OPPONENT = new THREE.Vector3(2.8, 0.05, -1.4);
 const CHEST_RISE = 2.4;
 const UP = new THREE.Vector3(0, 1, 0);
 

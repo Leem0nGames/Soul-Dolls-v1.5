@@ -469,7 +469,7 @@ export class LuminatiRenderer {
     );
     playerDollShadow.rotation.x = -Math.PI / 2;
     playerDollShadow.scale.set(1.3, 0.7, 1);
-    playerDollShadow.position.set(-2.8, 0.032, 1.4);
+    playerDollShadow.position.set(-2.85, 0.032, 1.4);
     this.battleArenaPlatform.add(playerDollShadow);
 
     // --- OPPONENT GLYPH (Right background: Concentric Stepped Crimson / Rift Rings) ---
@@ -523,7 +523,7 @@ export class LuminatiRenderer {
     );
     oppDollShadow.rotation.x = -Math.PI / 2;
     oppDollShadow.scale.set(1.3, 0.7, 1);
-    oppDollShadow.position.set(2.8, 0.032, -1.4);
+    oppDollShadow.position.set(2.75, 0.032, -1.4);
     this.battleArenaPlatform.add(oppDollShadow);
 
     // Player Doll Billboard Sprite (Back view)
@@ -536,7 +536,7 @@ export class LuminatiRenderer {
     const pAspect = pixelGenerator.getSoulDollAspect('ignisaur', true);
     const baseH = 5.18;
     this.battlePlayerDollSprite.scale.set(baseH * pAspect, baseH, 1);
-    this.battlePlayerDollSprite.position.set(-2.8, 1.95, 1.4);
+    this.battlePlayerDollSprite.position.set(-2.8, 0.05, 1.4);
     this.battleArenaPlatform.add(this.battlePlayerDollSprite);
 
     // Opponent Doll Billboard Sprite (Front view)
@@ -548,7 +548,7 @@ export class LuminatiRenderer {
     this.battleOpponentDollSprite.center.set(0.5, 0.0);
     const oAspect = pixelGenerator.getSoulDollAspect('aquafox', false);
     this.battleOpponentDollSprite.scale.set(baseH * oAspect, baseH, 1);
-    this.battleOpponentDollSprite.position.set(2.8, 1.95, -1.4);
+    this.battleOpponentDollSprite.position.set(2.8, 0.05, -1.4);
     this.battleArenaPlatform.add(this.battleOpponentDollSprite);
 
     // Spotlight in Arena
@@ -729,6 +729,23 @@ export class LuminatiRenderer {
       name: 'Santuario de las Almas',
       prompt: 'Toca el cristal para restaurar la salud y energía de tus SoulDolls.'
     });
+
+    // 6. Shop NPC
+    const shopEntity = ecs.createEntity();
+    ecs.positions.set(shopEntity, { x: 5, y: 0.8, z: -5 });
+    ecs.shops.set(shopEntity, {
+      name: 'Tienda de Objetos',
+      items: [
+        { id: 'animus_vial', price: 100 },
+        { id: 'evolution_prism', price: 500 }
+      ]
+    });
+
+    const shopTex = pixelGenerator.getTamerTexture('sage');
+    const shopSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: shopTex, transparent: true }));
+    shopSprite.scale.set(2.8, 2.8, 1);
+    shopSprite.position.set(5, 1.0, -5);
+    this.entitiesGroup.add(shopSprite);
   }
 
   /**
@@ -959,7 +976,7 @@ export class LuminatiRenderer {
       const pAspect = pixelGenerator.getSoulDollAspect(activePlayerDoll.speciesId, true);
       const breath = Math.sin(this.clock.getElapsedTime() * 4) * 0.04;
       this.battlePlayerDollSprite.scale.set(baseH * pAspect * (1 - breath * 0.5), baseH * (1 + breath), 1);
-      this.battlePlayerDollSprite.position.y = 1.95;
+      this.battlePlayerDollSprite.position.y = 0.05;
     }
 
     if (battle.opponentDoll) {
@@ -971,7 +988,7 @@ export class LuminatiRenderer {
       const oAspect = pixelGenerator.getSoulDollAspect(battle.opponentDoll.speciesId, false);
       const oppBreath = Math.sin(this.clock.getElapsedTime() * 4 + 1) * 0.04;
       this.battleOpponentDollSprite.scale.set(baseH * oAspect * (1 - oppBreath * 0.5), baseH * (1 + oppBreath), 1);
-      this.battleOpponentDollSprite.position.y = 1.95;
+      this.battleOpponentDollSprite.position.y = 0.05;
     }
   }
 
@@ -1021,6 +1038,22 @@ export class LuminatiRenderer {
           }
         });
         return;
+      }
+    }
+
+    // Check Shop interaction
+    const shops = ecs.getShops();
+    for (const sid of shops) {
+      const spos = ecs.positions.get(sid)!;
+      const shop = ecs.shops.get(sid)!;
+      const dist = Math.hypot(pos.x - spos.x, pos.z - spos.z);
+
+      if (dist < 2.5) {
+         gameStore.setDialogue(shop.name, '¡Bienvenido! ¿Qué buscas hoy?', () => {
+             gameStore.setState({ activeShopId: sid });
+             gameStore.setView('SHOP');
+         });
+         return;
       }
     }
   }

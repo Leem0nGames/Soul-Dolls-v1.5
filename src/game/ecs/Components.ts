@@ -78,3 +78,8 @@ export interface SlotHabilidadComponent {
   reactionSlots: number; // 1
 }
 
+export interface ShopComponent {
+  name: string;
+  items: { id: string; price: number }[];
+}
+
