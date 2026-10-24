@@ -24,6 +24,9 @@ export interface GameState {
   introStep: IntroStep;
   selectedStarterId: string | null;
   activeMapId: string;
+  wipeCount: number;
+  wipeLabel: string | null;
+  wipeFlash: boolean;
 }
 
 // Initial state setup with Tomo + Aquafox starter party
@@ -47,6 +50,9 @@ let globalState: GameState = {
   introStep: 'title',
   selectedStarterId: null,
   activeMapId: 'pallet_town',
+  wipeCount: 0,
+  wipeLabel: null,
+  wipeFlash: false,
   playerParty: initialParty,
   soulBox: [
     createSoulDoll('runika', 10),
@@ -79,6 +85,14 @@ export const gameStore = {
 
   setState(partial: Partial<GameState>) {
     globalState = { ...globalState, ...partial };
+    notify();
+  },
+
+  // Fires a full-screen shutter wipe. Used by map / interior transitions.
+  wipeScreen(label: string, flash = false) {
+    globalState.wipeCount += 1;
+    globalState.wipeLabel = label;
+    globalState.wipeFlash = flash;
     notify();
   },
 

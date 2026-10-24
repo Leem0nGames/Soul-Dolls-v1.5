@@ -7,7 +7,7 @@ import * as THREE from 'three';
  * (Blender Pokémon Center scenes) adapted to the game's 3D pipeline.
  */
 
-export const FACILITY_INTERIORS = ['pokemon_center', 'poke_mart', 'research_lab', 'house'] as const;
+export const FACILITY_INTERIORS = ['pokemon_center', 'poke_mart', 'research_lab', 'house', 'gym'] as const;
 export type FacilityKind = (typeof FACILITY_INTERIORS)[number];
 
 /** Shared interior room dimensions (all facility rooms use the same shell). */
@@ -23,6 +23,7 @@ export const INTERIOR_SERVICE_LOCAL: Record<FacilityKind, { x: number; z: number
   poke_mart: { x: -2.5, z: -INTERIOR_D / 2 + 2 },
   research_lab: { x: 0, z: -INTERIOR_D / 2 + 2 },
   house: { x: 2, z: -INTERIOR_D / 2 + 2 },
+  gym: { x: -2, z: -INTERIOR_D / 2 + 2 },
 };
 
 const TOON_MATERIALS = new Map<string, THREE.MeshStandardMaterial>();
@@ -259,6 +260,31 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       group.add(ambientLight);
       addBox(group, 2, 2, 0.1, 0x94a3b8, -3, 3, -d / 2 + 0.05);
       addBox(group, 2, 2, 0.1, 0x94a3b8, 3, 3, -d / 2 + 0.05);
+      return group;
+    }
+    case 'gym': {
+      const w = 12;
+      const d = 8;
+      const h = 7;
+      addShell(group, w, d, h, 0xd6d3d1, 0x8a5a2b, 0xcabfb2);
+      // Battle totem pillars with embers on top
+      addBox(group, 2.2, 6.2, 2.2, 0xb45309, -w / 2 + 2.4, 3.1, -d / 2 + 2);
+      addEmissiveBox(group, 2.2, 0.4, 2.2, 0xf97316, -w / 2 + 2.4, 6.1, -d / 2 + 2, 0.75);
+      addBox(group, 2.2, 6.2, 2.2, 0xb45309, w / 2 - 2.4, 3.1, -d / 2 + 2);
+      addEmissiveBox(group, 2.2, 0.4, 2.2, 0xf97316, w / 2 - 2.4, 6.1, -d / 2 + 2, 0.75);
+      // Leader's pedestal with lighter top
+      addBox(group, 3, 1.1, 2.4, 0x7c3f16, -2, 0.55, -d / 2 + 2);
+      addBox(group, 3, 0.2, 2.6, 0x4a2b12, -2, 1.2, -d / 2 + 2);
+      addBox(group, 3, 1.1, 2.4, 0xffedd0, -2, 0.55, -d / 2 + 2);
+      // Flaming gym emblem on the back wall
+      addEmissiveBox(group, 2.4, 2.4, 0.35, 0xf97316, -2, 4.4, -d / 2 + 0.15, 0.85);
+      // Door with frame (front, -Z side)
+      addBox(group, 2.6, 3.6, 0.3, 0x4a2f1a, 4, 1.5, -d / 2 + 0.1);
+      addBox(group, 2, 3, 0.25, 0x6b4423, 4, 1.5, -d / 2);
+      addInteriorLight(group, h - 0.5, -1, '#ffe19b', 26);
+      const ambientLight = new THREE.PointLight('#fde8c8', 8, 20, 2);
+      ambientLight.position.set(0, 4, 2);
+      group.add(ambientLight);
       return group;
     }
     default:

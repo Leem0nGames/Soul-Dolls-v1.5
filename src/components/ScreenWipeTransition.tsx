@@ -7,9 +7,9 @@ export const ScreenWipeTransition: React.FC = () => {
   const state = useGameStore();
   const currentView = state.view;
   const prevViewRef = useRef<GameView>(currentView);
+  const prevWipeRef = useRef<number>(state.wipeCount);
 
-  const [isWiping, setIsWiping] = useState(false);
-  const [wipeType, setWipeType] = useState<'enter-battle' | 'exit-battle'>('enter-battle');
+  const [wipe, setWipe] = useState<{ label: string; flash: boolean } | null>(null);
 
   useEffect(() => {
     const prev = prevViewRef.current;
@@ -17,23 +17,33 @@ export const ScreenWipeTransition: React.FC = () => {
 
     // Trigger on Overworld -> Battle or Battle -> Overworld
     if (prev === 'OVERWORLD' && currentView === 'BATTLE') {
-      setWipeType('enter-battle');
-      setIsWiping(true);
+      setWipe({ label: '¡COMBATE!', flash: true });
       const timer = setTimeout(() => {
-        setIsWiping(false);
+        setWipe(null);
       }, 1100);
       return () => clearTimeout(timer);
     } else if (prev === 'BATTLE' && currentView === 'OVERWORLD') {
-      setWipeType('exit-battle');
-      setIsWiping(true);
+      setWipe({ label: 'VICTORIA', flash: false });
       const timer = setTimeout(() => {
-        setIsWiping(false);
+        setWipe(null);
       }, 1050);
       return () => clearTimeout(timer);
     }
   }, [currentView]);
 
-  if (!isWiping) return null;
+  // Generic wipes (area crossings, interior doors): driven by the store token.
+  useEffect(() => {
+    const prev = prevWipeRef.current;
+    prevWipeRef.current = state.wipeCount;
+    if (state.wipeCount === prev || !state.wipeLabel) return;
+    setWipe({ label: state.wipeLabel, flash: false });
+    const timer = setTimeout(() => {
+      setWipe(null);
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [state.wipeCount, state.wipeLabel]);
+
+  if (!wipe) return null;
 
   // 10 staggered horizontal shutter bars for authentic retro screen-wipe
   const barCount = 10;
@@ -42,7 +52,7 @@ export const ScreenWipeTransition: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 pointer-events-none select-none overflow-hidden flex flex-col">
       {/* 1. Dramatic Battle Flash Overlay (Active on battle encounter) */}
-      {wipeType === 'enter-battle' && (
+      {wipe.flash && (
         <div className="absolute inset-0 bg-white z-20 animate-battle-flash pointer-events-none" />
       )}
 
@@ -76,7 +86,7 @@ export const ScreenWipeTransition: React.FC = () => {
             <Sparkles className="w-8 h-8 text-amber-300" />
           </div>
           <span className="font-pixel text-[10px] text-amber-300 mt-2 font-bold tracking-widest drop-shadow-md">
-            {wipeType === 'enter-battle' ? '¡COMBATE!' : 'VICTORIA'}
+            {wipe.label}
           </span>
         </div>
       </div>

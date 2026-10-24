@@ -14,6 +14,7 @@ export let activeRenderer: LuminatiRenderer | null = null;
 
 /** Exterior facility doors: the player presses Action near them to enter. */
 const FACILITY_DOORS: { kind: FacilityKind; x: number; z: number; color: number }[] = [
+  { kind: 'gym', x: -10.5, z: 9, color: 0xd97706 },
   { kind: 'pokemon_center', x: -6, z: 9, color: 0xe4574d },
   { kind: 'poke_mart', x: -1.5, z: 9, color: 0x3b82f6 },
   { kind: 'research_lab', x: 3, z: 9, color: 0x94a3b8 },
@@ -30,6 +31,14 @@ const INTERIOR_ANCHORS: Record<FacilityKind, { x: number; z: number }> = {
   poke_mart: { x: 20, z: 0 },
   research_lab: { x: -20, z: 0 },
   house: { x: 40, z: 0 },
+  gym: { x: 60, z: 0 },
+};
+
+/** Scene tint per area so each border crossing reads differently. */
+const MAP_TINTS: Record<MapId, { bg: string; fog: string }> = {
+  pallet_town: { bg: '#0f1725', fog: '#0f1725' },
+  route_1: { bg: '#0b1e15', fog: '#0b1e15' },
+  viridian_city: { bg: '#141328', fog: '#141328' },
 };
 
 export class LuminatiRenderer {
@@ -220,6 +229,7 @@ export class LuminatiRenderer {
     this.buildOverworldProps();
     this.buildFacilityInteriors();
     this.buildFacilityDoors();
+    this.applyMapTint(this.activeMapId);
     this.loadOverworldMap(this.activeMapId);
 
     // Battle visual effects (driven by this renderer's own tick)
@@ -329,6 +339,7 @@ export class LuminatiRenderer {
     ctl.isMoving = false;
     this.activeInteriorKind = kind;
     sound.playSelect();
+    gameStore.wipeScreen('ENTRANDO...');
   }
 
   /** Returns the player to the overworld position they entered from. */
@@ -345,6 +356,7 @@ export class LuminatiRenderer {
     ctl.isMoving = false;
     this.activeInteriorKind = null;
     sound.playSelect();
+    gameStore.wipeScreen('SALIENDO...');
   }
 
   /** Service interaction inside each interior (dialogue + existing store actions). */
@@ -373,6 +385,15 @@ export class LuminatiRenderer {
         gameStore.setDialogue(
           'Investigadora Íris',
           'Aquí estudiamos la evolución de las almas... Si tu SoulDoll madura con fuertes vínculos, regresará transformado a tu equipo.'
+        );
+        break;
+      case 'gym':
+        gameStore.setDialogue(
+          'Líder Fénix',
+          '¡Soy Fénix, guardián de la llama viva! Escucha tu alma, Domador... ¡Demuestra el vínculo con tus SoulDolls!',
+          () => {
+            gameStore.startBattle(createSoulDoll('drakonika', 18), true, 'Fénix');
+          }
         );
         break;
       case 'house':
@@ -417,6 +438,13 @@ export class LuminatiRenderer {
     }
   }
 
+  /** Applies the scene tint of an area (background + fog). */
+  private applyMapTint(map: MapId) {
+    const tint = MAP_TINTS[map];
+    this.scene.background = new THREE.Color(tint.bg);
+    this.scene.fog = new THREE.FogExp2(tint.fog, 0.035);
+  }
+
   /**
    * Option B: swaps the active overworld area when the player walks through a
    * border gap (Pueblo Paleta <-> Ruta 1 <-> Ciudad Verde). Battle/ECS logic is
@@ -434,8 +462,9 @@ export class LuminatiRenderer {
     pos.z = exit.spawn.z;
     this.activeMapId = nextMap;
     gameStore.setState({ activeMapId: nextMap });
+    this.applyMapTint(nextMap);
     sound.playSelect();
-    gameStore.showToast(`Ahora en ${MAP_NAMES[nextMap]}`);
+    gameStore.wipeScreen(`AHORA EN ${MAP_NAMES[nextMap].toUpperCase()}`);
 
     // Landmarks of the starter town only exist on Pueblo Paleta.
     const isPallet = nextMap === 'pallet_town';
