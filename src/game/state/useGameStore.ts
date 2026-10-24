@@ -330,7 +330,6 @@ export const gameStore = {
 
   // Trigger dynamic evolution screen
   startEvolutionSequence(doll: SoulDollInstance) {
-    sound.playEvolution();
     globalState.evolutionCandidate = doll;
     globalState.view = 'EVOLUTION';
     notify();

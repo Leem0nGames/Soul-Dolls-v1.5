@@ -65,6 +65,7 @@ export class LuminatiRenderer {
   private vfxGroup = new THREE.Group();
   private facilityGroup = new THREE.Group();
   private villaLanternsGroup = new THREE.Group();
+  private evolutionSanctum = new THREE.Group();
 
   // Battle VFX
   private vfxDirector!: BattleVfxDirector;
@@ -91,6 +92,21 @@ export class LuminatiRenderer {
   private battlePlayerDollSprite!: THREE.Sprite;
   private battleOpponentDollSprite!: THREE.Sprite;
   private battleArenaPlatform!: THREE.Group;
+  private evolutionFromSprite!: THREE.Sprite;
+  private evolutionToSprite!: THREE.Sprite;
+  private evolutionRingOuter!: THREE.Mesh;
+  private evolutionRingInner!: THREE.Mesh;
+  private evolutionCore!: THREE.Mesh;
+  private evolutionParticles!: THREE.Points;
+  private evolutionParticlePositions!: Float32Array;
+  private evolutionLight!: THREE.PointLight;
+  private evolutionRimLight!: THREE.PointLight;
+  private evolutionFromSpeciesId: string | null = null;
+  private evolutionToSpeciesId: string | null = null;
+  private unsubscribeEvolutionSprites?: () => void;
+  private evolutionStage: 'anticipation' | 'ascending' | 'complete' = 'anticipation';
+  private evolutionCameraActive = false;
+  private readonly evolutionBackground = new THREE.Color('#090713');
 
   // Overworld
   private groundMaterial!: THREE.MeshLambertMaterial;
@@ -237,6 +253,7 @@ export class LuminatiRenderer {
     this.scene.add(this.entitiesGroup);
     this.scene.add(this.battleGroup);
     this.scene.add(this.facilityGroup);
+    this.scene.add(this.evolutionSanctum);
     this.worldGroup.add(this.villaLanternsGroup);
     // NOTE: the VFX group is parented to the battle arena (see buildBattleArena)
     // so every effect is authored in arena local space (Y = -50 offset included).
@@ -248,6 +265,7 @@ export class LuminatiRenderer {
     this.buildTerrain();
     this.buildSanctuaryShrine();
     this.buildBattleArena();
+    this.buildEvolutionSanctum();
     this.initEcsEntities();
     this.buildOverworldBuildings();
     this.buildVillaLanterns();
@@ -973,6 +991,221 @@ export class LuminatiRenderer {
     this.battleGroup.add(this.battleArenaPlatform);
   }
 
+  private buildEvolutionSanctum(): void {
+    const stage = this.evolutionSanctum;
+    stage.position.set(0, 120, 0);
+    stage.visible = false;
+
+    const floor = new THREE.Mesh(
+      new THREE.CircleGeometry(9, 64),
+      new THREE.MeshStandardMaterial({
+        color: '#151126',
+        roughness: 0.35,
+        metalness: 0.35,
+        emissive: '#241245',
+        emissiveIntensity: 0.5,
+      })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.08;
+    floor.receiveShadow = true;
+    stage.add(floor);
+
+    const platform = new THREE.Mesh(
+      new THREE.CylinderGeometry(5.7, 6.2, 0.45, 64),
+      new THREE.MeshStandardMaterial({
+        color: '#28203a',
+        roughness: 0.4,
+        metalness: 0.55,
+        emissive: '#3b1c62',
+        emissiveIntensity: 0.45,
+      })
+    );
+    platform.position.y = 0.12;
+    platform.receiveShadow = true;
+    stage.add(platform);
+
+    this.evolutionRingOuter = new THREE.Mesh(
+      new THREE.TorusGeometry(6.35, 0.12, 8, 96),
+      new THREE.MeshStandardMaterial({
+        color: '#e8b84a',
+        emissive: '#f59e0b',
+        emissiveIntensity: 1.3,
+        metalness: 0.7,
+        roughness: 0.25,
+      })
+    );
+    this.evolutionRingOuter.rotation.x = Math.PI / 2;
+    this.evolutionRingOuter.position.y = 0.45;
+    stage.add(this.evolutionRingOuter);
+
+    this.evolutionRingInner = new THREE.Mesh(
+      new THREE.TorusGeometry(4.8, 0.055, 8, 96),
+      new THREE.MeshStandardMaterial({
+        color: '#a78bfa',
+        emissive: '#8b5cf6',
+        emissiveIntensity: 1.8,
+        transparent: true,
+        opacity: 0.8,
+      })
+    );
+    this.evolutionRingInner.rotation.x = Math.PI / 2;
+    this.evolutionRingInner.position.y = 0.48;
+    stage.add(this.evolutionRingInner);
+
+    const glyph = new THREE.Mesh(
+      new THREE.RingGeometry(1.1, 3.3, 8),
+      new THREE.MeshBasicMaterial({
+        color: '#c4b5fd',
+        transparent: true,
+        opacity: 0.42,
+        side: THREE.DoubleSide,
+      })
+    );
+    glyph.rotation.x = -Math.PI / 2;
+    glyph.rotation.z = Math.PI / 8;
+    glyph.position.y = 0.46;
+    stage.add(glyph);
+
+    for (let index = 0; index < 6; index++) {
+      const angle = (index / 6) * Math.PI * 2;
+      const x = Math.cos(angle) * 7.1;
+      const z = Math.sin(angle) * 7.1;
+      const pillar = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.45, 0),
+        new THREE.MeshStandardMaterial({
+          color: '#c4b5fd',
+          emissive: '#7c3aed',
+          emissiveIntensity: 1.1,
+          roughness: 0.22,
+          metalness: 0.6,
+        })
+      );
+      pillar.position.set(x, 2.4, z);
+      pillar.scale.set(0.8, 2.8, 0.8);
+      stage.add(pillar);
+      const pillarLight = new THREE.PointLight('#a78bfa', 1.25, 8);
+      pillarLight.position.set(x, 2.5, z);
+      stage.add(pillarLight);
+    }
+
+    this.evolutionFromSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      transparent: true,
+      depthWrite: false,
+      opacity: 1,
+    }));
+    this.evolutionFromSprite.center.set(0.5, 0);
+    this.evolutionFromSprite.position.set(0, 0.55, 0);
+    this.evolutionFromSprite.scale.set(5.2, 5.2, 1);
+    stage.add(this.evolutionFromSprite);
+
+    this.evolutionToSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      transparent: true,
+      depthWrite: false,
+      opacity: 0,
+    }));
+    this.evolutionToSprite.center.set(0.5, 0);
+    this.evolutionToSprite.position.set(0, 0.55, 0);
+    this.evolutionToSprite.scale.set(5.2, 5.2, 1);
+    stage.add(this.evolutionToSprite);
+
+    this.evolutionCore = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.75, 1),
+      new THREE.MeshStandardMaterial({
+        color: '#fff7cc',
+        emissive: '#fbbf24',
+        emissiveIntensity: 2.2,
+        metalness: 0.25,
+        roughness: 0.12,
+        transparent: true,
+        opacity: 0.75,
+      })
+    );
+    this.evolutionCore.position.y = 3.2;
+    stage.add(this.evolutionCore);
+
+    this.evolutionLight = new THREE.PointLight('#fbbf24', 8, 19);
+    this.evolutionLight.position.set(0, 3.4, 0);
+    stage.add(this.evolutionLight);
+    this.evolutionRimLight = new THREE.PointLight('#8b5cf6', 5, 18);
+    this.evolutionRimLight.position.set(0, 5, -4);
+    stage.add(this.evolutionRimLight);
+
+    const particleCount = this.isSoftwareGl ? 48 : 112;
+    this.evolutionParticlePositions = new Float32Array(particleCount * 3);
+    for (let index = 0; index < particleCount; index++) {
+      const angle = index * 2.399963;
+      const radius = 2.1 + (index % 9) * 0.42;
+      this.evolutionParticlePositions[index * 3] = Math.cos(angle) * radius;
+      this.evolutionParticlePositions[index * 3 + 1] = (index % 17) * 0.34 + 0.5;
+      this.evolutionParticlePositions[index * 3 + 2] = Math.sin(angle) * radius;
+    }
+    const particleGeometry = new THREE.BufferGeometry();
+    particleGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(this.evolutionParticlePositions, 3)
+    );
+    const particles = new THREE.Points(
+      particleGeometry,
+      new THREE.PointsMaterial({
+        color: '#f8df9b',
+        size: 0.12,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false,
+        sizeAttenuation: true,
+      })
+    );
+    stage.add(particles);
+    this.evolutionParticles = particles;
+    this.unsubscribeEvolutionSprites = pixelGenerator.onSoulDollSpritesheetLoaded(() => {
+      if (!this.evolutionFromSpeciesId || !this.evolutionToSpeciesId) return;
+      this.refreshEvolutionSprites();
+    });
+  }
+
+  public beginEvolutionScene(fromSpeciesId: string, toSpeciesId: string): void {
+    this.evolutionFromSpeciesId = fromSpeciesId;
+    this.evolutionToSpeciesId = toSpeciesId;
+    this.refreshEvolutionSprites();
+    this.setEvolutionPhase('anticipation');
+    this.evolutionSanctum.visible = true;
+  }
+
+  private refreshEvolutionSprites(): void {
+    if (!this.evolutionFromSpeciesId || !this.evolutionToSpeciesId) return;
+    const fromMaterial = this.evolutionFromSprite.material as THREE.SpriteMaterial;
+    const toMaterial = this.evolutionToSprite.material as THREE.SpriteMaterial;
+    fromMaterial.map = pixelGenerator.getSoulDollTexture(this.evolutionFromSpeciesId, false);
+    fromMaterial.needsUpdate = true;
+    toMaterial.map = pixelGenerator.getSoulDollTexture(this.evolutionToSpeciesId, false);
+    toMaterial.needsUpdate = true;
+    const fromAspect = pixelGenerator.getSoulDollAspect(this.evolutionFromSpeciesId, false);
+    const toAspect = pixelGenerator.getSoulDollAspect(this.evolutionToSpeciesId, false);
+    this.evolutionFromSprite.scale.set(5.2 * fromAspect, 5.2, 1);
+    this.evolutionToSprite.scale.set(5.2 * toAspect, 5.2, 1);
+  }
+
+  public setEvolutionPhase(phase: 'anticipation' | 'ascending' | 'complete'): void {
+    this.evolutionStage = phase;
+    const fromMaterial = this.evolutionFromSprite.material as THREE.SpriteMaterial;
+    const toMaterial = this.evolutionToSprite.material as THREE.SpriteMaterial;
+    if (phase === 'anticipation') {
+      fromMaterial.opacity = 1;
+      toMaterial.opacity = 0;
+    } else if (phase === 'ascending') {
+      fromMaterial.opacity = 0.9;
+      toMaterial.opacity = 0.15;
+    } else {
+      fromMaterial.opacity = 0;
+      toMaterial.opacity = 1;
+    }
+  }
+
+  public endEvolutionScene(): void {
+    this.evolutionSanctum.visible = false;
+  }
+
   /**
    * Initializes ECS entities for Player, NPC Tamers, and Wild Zones
    */
@@ -1167,12 +1400,17 @@ export class LuminatiRenderer {
 
     const time = this.clock.getElapsedTime();
 
-    if (state.view === 'BATTLE') {
-      this.updateBattleScene(delta, state);
+    if (state.view === 'EVOLUTION') {
+      this.updateEvolutionScene(delta);
     } else {
-      // Leaving the battle: drop every running effect.
-      this.vfxDirector.clear();
-      this.updateOverworld(delta, state);
+      if (this.evolutionCameraActive) this.restoreOverworldCamera(state);
+      if (state.view === 'BATTLE') {
+        this.updateBattleScene(delta, state);
+      } else {
+        // Leaving the battle: drop every running effect.
+        this.vfxDirector.clear();
+        this.updateOverworld(delta, state);
+      }
     }
 
     // Battle VFX share this tick (no extra animation loop).
@@ -1180,6 +1418,67 @@ export class LuminatiRenderer {
 
     this.renderer.render(this.scene, this.camera);
   };
+
+  private updateEvolutionScene(delta: number): void {
+    this.evolutionCameraActive = true;
+    this.scene.background = this.evolutionBackground;
+    this.scene.fog = null;
+    this.evolutionSanctum.visible = true;
+
+    const isPortrait = this.camera.aspect < 1;
+    this.targetCameraPos.set(0, 120 + (isPortrait ? 10.2 : 8.3), isPortrait ? 18 : 15);
+    this.targetCameraLookAt.set(0, 123.2, 0);
+    this.camera.position.lerp(this.targetCameraPos, 0.075);
+    this.currentCameraLookAt.lerp(this.targetCameraLookAt, 0.075);
+    this.camera.lookAt(this.currentCameraLookAt);
+
+    const time = this.clock.getElapsedTime();
+    this.evolutionRingOuter.rotation.z += delta * (this.evolutionStage === 'ascending' ? 1.4 : 0.32);
+    this.evolutionRingInner.rotation.z -= delta * (this.evolutionStage === 'ascending' ? 2.2 : 0.48);
+    this.evolutionCore.rotation.y += delta * 0.9;
+    this.evolutionCore.rotation.x += delta * 0.42;
+    this.evolutionCore.position.y = 3.2 + Math.sin(time * 2.2) * 0.22;
+
+    const surge = this.evolutionStage === 'ascending' ? 1.7 : this.evolutionStage === 'complete' ? 1.25 : 0.8;
+    this.evolutionLight.intensity = 5.2 + (Math.sin(time * 3.2) + 1) * surge;
+    this.evolutionRimLight.intensity = 3.2 + (Math.sin(time * 2.1 + 1) + 1) * surge;
+
+    if (this.evolutionStage === 'ascending') {
+      const flash = Math.sin(time * 16) > 0;
+      (this.evolutionFromSprite.material as THREE.SpriteMaterial).opacity = flash ? 0.95 : 0.15;
+      (this.evolutionToSprite.material as THREE.SpriteMaterial).opacity = flash ? 0.15 : 0.95;
+      const scale = flash ? 5.45 : 5.05;
+      this.evolutionFromSprite.scale.set(scale, scale, 1);
+      this.evolutionToSprite.scale.set(scale, scale, 1);
+    } else if (this.evolutionStage === 'complete') {
+      this.evolutionToSprite.position.y = 0.55 + Math.sin(time * 2.8) * 0.12;
+    }
+
+    const positions = this.evolutionParticlePositions;
+    for (let index = 0; index < positions.length / 3; index++) {
+      const offset = index * 3;
+      const angle = index * 2.399963 + time * (0.18 + (index % 5) * 0.025);
+      const radius = 2.1 + (index % 9) * 0.42;
+      positions[offset] = Math.cos(angle) * radius;
+      positions[offset + 1] = 0.5 + ((index * 0.34 + time * (0.7 + (index % 4) * 0.12)) % 6.2);
+      positions[offset + 2] = Math.sin(angle) * radius;
+    }
+    this.evolutionParticles.geometry.attributes.position.needsUpdate = true;
+  }
+
+  private restoreOverworldCamera(state: GameState): void {
+    this.evolutionCameraActive = false;
+    this.evolutionSanctum.visible = false;
+    this.applyMapTint(this.activeMapId);
+    const player = state.playerPosition;
+    const isPortrait = this.camera.aspect < 1;
+    const zoomFactor = isPortrait ? 1.4 : 1.05;
+    this.targetCameraPos.set(player.x, player.y + 11.2 * zoomFactor, player.z + 14.2 * zoomFactor);
+    this.targetCameraLookAt.set(player.x, player.y + 0.5, player.z);
+    this.camera.position.copy(this.targetCameraPos);
+    this.currentCameraLookAt.copy(this.targetCameraLookAt);
+    this.camera.lookAt(this.currentCameraLookAt);
+  }
 
   /**
    * Overworld Movement & System Updates
@@ -1601,6 +1900,13 @@ export class LuminatiRenderer {
     dom.removeEventListener('touchend', this.onTouchEnd);
     battleVfx.unregisterSink(this.vfxDirector);
     this.vfxDirector.dispose();
+    this.unsubscribeEvolutionSprites?.();
+    this.evolutionSanctum.traverse((object) => {
+      if (!(object instanceof THREE.Mesh || object instanceof THREE.Points)) return;
+      object.geometry.dispose();
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach((material) => material.dispose());
+    });
     this.overworldBuildings.dispose();
     this.overworldPropsByMap.forEach((props) => props.dispose());
     this.overworldPropsByMap.clear();
