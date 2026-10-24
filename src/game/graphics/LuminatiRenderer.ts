@@ -8,9 +8,29 @@ import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
 import { buildOverworldMap, isBlocked } from './OverworldTiles';
 import { OverworldProps } from './OverworldProps';
-import { buildFacilityInterior, FacilityKind } from './FacilityInterior';
+import { buildFacilityInterior, FacilityKind, INTERIOR_W, INTERIOR_D, INTERIOR_DOOR_LOCAL, INTERIOR_SERVICE_LOCAL } from './FacilityInterior';
 
 export let activeRenderer: LuminatiRenderer | null = null;
+
+/** Exterior facility doors: the player presses Action near them to enter. */
+const FACILITY_DOORS: { kind: FacilityKind; x: number; z: number; color: number }[] = [
+  { kind: 'pokemon_center', x: -6, z: 9, color: 0xe4574d },
+  { kind: 'poke_mart', x: -1.5, z: 9, color: 0x3b82f6 },
+  { kind: 'research_lab', x: 3, z: 9, color: 0x94a3b8 },
+  { kind: 'house', x: 7.5, z: 9, color: 0xb4643a },
+];
+
+/**
+ * Interiors live on a hidden rooftop platform (mirroring the battle arena
+ * trick at Y = -50): the camera only reaches them when the player teleports in.
+ */
+const INTERIOR_Y = 80;
+const INTERIOR_ANCHORS: Record<FacilityKind, { x: number; z: number }> = {
+  pokemon_center: { x: 0, z: 0 },
+  poke_mart: { x: 20, z: 0 },
+  research_lab: { x: -20, z: 0 },
+  house: { x: 40, z: 0 },
+};
 
 export class LuminatiRenderer {
   private container: HTMLElement;
@@ -48,6 +68,10 @@ export class LuminatiRenderer {
   // Overworld
   private groundMaterial!: THREE.MeshLambertMaterial;
   private overworldProps!: OverworldProps;
+
+  // Phase 3: facility interior flow (visual only; input-gated by these flags)
+  private activeInteriorKind: FacilityKind | null = null;
+  private interiorReturnPos = { x: 0, y: 0.8, z: 0 };
 
   // Camera settings
   private targetCameraPos = new THREE.Vector3(0, 8, 11);
@@ -174,7 +198,8 @@ export class LuminatiRenderer {
     this.scene.add(this.facilityGroup);
     // NOTE: the VFX group is parented to the battle arena (see buildBattleArena)
     // so every effect is authored in arena local space (Y = -50 offset included).
-    // NOTE: the facility group hosts the 3D interiors (see mountFacilityInterior).
+    // NOTE: the facility group hosts the 3D interiors (see buildFacilityInteriors,
+    // mounted on rooftop anchors and reached through the exterior doors).
 
     // Build World Geometry & Entities
     this.buildTerrain();
@@ -182,7 +207,8 @@ export class LuminatiRenderer {
     this.buildBattleArena();
     this.initEcsEntities();
     this.buildOverworldProps();
-    this.mountFacilityInterior('pokemon_center', { x: -18, y: 0.8, z: -18 });
+    this.buildFacilityInteriors();
+    this.buildFacilityDoors();
     this.loadOverworldMap();
 
     // Battle visual effects (driven by this renderer's own tick)
@@ -238,6 +264,124 @@ export class LuminatiRenderer {
     const interior = buildFacilityInterior(kind);
     interior.position.set(position.x, position.y, position.z);
     this.facilityGroup.add(interior);
+  }
+
+  /**
+   * Mounts every facility interior onto its rooftop anchor (see INTERIOR_ANCHORS).
+   * Phase 3: one room per building, reachable through its exterior door.
+   */
+  private buildFacilityInteriors() {
+    (Object.keys(INTERIOR_ANCHORS) as FacilityKind[]).forEach((kind) => {
+      const interior = buildFacilityInterior(kind);
+      interior.position.set(INTERIOR_ANCHORS[kind].x, INTERIOR_Y, INTERIOR_ANCHORS[kind].z);
+      this.facilityGroup.add(interior);
+    });
+  }
+
+  /** Small colored facades marking the enterable facility doors of the town. */
+  private buildFacilityDoors() {
+    FACILITY_DOORS.forEach((def) => {
+      const group = new THREE.Group();
+      group.position.set(def.x, 0, def.z);
+
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(3.6, 2.6, 0.8),
+        new THREE.MeshStandardMaterial({ color: '#e8dcc8', roughness: 1 })
+      );
+      base.position.set(0, 1.3, 0);
+      group.add(base);
+
+      const doorway = new THREE.Mesh(
+        new THREE.BoxGeometry(1.4, 2.1, 0.25),
+        new THREE.MeshStandardMaterial({ color: '#3a2a1a', roughness: 1 })
+      );
+      doorway.position.set(0, 1.05, 0.35);
+      group.add(doorway);
+
+      const roof = new THREE.Mesh(
+        new THREE.BoxGeometry(4.2, 0.35, 1.4),
+        new THREE.MeshStandardMaterial({ color: def.color, roughness: 0.9 })
+      );
+      roof.position.set(0, 2.85, 0);
+      group.add(roof);
+
+      this.worldGroup.add(group);
+    });
+  }
+
+  /**
+   * Teleports the player into a facility interior. Pure visual flow: the
+   * position swap is the entrance mechanic (no battle/ECS logic touched).
+   */
+  private enterInterior(kind: FacilityKind) {
+    const playerEntity = ecs.getPlayerEntity();
+    if (!playerEntity || this.activeInteriorKind) return;
+    const pos = ecs.positions.get(playerEntity)!;
+    const ctl = ecs.playerControls.get(playerEntity)!;
+
+    this.interiorReturnPos = { x: pos.x, y: pos.y, z: pos.z };
+    const anchor = INTERIOR_ANCHORS[kind];
+    pos.x = anchor.x + INTERIOR_DOOR_LOCAL.x;
+    pos.z = anchor.z - INTERIOR_D / 2 + 1.55;
+    pos.y = INTERIOR_Y + 0.8;
+    ctl.facing = 'up';
+    ctl.isMoving = false;
+    this.activeInteriorKind = kind;
+    sound.playSelect();
+  }
+
+  /** Returns the player to the overworld position they entered from. */
+  private exitInterior() {
+    const playerEntity = ecs.getPlayerEntity();
+    if (!playerEntity || !this.activeInteriorKind) return;
+    const pos = ecs.positions.get(playerEntity)!;
+    const ctl = ecs.playerControls.get(playerEntity)!;
+
+    pos.x = this.interiorReturnPos.x;
+    pos.y = 0.8;
+    pos.z = this.interiorReturnPos.z;
+    ctl.facing = 'up';
+    ctl.isMoving = false;
+    this.activeInteriorKind = null;
+    sound.playSelect();
+  }
+
+  /** Service interaction inside each interior (dialogue + existing store actions). */
+  private runInteriorService(kind: FacilityKind) {
+    switch (kind) {
+      case 'pokemon_center':
+        gameStore.setDialogue(
+          'Enfermera de Almas',
+          '¡Bienvenido al Centro Soul! Restauraré la vitalidad de tus SoulDolls con la energía del cristal.',
+          () => gameStore.healParty()
+        );
+        break;
+      case 'poke_mart': {
+        const shops = ecs.getShops();
+        if (shops.length > 0) {
+          gameStore.setDialogue('Dependiente', '¡Bienvenido al Mercado Soul! Esta semana hay objetos nuevos para tamers.', () => {
+            gameStore.setState({ activeShopId: shops[0] });
+            gameStore.setView('SHOP');
+          });
+        } else {
+          gameStore.showToast('El mercado está cerrado por hoy.');
+        }
+        break;
+      }
+      case 'research_lab':
+        gameStore.setDialogue(
+          'Investigadora Íris',
+          'Aquí estudiamos la evolución de las almas... Si tu SoulDoll madura con fuertes vínculos, regresará transformado a tu equipo.'
+        );
+        break;
+      case 'house':
+        gameStore.setDialogue(
+          'Domador Local',
+          '¿Cansado del viaje? Puedes descansar un momento en mi sofá para recuperar fuerzas.',
+          () => gameStore.healParty()
+        );
+        break;
+    }
   }
 
   /**
@@ -840,15 +984,41 @@ export class LuminatiRenderer {
           ctl.facing = dx > 0 ? 'right' : 'left';
         }
 
-        // Apply movement with bounds clamping and tree collision (slide).
-        const nextX = THREE.MathUtils.clamp(pos.x + dx * currentSpeed, -24, 24);
-        const nextZ = THREE.MathUtils.clamp(pos.z + dz * currentSpeed, -24, 24);
-        if (!isBlocked(nextX, nextZ)) {
-          pos.x = nextX;
-          pos.z = nextZ;
+        if (this.activeInteriorKind) {
+          // Interior rooms: free navigation clamped to the room box
+          // (no tilemap collision and no wild/tamers triggers up here).
+          const anchor = INTERIOR_ANCHORS[this.activeInteriorKind];
+          pos.x = THREE.MathUtils.clamp(
+            pos.x + dx * currentSpeed,
+            anchor.x - INTERIOR_W / 2 + 1.5,
+            anchor.x + INTERIOR_W / 2 - 1.5
+          );
+          pos.z = THREE.MathUtils.clamp(
+            pos.z + dz * currentSpeed,
+            anchor.z - INTERIOR_D / 2 + 1.2,
+            anchor.z + INTERIOR_D / 2 - 1.2
+          );
         } else {
-          if (!isBlocked(nextX, pos.z)) pos.x = nextX;
-          if (!isBlocked(pos.x, nextZ)) pos.z = nextZ;
+          // Apply movement with bounds clamping and tree collision (slide).
+          const nextX = THREE.MathUtils.clamp(pos.x + dx * currentSpeed, -24, 24);
+          const nextZ = THREE.MathUtils.clamp(pos.z + dz * currentSpeed, -24, 24);
+          if (!isBlocked(nextX, nextZ)) {
+            pos.x = nextX;
+            pos.z = nextZ;
+          } else {
+            if (!isBlocked(nextX, pos.z)) pos.x = nextX;
+            if (!isBlocked(pos.x, nextZ)) pos.z = nextZ;
+          }
+
+          // Step accumulator for wild encounters in spirit grass
+          ctl.stepDistanceAccumulator += Math.hypot(dx * currentSpeed, dz * currentSpeed);
+          if (ctl.stepDistanceAccumulator > 1.2) {
+            ctl.stepDistanceAccumulator = 0;
+            this.checkWildGrassEncounter(pos.x, pos.z);
+          }
+
+          // Check proximity to NPC Tamers
+          this.checkTamerTriggers(pos.x, pos.z);
         }
 
         // Update sprite position & 6-frame walk animation from spritesheet
@@ -858,16 +1028,6 @@ export class LuminatiRenderer {
 
         // Ground-level positioning without excessive artificial bounce
         spr.bobOffset = 0;
-
-        // Step accumulator for wild encounters in spirit grass
-        ctl.stepDistanceAccumulator += Math.hypot(dx * currentSpeed, dz * currentSpeed);
-        if (ctl.stepDistanceAccumulator > 1.2) {
-          ctl.stepDistanceAccumulator = 0;
-          this.checkWildGrassEncounter(pos.x, pos.z);
-        }
-
-        // Check proximity to NPC Tamers
-        this.checkTamerTriggers(pos.x, pos.z);
       } else {
         spr.animTimer = 0;
         spr.stepFrame = 0;
@@ -875,9 +1035,10 @@ export class LuminatiRenderer {
         spr.sprite.material.map = pixelGenerator.getPlayerTexture(ctl.facing, 0);
       }
 
-      this.playerSprite.position.set(pos.x, 1.8, pos.z);
+      // Sprite rides on pos.y so it also works on the rooftop interiors.
+      this.playerSprite.position.set(pos.x, pos.y + 1.0, pos.z);
       if (this.playerShadow) {
-        this.playerShadow.position.set(pos.x, 0.02, pos.z);
+        this.playerShadow.position.set(pos.x, pos.y - 0.78, pos.z);
       }
       state.playerPosition = { x: pos.x, y: pos.y, z: pos.z };
 
@@ -1023,6 +1184,31 @@ export class LuminatiRenderer {
     const playerEntity = ecs.getPlayerEntity();
     if (!playerEntity) return;
     const pos = ecs.positions.get(playerEntity)!;
+
+    // Phase 3: facility interior flow (exit door + service counters)
+    if (this.activeInteriorKind) {
+      const kind = this.activeInteriorKind;
+      const anchor = INTERIOR_ANCHORS[kind];
+      const doorWorld = { x: anchor.x + INTERIOR_DOOR_LOCAL.x, z: anchor.z + INTERIOR_DOOR_LOCAL.z };
+      if (Math.hypot(pos.x - doorWorld.x, pos.z - doorWorld.z) < 1.35) {
+        this.exitInterior();
+        return;
+      }
+      const service = INTERIOR_SERVICE_LOCAL[kind];
+      const serviceWorld = { x: anchor.x + service.x, z: anchor.z + service.z };
+      if (Math.hypot(pos.x - serviceWorld.x, pos.z - serviceWorld.z) < 2.2) {
+        this.runInteriorService(kind);
+      }
+      return;
+    }
+
+    // Exterior facility doors: press the Action key near one to enter.
+    for (const def of FACILITY_DOORS) {
+      if (Math.hypot(pos.x - def.x, pos.z - def.z) < 2.2) {
+        this.enterInterior(def.kind);
+        return;
+      }
+    }
 
     // Check Sanctuary Shrine healing
     const shrines = ecs.getShrines();

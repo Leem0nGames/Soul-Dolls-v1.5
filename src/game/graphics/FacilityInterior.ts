@@ -10,6 +10,21 @@ import * as THREE from 'three';
 export const FACILITY_INTERIORS = ['pokemon_center', 'poke_mart', 'research_lab', 'house'] as const;
 export type FacilityKind = (typeof FACILITY_INTERIORS)[number];
 
+/** Shared interior room dimensions (all facility rooms use the same shell). */
+export const INTERIOR_W = 12;
+export const INTERIOR_D = 8;
+
+/** Local-space position of the exit door plate (front, -Z side). */
+export const INTERIOR_DOOR_LOCAL = { x: 4, z: -INTERIOR_D / 2 };
+
+/** Local-space service interaction hotspots (counter / desk / table). */
+export const INTERIOR_SERVICE_LOCAL: Record<FacilityKind, { x: number; z: number }> = {
+  pokemon_center: { x: -2, z: -INTERIOR_D / 2 + 2 },
+  poke_mart: { x: -2.5, z: -INTERIOR_D / 2 + 2 },
+  research_lab: { x: 0, z: -INTERIOR_D / 2 + 2 },
+  house: { x: 2, z: -INTERIOR_D / 2 + 2 },
+};
+
 const TOON_MATERIALS = new Map<string, THREE.MeshStandardMaterial>();
 
 function toonMaterial(
