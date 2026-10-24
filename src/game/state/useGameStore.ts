@@ -7,6 +7,7 @@ import { combatEngine } from '../combat/CombatEngine';
 import { AffinityValidator } from '../combat/AffinityValidator';
 import { sound } from '../audio/SoundEffects';
 import { MapId } from '../data/world';
+import { ecs } from '../ecs/World';
 
 export interface GameState {
   view: GameView;
@@ -146,7 +147,12 @@ export const gameStore = {
   },
 
   // Start Wild or Trainer Battle
-  startBattle(opponent: SoulDollInstance, isTrainer = false, trainerName?: string) {
+  startBattle(
+    opponent: SoulDollInstance,
+    isTrainer = false,
+    trainerName?: string,
+    trainer?: { party: SoulDollInstance[]; entityId: number }
+  ) {
     if (globalState.battleState?.isActive) return;
     if (globalState.playerParty.length === 0) {
       this.showToast('Primero elige a tu SoulDoll inicial en el laboratorio.');
@@ -175,6 +181,9 @@ export const gameStore = {
       isActive: true,
       isTrainerBattle: isTrainer,
       trainerName,
+      trainerEntityId: trainer?.entityId,
+      opponentParty: trainer?.party ?? [opponent],
+      opponentPartyIndex: 0,
       phase: 'action_select',
       playerActiveIndex: firstAliveIdx,
       opponentDoll: opponent,
@@ -187,9 +196,19 @@ export const gameStore = {
 
   // End battle
   endBattle(won = true) {
+    const battle = globalState.battleState;
+    if (!battle) return;
     globalState.battleState = null;
     globalState.view = 'OVERWORLD';
-    if (won) {
+    if (won && battle.isTrainerBattle) {
+      const trainer = battle.trainerEntityId === undefined
+        ? undefined
+        : ecs.tamers.get(battle.trainerEntityId);
+      if (trainer) trainer.defeated = true;
+      const reward = battle.opponentParty.reduce((total, doll) => total + doll.level * 10, 0);
+      globalState.soulShards += reward;
+      this.showToast(`¡Venciste a ${battle.trainerName}! Recibiste ${reward} fragmentos de alma.`);
+    } else if (won) {
       this.showToast('¡Has triunfado en el combate de almas!');
     }
     notify();

@@ -336,8 +336,8 @@ export const BattleUI: React.FC = () => {
 
   // Opponent defeated
   const handleOpponentFainted = async () => {
-    sound.playLevelUp();
     const expRes = combatEngine.awardExp(playerDoll, opponentDoll, battle.isTrainerBattle);
+    if (expRes.leveledUp) sound.playLevelUp();
     
     for (const msg of expRes.messages) {
       battle.log.push(msg);
@@ -346,7 +346,24 @@ export const BattleUI: React.FC = () => {
       await new Promise(r => setTimeout(r, 1100));
     }
 
-    if (expRes.evolutionReady) {
+    battle.pendingEvolution = battle.pendingEvolution || expRes.evolutionReady;
+    const nextOpponentIndex = battle.opponentPartyIndex + 1;
+    if (battle.isTrainerBattle && nextOpponentIndex < battle.opponentParty.length) {
+      const nextOpponent = battle.opponentParty[nextOpponentIndex];
+      battle.opponentPartyIndex = nextOpponentIndex;
+      battle.opponentDoll = nextOpponent;
+      battle.turnNumber = 1;
+      battle.pendingPlayerAction = undefined;
+      const announce = `¡${battle.trainerName} envía a ${nextOpponent.nickname}!`;
+      battle.log.push(announce);
+      setCurrentMessage(announce);
+      setActiveMenu('root');
+      gameStore.setState({ battleState: { ...battle } });
+      setIsExecuting(false);
+      return;
+    }
+
+    if (battle.pendingEvolution) {
       await new Promise(r => setTimeout(r, 500));
       gameStore.endBattle(true);
       gameStore.startEvolutionSequence(playerDoll);
@@ -496,6 +513,12 @@ export const BattleUI: React.FC = () => {
   const opponentSpecies = SOULDOLL_SPECIES[opponentDoll.speciesId];
   const playerTypes = playerSpecies?.types || [playerDoll.moves[0]?.type || 'Fire'];
   const opponentTypes = opponentSpecies?.types || [opponentDoll.moves[0]?.type || 'Fire'];
+  const xpFloor = Math.floor(playerDoll.level ** 3);
+  const xpProgress = playerDoll.level >= 100
+    ? 100
+    : Math.max(0, Math.min(100,
+      ((playerDoll.currentXp - xpFloor) / Math.max(1, playerDoll.xpToNext - xpFloor)) * 100
+    ));
 
   return (
     <div
@@ -708,10 +731,7 @@ export const BattleUI: React.FC = () => {
                 <div
                   className="sd-bar-exp-soul h-full rounded-full"
                   style={{
-                    width: `${Math.min(
-                      100,
-                      Math.max(0, ((playerDoll.currentXp % 100) / 100) * 100)
-                    )}%`,
+                    width: `${xpProgress}%`,
                   }}
                 />
               </div>

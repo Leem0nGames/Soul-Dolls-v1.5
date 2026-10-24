@@ -60,6 +60,12 @@ export const PartyModal: React.FC = () => {
             const dollSpecies = SOULDOLL_SPECIES[doll.speciesId] || SOULDOLL_SPECIES.ignisaur;
             const isSelected = selectedIdx === idx;
             const hpPct = Math.floor((doll.currentHp / doll.maxHp) * 100);
+            const xpFloor = Math.floor(doll.level ** 3);
+            const xpPct = doll.level >= 100
+              ? 100
+              : Math.max(0, Math.min(100,
+                ((doll.currentXp - xpFloor) / Math.max(1, doll.xpToNext - xpFloor)) * 100
+              ));
 
             return (
               <BrandButton
@@ -86,6 +92,9 @@ export const PartyModal: React.FC = () => {
                     <div className="font-pixel text-[8px] text-amber-100/60 mt-0.5">Lv. {doll.level}</div>
                     <div className="w-full bg-black/40 h-1.5 rounded-full mt-1 overflow-hidden">
                       <div className={`h-full ${hpPct > 50 ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ width: `${hpPct}%` }} />
+                    </div>
+                    <div className="w-full bg-black/40 h-1 mt-1 overflow-hidden rounded-full">
+                      <div className="h-full bg-sky-400" style={{ width: `${xpPct}%` }} />
                     </div>
                   </div>
               </BrandButton>
@@ -116,6 +125,9 @@ export const PartyModal: React.FC = () => {
             <div className="sd-brand-panel sd-brand-panel-surface p-3 shadow-inner">
               <div className="font-pixel text-[10px] text-amber-200 mb-2 font-bold uppercase tracking-wider">
                 ESTADÍSTICAS ACTUALES
+              </div>
+              <div className="font-pixel text-[8px] text-sky-300 mb-2">
+                EXP {currentDoll.currentXp.toLocaleString()} / {currentDoll.xpToNext.toLocaleString()}
               </div>
               <div className="grid grid-cols-3 gap-2 font-pixel text-[9px]">
                 {[

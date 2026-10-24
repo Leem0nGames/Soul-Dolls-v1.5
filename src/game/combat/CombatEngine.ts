@@ -1,5 +1,6 @@
 import { SoulDollInstance, Move, Item, BattleState, BattleAction, StatBlock } from '../../types/game';
-import { SOULDOLL_SPECIES, createSoulDoll } from '../data/souldolls';
+import { SOULDOLL_SPECIES } from '../data/souldolls';
+import { createMoveInstance } from '../data/moves';
 import { getTypeEffectiveness } from '../data/typesChart';
 import { sound } from '../audio/SoundEffects';
 
@@ -207,7 +208,9 @@ export class CombatEngine {
     const result = this.applyExperience(winner, expGained);
     return {
       ...result,
-      messages: [`¡${winner.nickname} ganó ${expGained} puntos de EXP!`, ...result.messages],
+      messages: result.expGained > 0
+        ? [`¡${winner.nickname} ganó ${result.expGained} puntos de EXP!`, ...result.messages]
+        : [`¡${winner.nickname} ya alcanzó el nivel máximo!`, ...result.messages],
     };
   }
 
@@ -222,6 +225,9 @@ export class CombatEngine {
     winner: SoulDollInstance,
     expGained: number
   ): { expGained: number; leveledUp: boolean; evolutionReady: boolean; messages: string[] } {
+    if (winner.level >= 100 || expGained <= 0) {
+      return { expGained: 0, leveledUp: false, evolutionReady: false, messages: [] };
+    }
     winner.currentXp += expGained;
     const msgs: string[] = [];
     let leveledUp = false;
@@ -252,13 +258,14 @@ export class CombatEngine {
 
       msgs.push(`¡${winner.nickname} subió al Nivel ${winner.level}!`);
 
-      // Check if new move is learned at this level
-      const newMoveEntry = species.learnset.find(l => l.level === winner.level);
-      if (newMoveEntry) {
-        const moveInstance = { ...newMoveEntry, ...species };
+      const newMoveEntry = species.learnset.find((entry) => entry.level === winner.level);
+      if (newMoveEntry && !winner.moves.some((move) => move.id === newMoveEntry.moveId)) {
+        const learnedMove = createMoveInstance(newMoveEntry.moveId);
         if (winner.moves.length < 4) {
-          const moveData = SOULDOLL_SPECIES[winner.speciesId];
-          // We can push if less than 4
+          winner.moves.push(learnedMove);
+          msgs.push(`¡${winner.nickname} aprendió ${learnedMove.name}!`);
+        } else {
+          msgs.push(`¡${winner.nickname} quiso aprender ${learnedMove.name}, pero ya conoce cuatro habilidades!`);
         }
       }
 

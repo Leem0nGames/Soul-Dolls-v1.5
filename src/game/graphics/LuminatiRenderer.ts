@@ -1372,7 +1372,10 @@ export class LuminatiRenderer {
           () => {
             // Initiate trainer battle
             const firstOpponent = tamer.party[0];
-            gameStore.startBattle(firstOpponent, true, tamer.name);
+            gameStore.startBattle(firstOpponent, true, tamer.name, {
+              party: tamer.party,
+              entityId: tid,
+            });
           }
         );
         return;
@@ -1506,7 +1509,10 @@ export class LuminatiRenderer {
         const text = tamer.defeated ? tamer.dialogueDefeated : tamer.dialogueIntro;
         gameStore.setDialogue(`${tamer.title} ${tamer.name}`, text, () => {
           if (!tamer.defeated) {
-            gameStore.startBattle(tamer.party[0], true, tamer.name);
+            gameStore.startBattle(tamer.party[0], true, tamer.name, {
+              party: tamer.party,
+              entityId: tid,
+            });
           }
         });
         return;
