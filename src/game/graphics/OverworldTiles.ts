@@ -10,12 +10,11 @@
  * so one tile covers 1.5 world units (the same pixel density as the rest of
  * the art, which is ~10.7 px per world unit).
  *
- * Option B (Kanto clone): the world is a set of connected areas
- * (Pueblo Paleta <-> Ruta 1 <-> Ciudad Verde). Each area has its own layout,
- * decorations and collisions, cached and baked on demand. The renderer swaps
- * them through MAP_EXITS when the player walks into a border gap.
+ * Villa Marionette is the first authored area of the new overworld. Its road
+ * plan, gardens, building footprints, and tile texture are generated locally.
  */
 import * as THREE from 'three';
+import { VILLA_BUILDINGS } from './OverworldBuildings';
 
 /** Source size of a tile (Kenney Roguelike tiles are 16x16). */
 const TILE_PX = 16;
@@ -65,115 +64,56 @@ const WATER_PARTS: Record<string, string> = {
 const VOID_COLOR = '#393939';
 
 // ---------------------------------------------------------------------------
-// World areas (Kanto clone, Option B)
+// Villa Marionette
 // ---------------------------------------------------------------------------
 
-/** Playable area ids of the world. */
-export type MapId = 'pallet_town' | 'route_1' | 'viridian_city';
+export type MapId = 'villa_marionette';
 
-/** Display names shown by the HUD when the player crosses a border. */
 export const MAP_NAMES: Record<MapId, string> = {
-  pallet_town: 'Pueblo Paleta',
-  route_1: 'Ruta 1',
-  viridian_city: 'Ciudad Verde',
+  villa_marionette: 'Villa Marionette',
 };
 
 interface MapLayoutDef {
   /** Patches of spirit grass where wild SoulDolls appear. */
   wildZones: { minX: number; maxX: number; minZ: number; maxZ: number }[];
-  /** Central plaza (gravel circle) or null for pure route areas. */
-  plaza: { x: number; z: number; radius: number } | null;
-  /** Half width of the crossroads. */
-  pathHalfWidth: number;
+  /** The town's central stone plaza. */
+  plaza: { x: number; z: number; radius: number };
+  /** Centers of the main roads, in world units. */
+  roadXs: number[];
+  roadZs: number[];
+  /** Half width of each road. */
+  roadHalfWidth: number;
   /** Fraction of plain grass tiles that get a baked flower patch. */
   flowerDensity: number;
-  /** Southern coast: sand beach and sea rows (like Paleta by the water). */
-  shore?: { sandStartZ: number; waterStartZ: number };
 }
 
 const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
-  pallet_town: {
-    // Pallet Town: a quiet village between a forest and the sea.
-    wildZones: [],
-    plaza: { x: 0, z: 0, radius: 5.5 },
-    pathHalfWidth: 1.75,
-    flowerDensity: 0.09,
-    shore: { sandStartZ: 19.5, waterStartZ: 22.5 },
-  },
-  route_1: {
-    // Route 1: north-south corridor flanked by spirit grass bands.
+  villa_marionette: {
+    // A compact hillside village with a central square and branching lanes.
     wildZones: [
-      { minX: -10, maxX: -4, minZ: -20, maxZ: 16 },
-      { minX: 4, maxX: 10, minZ: -16, maxZ: 20 },
+      { minX: -8, maxX: -3, minZ: -25, maxZ: -20 },
+      { minX: 3, maxX: 8, minZ: -25, maxZ: -20 },
     ],
-    plaza: null,
-    pathHalfWidth: 1.6,
-    flowerDensity: 0.03,
-  },
-  viridian_city: {
-    // Green leaf city: bigger plaza, no wild grass inside.
-    wildZones: [],
-    plaza: { x: 0, z: 0, radius: 6 },
-    pathHalfWidth: 1.75,
-    flowerDensity: 0.07,
+    plaza: { x: 0, z: 0, radius: 5.5 },
+    roadXs: [-12, 0, 12],
+    roadZs: [-21, -12, 0, 12, 21],
+    roadHalfWidth: 1.5,
+    flowerDensity: 0.08,
   },
 };
 
-/** Places that must stay clear of trees (spawn, tamers, doors, map gaps). */
+/** Places that must stay clear of decorative props and building footprints. */
 const MAP_CLEAR_POINTS: Record<MapId, { x: number; z: number; r: number }[]> = {
-  pallet_town: [
-    { x: 0, z: -4, r: 3.4 },
-    { x: -3.5, z: -8, r: 3.4 },
-    { x: 7.5, z: -7, r: 3.4 },
-    { x: 0, z: 2.5, r: 2.2 },
-    { x: -10.5, z: 9, r: 3.2 },
-    { x: -6, z: 9, r: 3.2 },
-    { x: -1.5, z: 9, r: 3.2 },
-    { x: 3, z: 9, r: 3.2 },
-    { x: 7.5, z: 9, r: 3.2 },
-    { x: 0, z: -16, r: 6.5 },
-    { x: 0, z: -22, r: 3 },
-  ],
-  route_1: [
-    { x: 0, z: 0, r: 3 },
-    { x: 0, z: -14, r: 7 },
-    { x: 0, z: 14, r: 7 },
-    { x: 0, z: -21.5, r: 4 },
-    { x: 0, z: 21.5, r: 4 },
-  ],
-  viridian_city: [
-    { x: 0, z: 0, r: 6.5 },
-    { x: 0, z: 14, r: 7 },
-    { x: 0, z: 21.5, r: 4 },
-    { x: -10.5, z: 9, r: 3.2 },
-    { x: -6, z: 9, r: 3.2 },
-    { x: -1.5, z: 9, r: 3.2 },
-    { x: 3, z: 9, r: 3.2 },
-    { x: 7.5, z: 9, r: 3.2 },
-  ],
-};
-
-/** Border crossings that connect the areas of the world. */
-export interface MapExit {
-  targetMap: MapId;
-  /** Edge of the current map that leads out. */
-  edge: 'n' | 's';
-  /** Half width of the crossing corridor in world units. */
-  halfWidth: number;
-  /** Player position right after the swap. */
-  spawn: { x: number; z: number };
-}
-
-export const MAP_EXITS: Record<MapId, MapExit[]> = {
-  pallet_town: [
-    { targetMap: 'route_1', edge: 'n', halfWidth: 3.5, spawn: { x: 0, z: 21.5 } },
-  ],
-  route_1: [
-    { targetMap: 'pallet_town', edge: 's', halfWidth: 3.5, spawn: { x: 0, z: -21.5 } },
-    { targetMap: 'viridian_city', edge: 'n', halfWidth: 3.5, spawn: { x: 0, z: 21.5 } },
-  ],
-  viridian_city: [
-    { targetMap: 'route_1', edge: 's', halfWidth: 3.5, spawn: { x: 0, z: -21.5 } },
+  villa_marionette: [
+    { x: 0, z: 22, r: 4.5 },
+    { x: 0, z: 0, r: 8 },
+    { x: -6, z: -5, r: 3.5 },
+    { x: 6, z: 5, r: 3.5 },
+    { x: 17, z: -7, r: 3.5 },
+    ...VILLA_BUILDINGS.flatMap((building) => [
+      { x: building.x, z: building.z, r: 4.5 },
+      { x: building.entrance.x, z: building.entrance.z, r: 3.5 },
+    ]),
   ],
 };
 
@@ -245,27 +185,20 @@ function kindAt(col: number, row: number, layout: MapLayoutDef): TileKind {
   const wx = tileCenter(col);
   const wz = tileCenter(row);
 
+  if (Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
+    return 'gravel';
+  }
+  if (
+    layout.roadXs.some((x) => Math.abs(wx - x) <= layout.roadHalfWidth) ||
+    layout.roadZs.some((z) => Math.abs(wz - z) <= layout.roadHalfWidth)
+  ) {
+    return 'path';
+  }
+
   for (const zone of layout.wildZones) {
     if (wx >= zone.minX && wx <= zone.maxX && wz >= zone.minZ && wz <= zone.maxZ) {
       return 'tallgrass';
     }
-  }
-
-  // Southern coast (Pueblo Paleta): sea at the bottom with a sand beach.
-  if (layout.shore) {
-    if (wz >= layout.shore.waterStartZ) return 'water';
-    if (wz >= layout.shore.sandStartZ) return 'sand';
-  }
-
-  if (layout.plaza && Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
-    return 'gravel';
-  }
-  if (
-    (Math.abs(wx - (layout.plaza?.x ?? 0)) <= layout.pathHalfWidth ||
-      Math.abs(wz - (layout.plaza?.z ?? 0)) <= layout.pathHalfWidth) &&
-    (!layout.shore || wz < layout.shore.sandStartZ)
-  ) {
-    return 'path';
   }
 
   return 'grass';
@@ -313,7 +246,7 @@ function maskedTile(
 interface MapLayout {
   grid: TileKind[][];
   decorations: Decoration[];
-  /** Tiles occupied by a tree, the player cannot walk through them. */
+  /** Tiles occupied by buildings, water, or solid trees. */
   blocked: Set<string>;
 }
 
@@ -323,10 +256,21 @@ function buildLayout(map: MapId): MapLayout {
   const def = MAP_LAYOUTS[map];
   const grid = buildTileGrid(def);
   const blocked = new Set<string>();
-  // Sea tiles stop the player (the beach is walkable, the water is not).
+  // Keep building footprints solid and plant props out of their yards.
   for (let row = 0; row < MAP_TILES; row++) {
     for (let col = 0; col < MAP_TILES; col++) {
+      const x = tileCenter(col);
+      const z = tileCenter(row);
       if (grid[row][col] === 'water') blocked.add(`${col},${row}`);
+      if (
+        VILLA_BUILDINGS.some(
+          (building) =>
+            Math.abs(x - building.x) <= building.halfWidth &&
+            Math.abs(z - building.z) <= building.halfDepth
+        )
+      ) {
+        blocked.add(`${col},${row}`);
+      }
     }
   }
   const decorations = buildDecorations(grid, MAP_CLEAR_POINTS[map], blocked, hashString(map));
@@ -351,7 +295,7 @@ export interface PlacedDecoration {
 }
 
 /** Every decoration of an area, in world coordinates. */
-export function getDecorations(map: MapId = 'pallet_town'): PlacedDecoration[] {
+export function getDecorations(map: MapId = 'villa_marionette'): PlacedDecoration[] {
   return getLayout(map).decorations.map((decor) => ({
     kind: decor.kind,
     x: tileCenter(decor.col),
@@ -359,8 +303,8 @@ export function getDecorations(map: MapId = 'pallet_town'): PlacedDecoration[] {
   }));
 }
 
-/** True when a world position is inside a tree of the given area. */
-export function isBlocked(worldX: number, worldZ: number, map: MapId = 'pallet_town'): boolean {
+/** True when a world position intersects a solid obstacle in the given area. */
+export function isBlocked(worldX: number, worldZ: number, map: MapId = 'villa_marionette'): boolean {
   const col = Math.floor(worldX / TILE_UNITS + MAP_TILES / 2);
   const row = Math.floor(worldZ / TILE_UNITS + MAP_TILES / 2);
   return getLayout(map).blocked.has(`${col},${row}`);
@@ -397,8 +341,7 @@ function buildDecorations(
     for (let c = col; c < col + width; c++) {
       for (let r = row; r < row + height; r++) {
         if (c < 0 || r < 0 || c >= MAP_TILES || r >= MAP_TILES) return false;
-        if (grid[r][c] !== onKind) return false;
-        if (taken.has(key(c, r))) return false;
+        if (grid[r][c] !== onKind || blocked.has(key(c, r)) || taken.has(key(c, r))) return false;
       }
     }
     // Keep the important places free.
@@ -429,22 +372,18 @@ function buildDecorations(
     return false;
   };
 
-  // A forest belt on the north side and around the edges.
-  for (let i = 0; i < 20; i++) place('tree-tall', 2, 4);
-  for (let i = 0; i < 24; i++) place('tree-short', 2, 2);
-  // Bushes and rocks fill the gaps between the trees.
-  for (let i = 0; i < 18; i++) place('bush', 1, 1);
-  for (let i = 0; i < 10; i++) place('rock', 1, 1);
-  for (let i = 0; i < 26; i++) place(random() < 0.5 ? 'flower-a' : 'flower-b', 1, 1);
-  // Tufts of grass inside the spirit grass patches.
-  for (let i = 0; i < 26; i++) place('grass-tuft', 1, 1, 'tallgrass');
+  // Small garden trees and planted borders around the walkable lanes.
+  for (let i = 0; i < 12; i++) place('tree-tall', 2, 4);
+  for (let i = 0; i < 18; i++) place('tree-short', 2, 2);
+  for (let i = 0; i < 22; i++) place('bush', 1, 1);
+  for (let i = 0; i < 8; i++) place('rock', 1, 1);
+  for (let i = 0; i < 32; i++) place(random() < 0.5 ? 'flower-a' : 'flower-b', 1, 1);
+  for (let i = 0; i < 12; i++) place('grass-tuft', 1, 1, 'tallgrass');
 
-  // Signposts next to the crossroads.
+  // Signposts mark the village entrance lanes.
   const signSpots: [number, number][] = [
-    [MAP_TILES / 2 + 2, MAP_TILES / 2 - 3],
-    [MAP_TILES / 2 - 3, MAP_TILES / 2 + 2],
-    [MAP_TILES / 2 - 12, MAP_TILES / 2 + 2],
-    [MAP_TILES / 2 + 11, MAP_TILES / 2 - 3],
+    [MAP_TILES / 2 - 2, MAP_TILES - BORDER_TILES - 2],
+    [MAP_TILES / 2 + 2, BORDER_TILES + 2],
   ];
   for (const [col, row] of signSpots) {
     if (col < 0 || row < 0 || col >= MAP_TILES || row >= MAP_TILES) continue;
@@ -471,7 +410,7 @@ export interface OverworldMap {
  * Bakes the whole overworld of an area: loads the tiles, bakes the ground with
  * its transitions, the 9-patch overlays and the flowers into a single texture.
  */
-export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<OverworldMap> {
+export async function buildOverworldMap(map: MapId = 'villa_marionette'): Promise<OverworldMap> {
   const grid = getLayout(map).grid;
 
   // Load every image the bake can use.

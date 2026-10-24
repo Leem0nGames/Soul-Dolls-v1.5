@@ -49,7 +49,7 @@ let globalState: GameState = {
   view: 'OVERWORLD',
   introStep: 'title',
   selectedStarterId: null,
-  activeMapId: 'pallet_town',
+  activeMapId: 'villa_marionette',
   wipeCount: 0,
   wipeLabel: null,
   wipeFlash: false,

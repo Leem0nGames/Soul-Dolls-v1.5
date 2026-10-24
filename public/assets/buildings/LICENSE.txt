@@ -1,0 +1,16 @@
+Villa Marionette building models
+================================
+Models in this directory are from Kenney's City Kit (Suburban), released
+under the Creative Commons Zero (CC0) license.
+
+Official asset page:
+https://kenney.nl/assets/city-kit-suburban
+License:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The GLB files were downloaded from the following public mirror at commit
+3694c6879e487c108f55677be7dd2ca75b07cc3b:
+https://github.com/shorepine/kenney/tree/3694c6879e487c108f55677be7dd2ca75b07cc3b/3d/city-suburban
+
+Original creator: Kenney (https://kenney.nl). Attribution is appreciated,
+but not required by CC0.

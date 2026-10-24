@@ -95,7 +95,8 @@ Current line of fire:
 
 ## 2. Overworld map
 
-The map ground is baked from the **modern tileset** in `modern/`: tiles cut out
+The current starter map is **Villa Marionette**, an original village layout.
+Its ground is baked from the **modern tileset** in `modern/`: tiles cut out
 of Kenney's Roguelike pack (CC0, 16x16, 1px spacing) by
 `tools/bake-modern-tiles.py` from the vendored sheet
 `tools/modern-source/RoguelikeSheet_misa.png`. The Gen 2 tileset
@@ -105,21 +106,23 @@ loaded anymore.
 ```
 public/tilesets/overworld/modern/     <- the cut tiles in use (16x16) + LICENSE.txt
 public/tilesets/overworld/            <- legacy Gen 2 tileset (8x8) + LICENSE + README
+public/assets/buildings/              <- Kenney City Kit Suburban GLB exteriors (CC0)
 tools/bake-modern-tiles.py            <- regenerates the cut tiles (pure stdlib)
 tools/modern-source/                  <- vendored Kenney sheet (source of truth)
 src/game/graphics/OverworldTiles.ts   <- the grid, the transitions, the layout
+src/game/graphics/OverworldBuildings.ts <- Villa Marionette building placement and GLB loading
 src/game/graphics/OverworldProps.ts   <- the billboards (trees, rocks, flowers)
 public/assets/props/                  <- the baked modern props with alpha (CC0)
 tools/bake-modern-props.py            <- extracts props from the vendored Kenney sheet
 ```
 
-- 1 tile = 1.5 world units, the map is 40x40 tiles (60x60 units).
+- 1 tile = 1.5 world units, Villa Marionette is 40x40 tiles (60x60 units).
+- Exteriors use eight CC0 GLB models from Kenney's City Kit (Suburban); the
+  source and license are recorded in `public/assets/buildings/LICENSE.txt`.
 - The whole ground is **one canvas** baked at runtime and used as the texture
   of a single plane (one draw call).
-- **9-patch overlays**: water (Pueblo Paleta south coast, blocked for walking),
-  the spirit grass tufts (wild encounter patches) and the gravel plaza island
-  pick their piece from the exposed cardinal edges; sand sits between grass and
-  water (Pueblo Paleta shore).
+- **9-patch overlays**: spirit grass tufts (wild encounter patches) and the
+  gravel plaza pick their piece from the exposed cardinal edges.
 - **Transitions**: grass is dithered over path/sand with a 50% checkerboard;
   water and the gravel island carry their own rounded shore pieces.
 - The props are **billboards** (sprites) so the player walks behind them.

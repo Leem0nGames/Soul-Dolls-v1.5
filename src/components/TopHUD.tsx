@@ -19,14 +19,13 @@ export const TopHUD: React.FC = () => {
 
   const getZoneName = () => {
     const mapId = state.activeMapId;
-    // Outside the starter town the HUD shows the area name of the Kanto-like world.
-    if (mapId && mapId !== 'pallet_town' && mapId in MAP_NAMES) {
-      return MAP_NAMES[mapId as keyof typeof MAP_NAMES];
-    }
     const px = state.playerPosition.x;
     const pz = state.playerPosition.z;
-    if (Math.hypot(px, pz + 4) < 5) return 'Santuario de Almas';
-    return 'Pueblo Paleta';
+    if (Math.hypot(px, pz) < 7) return 'Plaza de Marionette';
+    if (mapId in MAP_NAMES) {
+      return MAP_NAMES[mapId as keyof typeof MAP_NAMES];
+    }
+    return 'Villa Marionette';
   };
 
   return (

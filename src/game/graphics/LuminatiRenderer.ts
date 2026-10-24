@@ -6,20 +6,24 @@ import { createSoulDoll } from '../data/souldolls';
 import { sound } from '../audio/SoundEffects';
 import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
-import { buildOverworldMap, isBlocked, MapId, MapExit, MAP_EXITS, MAP_NAMES } from './OverworldTiles';
+import { buildOverworldMap, isBlocked, MapId } from './OverworldTiles';
 import { OverworldProps } from './OverworldProps';
+import { OverworldBuildings, VILLA_BUILDINGS, VillaBuilding } from './OverworldBuildings';
 import { buildFacilityInterior, FacilityKind, INTERIOR_W, INTERIOR_D, INTERIOR_DOOR_LOCAL, INTERIOR_SERVICE_LOCAL } from './FacilityInterior';
 
 export let activeRenderer: LuminatiRenderer | null = null;
 
-/** Exterior facility doors: the player presses Action near them to enter. */
-const FACILITY_DOORS: { kind: FacilityKind; x: number; z: number; color: number }[] = [
-  { kind: 'gym', x: -10.5, z: 9, color: 0xd97706 },
-  { kind: 'pokemon_center', x: -6, z: 9, color: 0xe4574d },
-  { kind: 'poke_mart', x: -1.5, z: 9, color: 0x3b82f6 },
-  { kind: 'research_lab', x: 3, z: 9, color: 0x94a3b8 },
-  { kind: 'house', x: 7.5, z: 9, color: 0xb4643a },
-];
+type FacilityBuilding = VillaBuilding & { facility: FacilityKind };
+const FACILITY_DOORS = VILLA_BUILDINGS.filter(
+  (building): building is FacilityBuilding => building.facility !== undefined
+);
+const FACILITY_SIGN_STYLE: Record<FacilityKind, { label: string; color: string }> = {
+  pokemon_center: { label: 'CENTRO SOUL', color: '#d85261' },
+  poke_mart: { label: 'MERCADO', color: '#3b82f6' },
+  research_lab: { label: 'LABORATORIO', color: '#64748b' },
+  house: { label: 'HOGAR', color: '#b4643a' },
+  gym: { label: 'DOJO', color: '#d97706' },
+};
 
 /**
  * Interiors live on a hidden rooftop platform (mirroring the battle arena
@@ -34,11 +38,9 @@ const INTERIOR_ANCHORS: Record<FacilityKind, { x: number; z: number }> = {
   gym: { x: 60, z: 0 },
 };
 
-/** Scene tint per area so each border crossing reads differently. */
+/** Scene palette for the active overworld. */
 const MAP_TINTS: Record<MapId, { bg: string; fog: string }> = {
-  pallet_town: { bg: '#0f1725', fog: '#0f1725' },
-  route_1: { bg: '#0b1e15', fog: '#0b1e15' },
-  viridian_city: { bg: '#141328', fog: '#141328' },
+  villa_marionette: { bg: '#c9dfcf', fog: '#c9dfcf' },
 };
 
 export class LuminatiRenderer {
@@ -67,7 +69,6 @@ export class LuminatiRenderer {
   private unsubscribePlayerSprite?: () => void;
   private unsubscribeSoulDollSprite?: () => void;
   private shrineCrystal!: THREE.Mesh;
-  private tamerSprites: { sprite: THREE.Sprite; entityId: number }[] = [];
 
   // Battle 3D Sprites
   private battlePlayerDollSprite!: THREE.Sprite;
@@ -77,15 +78,13 @@ export class LuminatiRenderer {
   // Overworld
   private groundMaterial!: THREE.MeshLambertMaterial;
   private overworldProps!: OverworldProps;
+  private overworldBuildings!: OverworldBuildings;
 
-  // Option B (Kanto clone): the world is a set of connected areas. This is the
-  // current area, its baked texture cache and the landmark groups that only
-  // exist on the starter town.
-  private activeMapId: MapId = 'pallet_town';
+  // Active village map, baked ground, and its landmarks.
+  private activeMapId: MapId = 'villa_marionette';
   private bakedMapTextures = new Map<MapId, THREE.CanvasTexture>();
   private facilityDoorsGroup = new THREE.Group();
-  private palletLandmarksGroup = new THREE.Group();
-  private shopSprite: THREE.Sprite | null = null;
+  private villaLandmarksGroup = new THREE.Group();
 
   // Phase 3: facility interior flow (visual only; input-gated by these flags)
   private activeInteriorKind: FacilityKind | null = null;
@@ -216,16 +215,16 @@ export class LuminatiRenderer {
     this.scene.add(this.facilityGroup);
     // NOTE: the VFX group is parented to the battle arena (see buildBattleArena)
     // so every effect is authored in arena local space (Y = -50 offset included).
-    // NOTE: the facility group hosts the 3D interiors (see buildFacilityInteriors,
-    // mounted on rooftop anchors and reached through the exterior doors).
+    // The facility group hosts the 3D interiors reached through the village buildings.
 
     // Build World Geometry & Entities
-    this.worldGroup.add(this.palletLandmarksGroup);
+    this.worldGroup.add(this.villaLandmarksGroup);
     this.worldGroup.add(this.facilityDoorsGroup);
     this.buildTerrain();
     this.buildSanctuaryShrine();
     this.buildBattleArena();
     this.initEcsEntities();
+    this.buildOverworldBuildings();
     this.buildOverworldProps();
     this.buildFacilityInteriors();
     this.buildFacilityDoors();
@@ -289,49 +288,34 @@ export class LuminatiRenderer {
     });
   }
 
-  /** Small colored facades marking the enterable facility doors of the town. */
+  /** Textured wayfinding signs above the doors of the enterable buildings. */
   private buildFacilityDoors() {
     FACILITY_DOORS.forEach((def) => {
-      const group = new THREE.Group();
-      group.position.set(def.x, 0, def.z);
+      const style = FACILITY_SIGN_STYLE[def.facility];
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 64;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('No se pudo crear el rótulo de un edificio');
+      context.fillStyle = '#18212a';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.strokeStyle = style.color;
+      context.lineWidth = 8;
+      context.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+      context.fillStyle = '#fff8e7';
+      context.font = 'bold 25px sans-serif';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(style.label, canvas.width / 2, canvas.height / 2);
 
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(3.6, 2.6, 0.8),
-        new THREE.MeshStandardMaterial({ color: '#e8dcc8', roughness: 1 })
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const sign = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false })
       );
-      base.position.set(0, 1.3, 0);
-      group.add(base);
-
-      const doorway = new THREE.Mesh(
-        new THREE.BoxGeometry(1.4, 2.1, 0.25),
-        new THREE.MeshStandardMaterial({ color: '#3a2a1a', roughness: 1 })
-      );
-      doorway.position.set(0, 1.05, 0.35);
-      group.add(doorway);
-
-      const roof = new THREE.Mesh(
-        new THREE.BoxGeometry(4.2, 0.35, 1.4),
-        new THREE.MeshStandardMaterial({ color: def.color, roughness: 0.9 })
-      );
-      roof.position.set(0, 2.85, 0);
-      group.add(roof);
-
-      // Colored awning over the doorway and a welcome mat on the ground.
-      const awning = new THREE.Mesh(
-        new THREE.BoxGeometry(2.6, 0.25, 0.9),
-        new THREE.MeshStandardMaterial({ color: def.color, roughness: 0.9 })
-      );
-      awning.position.set(0, 2.2, 0.75);
-      group.add(awning);
-
-      const doormat = new THREE.Mesh(
-        new THREE.BoxGeometry(1.7, 0.06, 0.9),
-        new THREE.MeshStandardMaterial({ color: 0x8a5524, roughness: 1 })
-      );
-      doormat.position.set(0, 0.03, 1.6);
-      group.add(doormat);
-
-      this.facilityDoorsGroup.add(group);
+      sign.scale.set(3.2, 0.8, 1);
+      sign.position.set(def.entrance.x, 5.1, def.entrance.z);
+      this.facilityDoorsGroup.add(sign);
     });
   }
 
@@ -427,10 +411,18 @@ export class LuminatiRenderer {
     this.worldGroup.add(this.overworldProps.group);
   }
 
+  private buildOverworldBuildings() {
+    this.overworldBuildings = new OverworldBuildings();
+    this.worldGroup.add(this.overworldBuildings.group);
+    const baseUrl = `${import.meta.env?.BASE_URL ?? '/'}assets/buildings`;
+    void this.overworldBuildings.load(baseUrl).catch((error) => {
+      console.error('[Villa Marionette] No se pudieron cargar los edificios 3D:', error);
+    });
+  }
+
   /**
-   * Bakes the active area's tilemap and applies it to the ground. The world
-   * stays playable while the tiles are loading. Baked textures are cached per
-   * area so border crossings are instant.
+   * Bakes the active tilemap and applies it to the ground while the rest of the
+   * world initializes. Baked textures are cached by map id.
    */
   private async loadOverworldMap(map: MapId): Promise<void> {
     try {
@@ -461,50 +453,11 @@ export class LuminatiRenderer {
   }
 
   /**
-   * Option B: swaps the active overworld area when the player walks through a
-   * border gap (Pueblo Paleta <-> Ruta 1 <-> Ciudad Verde). Battle/ECS logic is
-   * untouched: only the visual layer and the player position change.
-   */
-  private switchMap(exit: MapExit): void {
-    const playerEntity = ecs.getPlayerEntity();
-    if (!playerEntity) return;
-
-    const nextMap = exit.targetMap;
-    if (nextMap === this.activeMapId) return;
-
-    const pos = ecs.positions.get(playerEntity)!;
-    pos.x = exit.spawn.x;
-    pos.z = exit.spawn.z;
-    this.activeMapId = nextMap;
-    gameStore.setState({ activeMapId: nextMap });
-    this.applyMapTint(nextMap);
-    sound.playSelect();
-    gameStore.wipeScreen(`AHORA EN ${MAP_NAMES[nextMap].toUpperCase()}`);
-
-    // Landmarks of the starter town only exist on Pueblo Paleta.
-    const isPallet = nextMap === 'pallet_town';
-    this.palletLandmarksGroup.visible = isPallet;
-    this.facilityDoorsGroup.visible = nextMap !== 'route_1';
-    this.tamerSprites.forEach(({ sprite }) => (sprite.visible = isPallet));
-    if (this.shopSprite) this.shopSprite.visible = isPallet;
-
-    // Rebuild the billboards from the new area's decoration layout.
-    this.overworldProps.dispose();
-    this.worldGroup.remove(this.overworldProps.group);
-    const url = `${import.meta.env?.BASE_URL ?? '/'}assets/props`;
-    this.overworldProps = new OverworldProps(url);
-    this.overworldProps.load(nextMap);
-    this.worldGroup.add(this.overworldProps.group);
-
-    this.loadOverworldMap(nextMap);
-  }
-
-  /**
    * Builds the 3D Sanctuary Shrine (Composite 3-12 part procedural model)
    */
   private buildSanctuaryShrine() {
     const shrine = new THREE.Group();
-    shrine.position.set(0, 0, -4);
+    shrine.position.set(0, 0, 0);
     // Scaled to the tile size of the new overworld (1 tile = 1.5 world units).
     shrine.scale.setScalar(1.35);
 
@@ -575,7 +528,7 @@ export class LuminatiRenderer {
     crystalLight.position.set(0, 2.0, 0);
     shrine.add(crystalLight);
 
-    this.palletLandmarksGroup.add(shrine);
+    this.villaLandmarksGroup.add(shrine);
   }
 
   /**
@@ -828,12 +781,12 @@ export class LuminatiRenderer {
 
     // 1. Player Entity
     const playerEntity = ecs.createEntity();
-    ecs.positions.set(playerEntity, { x: 0, y: 0.8, z: 2.5 });
+    ecs.positions.set(playerEntity, { x: 0, y: 0.8, z: 22 });
     ecs.velocities.set(playerEntity, { vx: 0, vy: 0, vz: 0 });
     ecs.playerControls.set(playerEntity, {
       speed: 4.8,
       isMoving: false,
-      facing: 'down',
+      facing: 'up',
       isSprinting: false,
       stepDistanceAccumulator: 0,
     });
@@ -842,7 +795,7 @@ export class LuminatiRenderer {
     const playerMat = new THREE.SpriteMaterial({ map: playerTex, transparent: true });
     this.playerSprite = new THREE.Sprite(playerMat);
     this.playerSprite.scale.set(3.6, 3.6, 1);
-    this.playerSprite.position.set(0, 1.8, 2.5);
+    this.playerSprite.position.set(0, 1.8, 22);
     this.entitiesGroup.add(this.playerSprite);
 
     // Dynamic ground contact shadow disc for the player
@@ -855,7 +808,7 @@ export class LuminatiRenderer {
     });
     this.playerShadow = new THREE.Mesh(shadowGeo, shadowMat);
     this.playerShadow.rotation.x = -Math.PI / 2;
-    this.playerShadow.position.set(0, 0.02, 2.5);
+    this.playerShadow.position.set(0, 0.02, 22);
     this.worldGroup.add(this.playerShadow);
 
     // Listen for spritesheet ready event to refresh texture immediately
@@ -903,9 +856,9 @@ export class LuminatiRenderer {
       flashTimer: 0,
     });
 
-    // 2. NPC Tamer 1: Apprentice Tyler (Near North Path)
+    // 2. NPC Tamer 1: Apprentice Tyler (beside the central square)
     const tamer1 = ecs.createEntity();
-    ecs.positions.set(tamer1, { x: -3.5, y: 0.8, z: -8 });
+    ecs.positions.set(tamer1, { x: -6.5, y: 0.8, z: -4 });
     ecs.tamers.set(tamer1, {
       name: 'Tyler',
       title: 'Aprendiz de Almas',
@@ -920,13 +873,12 @@ export class LuminatiRenderer {
     const tamer1Tex = pixelGenerator.getTamerTexture('apprentice');
     const tamer1Sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tamer1Tex, transparent: true }));
     tamer1Sprite.scale.set(2.8, 2.8, 1);
-    tamer1Sprite.position.set(-3.5, 1.0, -8);
+    tamer1Sprite.position.set(-6.5, 1.0, -4);
     this.entitiesGroup.add(tamer1Sprite);
-    this.tamerSprites.push({ sprite: tamer1Sprite, entityId: tamer1 });
 
-    // 3. NPC Tamer 2: Master Vesper (Near East Gateway)
+    // 3. NPC Tamer 2: Master Vesper (beside the central square)
     const tamer2 = ecs.createEntity();
-    ecs.positions.set(tamer2, { x: 7.5, y: 0.8, z: -7 });
+    ecs.positions.set(tamer2, { x: 6.5, y: 0.8, z: 4 });
     ecs.tamers.set(tamer2, {
       name: 'Vesper',
       title: 'Maestro del Éter',
@@ -941,18 +893,17 @@ export class LuminatiRenderer {
     const tamer2Tex = pixelGenerator.getTamerTexture('master');
     const tamer2Sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tamer2Tex, transparent: true }));
     tamer2Sprite.scale.set(2.8, 2.8, 1);
-    tamer2Sprite.position.set(7.5, 1.0, -7);
+    tamer2Sprite.position.set(6.5, 1.0, 4);
     this.entitiesGroup.add(tamer2Sprite);
-    this.tamerSprites.push({ sprite: tamer2Sprite, entityId: tamer2 });
 
-    // 4. Wild Zones (Route 1 flames: wild grass only exists on the route).
+    // 4. Wild Zones: small spirit-grass clearings at the north edge of town.
     const wz1 = ecs.createEntity();
     ecs.wildZones.set(wz1, {
-      name: 'Ruta 1 · Arbóleda',
-      minX: -10,
-      maxX: -4,
-      minZ: -20,
-      maxZ: 16,
+      name: 'Villa Marionette · Prado Oeste',
+      minX: -8,
+      maxX: -3,
+      minZ: -25,
+      maxZ: -20,
       encounterRate: 0.08,
       speciesPool: [
         { speciesId: 'florabun', minLevel: 6, maxLevel: 10, weight: 30 },
@@ -964,11 +915,11 @@ export class LuminatiRenderer {
 
     const wz2 = ecs.createEntity();
     ecs.wildZones.set(wz2, {
-      name: 'Ruta 1 · Pradera del Susurro',
-      minX: 4,
-      maxX: 10,
-      minZ: -16,
-      maxZ: 20,
+      name: 'Villa Marionette · Prado Este',
+      minX: 3,
+      maxX: 8,
+      minZ: -25,
+      maxZ: -20,
       encounterRate: 0.08,
       speciesPool: [
         { speciesId: 'aquafox', minLevel: 7, maxLevel: 11, weight: 35 },
@@ -980,7 +931,7 @@ export class LuminatiRenderer {
 
     // 5. Shrine Interactor
     const shrineEntity = ecs.createEntity();
-    ecs.positions.set(shrineEntity, { x: 0, y: 0.8, z: -4 });
+    ecs.positions.set(shrineEntity, { x: 0, y: 0.8, z: 0 });
     ecs.shrines.set(shrineEntity, {
       type: 'heal',
       name: 'Santuario de las Almas',
@@ -989,7 +940,7 @@ export class LuminatiRenderer {
 
     // 6. Shop NPC
     const shopEntity = ecs.createEntity();
-    ecs.positions.set(shopEntity, { x: 5, y: 0.8, z: -5 });
+    ecs.positions.set(shopEntity, { x: 18, y: 0.8, z: -7 });
     ecs.shops.set(shopEntity, {
       name: 'Tienda de Objetos',
       items: [
@@ -1001,9 +952,8 @@ export class LuminatiRenderer {
     const shopTex = pixelGenerator.getTamerTexture('sage');
     const shopSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: shopTex, transparent: true }));
     shopSprite.scale.set(2.8, 2.8, 1);
-    shopSprite.position.set(5, 1.0, -5);
+    shopSprite.position.set(18, 1.0, -7);
     this.entitiesGroup.add(shopSprite);
-    this.shopSprite = shopSprite;
   }
 
   /**
@@ -1095,9 +1045,9 @@ export class LuminatiRenderer {
             anchor.z + INTERIOR_D / 2 - 1.2
           );
         } else {
-          // Apply movement with bounds clamping and tree collision (slide).
-          const nextX = THREE.MathUtils.clamp(pos.x + dx * currentSpeed, -24, 24);
-          const nextZ = THREE.MathUtils.clamp(pos.z + dz * currentSpeed, -24, 24);
+          // Apply movement with bounds clamping and solid map props (slide).
+          const nextX = THREE.MathUtils.clamp(pos.x + dx * currentSpeed, -26.8, 26.8);
+          const nextZ = THREE.MathUtils.clamp(pos.z + dz * currentSpeed, -26.8, 26.8);
           if (!isBlocked(nextX, nextZ)) {
             pos.x = nextX;
             pos.z = nextZ;
@@ -1116,14 +1066,6 @@ export class LuminatiRenderer {
           // Check proximity to NPC Tamers
           this.checkTamerTriggers(pos.x, pos.z);
 
-          // Border crossings: reach a corridor gap at the edge to swap area.
-          for (const exit of MAP_EXITS[this.activeMapId]) {
-            const atEdge = exit.edge === 'n' ? pos.z <= -23.6 : pos.z >= 23.6;
-            if (atEdge && Math.abs(pos.x) <= exit.halfWidth) {
-              this.switchMap(exit);
-              break;
-            }
-          }
         }
 
         // Update sprite position & 6-frame walk animation from spritesheet
@@ -1169,11 +1111,9 @@ export class LuminatiRenderer {
   }
 
   /**
-   * Checks if player stepped into wild spirit grass and triggers battle.
-   * Wild grass only exists on Route 1 in the Kanto-like world.
+   * Checks whether the player stepped into Villa Marionette's spirit grass.
    */
   private checkWildGrassEncounter(px: number, pz: number) {
-    if (this.activeMapId !== 'route_1') return;
     const zones = ecs.getWildZones();
     for (const zid of zones) {
       const z = ecs.wildZones.get(zid)!;
@@ -1311,8 +1251,8 @@ export class LuminatiRenderer {
 
     // Exterior facility doors: press the Action key near one to enter.
     for (const def of FACILITY_DOORS) {
-      if (Math.hypot(pos.x - def.x, pos.z - def.z) < 2.2) {
-        this.enterInterior(def.kind);
+      if (Math.hypot(pos.x - def.entrance.x, pos.z - def.entrance.z) < 2.2) {
+        this.enterInterior(def.facility);
         return;
       }
     }
@@ -1418,6 +1358,10 @@ export class LuminatiRenderer {
     dom.removeEventListener('touchend', this.onTouchEnd);
     battleVfx.unregisterSink(this.vfxDirector);
     this.vfxDirector.dispose();
+    this.overworldBuildings.dispose();
+    this.overworldProps.dispose();
+    this.bakedMapTextures.forEach((texture) => texture.dispose());
+    this.bakedMapTextures.clear();
     this.renderer.dispose();
     if (this.renderer.domElement.parentElement) {
       this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);

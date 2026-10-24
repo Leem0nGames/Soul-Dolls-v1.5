@@ -41,7 +41,7 @@ export class OverworldProps {
   constructor(private baseUrl: string) {}
 
   /** Loads every prop texture and spawns the billboards of the given area. */
-  public load(map: MapId = 'pallet_town'): void {
+  public load(map: MapId = 'villa_marionette'): void {
     const loader = new THREE.TextureLoader();
     const byKind = new Map<DecorationKind, PlacedDecoration[]>();
     for (const decor of getDecorations(map)) {
