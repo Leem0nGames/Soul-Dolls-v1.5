@@ -3,10 +3,16 @@ import { pixelGenerator } from './PixelArtGenerator';
 import { ecs } from '../ecs/World';
 import { gameStore, GameState } from '../state/useGameStore';
 import { createSoulDoll } from '../data/souldolls';
+import { MAP_IDS, MAP_NAMES, MAP_PALETTES, MapId } from '../data/world';
 import { sound } from '../audio/SoundEffects';
 import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
-import { buildOverworldMap, isBlocked, MapId } from './OverworldTiles';
+import {
+  buildOverworldMap,
+  getMapWildZones,
+  isBlocked,
+  MAP_CONNECTIONS,
+} from './OverworldTiles';
 import { OverworldProps } from './OverworldProps';
 import { OverworldBuildings, VILLA_BUILDINGS, VillaBuilding } from './OverworldBuildings';
 import { buildFacilityInterior, FacilityKind, INTERIOR_W, INTERIOR_D, INTERIOR_DOOR_LOCAL, INTERIOR_SERVICE_LOCAL } from './FacilityInterior';
@@ -40,11 +46,6 @@ const INTERIOR_ANCHORS: Record<FacilityKind, { x: number; z: number }> = {
   gym: { x: 60, z: 0 },
 };
 
-/** Scene palette for the active overworld. */
-const MAP_TINTS: Record<MapId, { bg: string; fog: string }> = {
-  villa_marionette: { bg: '#c9dfcf', fog: '#c9dfcf' },
-};
-
 export class LuminatiRenderer {
   private container: HTMLElement;
   private renderer!: THREE.WebGLRenderer;
@@ -72,6 +73,7 @@ export class LuminatiRenderer {
   private npcMaterials: THREE.SpriteMaterial[] = [];
   private npcBillboards: {
     frame: number;
+    mapId: MapId;
     x: number;
     y: number;
     z: number;
@@ -89,11 +91,10 @@ export class LuminatiRenderer {
 
   // Overworld
   private groundMaterial!: THREE.MeshLambertMaterial;
-  private overworldProps!: OverworldProps;
+  private overworldPropsByMap = new Map<MapId, OverworldProps>();
   private overworldBuildings!: OverworldBuildings;
 
   // Active village map, baked ground, and its landmarks.
-  private activeMapId: MapId = 'villa_marionette';
   private bakedMapTextures = new Map<MapId, THREE.CanvasTexture>();
   private facilityDoorsGroup = new THREE.Group();
   private villaLandmarksGroup = new THREE.Group();
@@ -101,6 +102,10 @@ export class LuminatiRenderer {
   // Phase 3: facility interior flow (visual only; input-gated by these flags)
   private activeInteriorKind: FacilityKind | null = null;
   private interiorReturnPos = { x: 0, y: 0.8, z: 0 };
+
+  private get activeMapId(): MapId {
+    return gameStore.getState().activeMapId;
+  }
 
   // Camera settings
   private targetCameraPos = new THREE.Vector3(0, 8, 11);
@@ -430,9 +435,19 @@ export class LuminatiRenderer {
   }
 
   private buildOverworldProps() {
-    this.overworldProps = new OverworldProps(`${import.meta.env?.BASE_URL ?? '/'}assets/props`);
-    this.overworldProps.load(this.activeMapId);
-    this.worldGroup.add(this.overworldProps.group);
+    this.ensureOverworldProps(this.activeMapId);
+  }
+
+  private ensureOverworldProps(map: MapId) {
+    let props = this.overworldPropsByMap.get(map);
+    if (!props) {
+      props = new OverworldProps(`${import.meta.env?.BASE_URL ?? '/'}assets/props`);
+      props.load(map);
+      props.group.visible = map === this.activeMapId;
+      this.worldGroup.add(props.group);
+      this.overworldPropsByMap.set(map, props);
+    }
+    return props;
   }
 
   private buildOverworldBuildings() {
@@ -450,9 +465,10 @@ export class LuminatiRenderer {
     y: number,
     z: number,
     width: number,
-    height: number
+    height: number,
+    mapId: MapId = 'villa_marionette'
   ): void {
-    this.npcBillboards.push({ frame, x, y, z, width, height });
+    this.npcBillboards.push({ frame, mapId, x, y, z, width, height });
   }
 
   private loadNpcBillboards(): void {
@@ -485,6 +501,8 @@ export class LuminatiRenderer {
           sprite.center.set(0.5, 0);
           sprite.scale.set(placement.width, placement.height, 1);
           sprite.position.set(placement.x, placement.y, placement.z);
+          sprite.userData.mapId = placement.mapId;
+          sprite.visible = placement.mapId === this.activeMapId;
           this.entitiesGroup.add(sprite);
         }
       },
@@ -510,6 +528,7 @@ export class LuminatiRenderer {
         texture = baked.texture;
         this.bakedMapTextures.set(map, texture);
       }
+      if (map !== this.activeMapId || this.isDestroyed) return;
       this.groundMaterial.map = texture;
       this.groundMaterial.color.set('#ffffff');
       this.groundMaterial.needsUpdate = true;
@@ -521,9 +540,48 @@ export class LuminatiRenderer {
 
   /** Applies the scene tint of an area (background + fog). */
   private applyMapTint(map: MapId) {
-    const tint = MAP_TINTS[map];
-    this.scene.background = new THREE.Color(tint.bg);
+    const tint = MAP_PALETTES[map];
+    this.scene.background = new THREE.Color(tint.background);
     this.scene.fog = new THREE.FogExp2(tint.fog, 0.035);
+  }
+
+  private transitionMap(map: MapId, arrival: { x: number; z: number }) {
+    const playerEntity = ecs.getPlayerEntity();
+    if (!playerEntity) throw new Error('No se puede cambiar de mapa sin jugador');
+    const pos = ecs.positions.get(playerEntity)!;
+    const controls = ecs.playerControls.get(playerEntity)!;
+
+    gameStore.setState({ activeMapId: map, playerPosition: { x: arrival.x, y: 0.8, z: arrival.z } });
+    pos.x = arrival.x;
+    pos.y = 0.8;
+    pos.z = arrival.z;
+    controls.facing = map === 'ruta_1' ? 'up' : 'down';
+    controls.isMoving = false;
+    controls.stepDistanceAccumulator = 0;
+
+    this.villaLandmarksGroup.visible = map === 'villa_marionette';
+    this.facilityDoorsGroup.visible = map === 'villa_marionette';
+    this.overworldBuildings.group.visible = map === 'villa_marionette';
+    for (const [mapId, props] of this.overworldPropsByMap) {
+      props.group.visible = mapId === map;
+    }
+    this.ensureOverworldProps(map).group.visible = true;
+    this.entitiesGroup.children.forEach((child) => {
+      if (child.userData.mapId) child.visible = child.userData.mapId === map;
+    });
+
+    this.applyMapTint(map);
+    void this.loadOverworldMap(map);
+    gameStore.wipeScreen(MAP_NAMES[map].toLocaleUpperCase('es'));
+  }
+
+  private tryMapTransition(pos: { x: number; z: number }): boolean {
+    const connection = MAP_CONNECTIONS[this.activeMapId].find(
+      (candidate) => Math.hypot(pos.x - candidate.at.x, pos.z - candidate.at.z) < 1.4
+    );
+    if (!connection) return false;
+    this.transitionMap(connection.toMap, connection.arrival);
+    return true;
   }
 
   /**
@@ -946,6 +1004,7 @@ export class LuminatiRenderer {
     const tamer1 = ecs.createEntity();
     ecs.positions.set(tamer1, { ...tylerPosition });
     ecs.tamers.set(tamer1, {
+      mapId: 'villa_marionette',
       name: 'Tyler',
       title: 'Aprendiz de Almas',
       tamerType: 'apprentice',
@@ -963,6 +1022,7 @@ export class LuminatiRenderer {
     const tamer2 = ecs.createEntity();
     ecs.positions.set(tamer2, { ...vesperPosition });
     ecs.tamers.set(tamer2, {
+      mapId: 'villa_marionette',
       name: 'Vesper',
       title: 'Maestro del Éter',
       tamerType: 'master',
@@ -975,38 +1035,37 @@ export class LuminatiRenderer {
 
     this.addNpcBillboard(NPC_ATLAS_FRAME.vesper, vesperPosition.x, 0.02, vesperPosition.z, 3, 4);
 
-    // 4. Wild Zones: small spirit-grass clearings at the north edge of town.
-    const wz1 = ecs.createEntity();
-    ecs.wildZones.set(wz1, {
-      name: 'Villa Marionette · Prado Oeste',
-      minX: -8,
-      maxX: -3,
-      minZ: -25,
-      maxZ: -20,
-      encounterRate: 0.08,
-      speciesPool: [
-        { speciesId: 'florabun', minLevel: 6, maxLevel: 10, weight: 30 },
-        { speciesId: 'runika', minLevel: 7, maxLevel: 11, weight: 25 },
-        { speciesId: 'sparkit', minLevel: 7, maxLevel: 10, weight: 25 },
-        { speciesId: 'geotort', minLevel: 6, maxLevel: 9, weight: 20 },
-      ]
+    // 4. Wild encounters are authored alongside each tilemap in OverworldTiles.
+    const routeTamerPosition = { x: 3.5, y: 0.8, z: -15 };
+    const routeTamer = ecs.createEntity();
+    ecs.positions.set(routeTamer, { ...routeTamerPosition });
+    ecs.tamers.set(routeTamer, {
+      mapId: 'ruta_1',
+      name: 'Nina',
+      title: 'Exploradora',
+      tamerType: 'apprentice',
+      defeated: false,
+      party: [createSoulDoll('cryopup', 11), createSoulDoll('sparkit', 12)],
+      dialogueIntro: '¡Qué buen día para explorar! ¿Te animas a probar el vínculo con tus SoulDolls?',
+      dialogueDefeated: '¡Buen combate! El sendero siempre guarda nuevas sorpresas.',
+      triggerDistance: 2.8,
     });
+    this.addNpcBillboard(
+      NPC_ATLAS_FRAME.vesper,
+      routeTamerPosition.x,
+      0.02,
+      routeTamerPosition.z,
+      3,
+      4,
+      'ruta_1'
+    );
 
-    const wz2 = ecs.createEntity();
-    ecs.wildZones.set(wz2, {
-      name: 'Villa Marionette · Prado Este',
-      minX: 3,
-      maxX: 8,
-      minZ: -25,
-      maxZ: -20,
-      encounterRate: 0.08,
-      speciesPool: [
-        { speciesId: 'aquafox', minLevel: 7, maxLevel: 11, weight: 35 },
-        { speciesId: 'cryopup', minLevel: 7, maxLevel: 10, weight: 30 },
-        { speciesId: 'aerochick', minLevel: 6, maxLevel: 10, weight: 25 },
-        { speciesId: 'lumiwisp', minLevel: 8, maxLevel: 12, weight: 10 }
-      ]
-    });
+    for (const mapId of MAP_IDS) {
+      for (const zone of getMapWildZones(mapId)) {
+        const wildZone = ecs.createEntity();
+        ecs.wildZones.set(wildZone, { mapId, ...zone });
+      }
+    }
 
     // 5. Shrine Interactor
     const shrineEntity = ecs.createEntity();
@@ -1143,23 +1202,24 @@ export class LuminatiRenderer {
           // Apply movement with bounds clamping and solid map props (slide).
           const nextX = THREE.MathUtils.clamp(pos.x + dx * currentSpeed, -26.8, 26.8);
           const nextZ = THREE.MathUtils.clamp(pos.z + dz * currentSpeed, -26.8, 26.8);
-          if (!isBlocked(nextX, nextZ)) {
+          if (!isBlocked(nextX, nextZ, this.activeMapId)) {
             pos.x = nextX;
             pos.z = nextZ;
           } else {
-            if (!isBlocked(nextX, pos.z)) pos.x = nextX;
-            if (!isBlocked(pos.x, nextZ)) pos.z = nextZ;
+            if (!isBlocked(nextX, pos.z, this.activeMapId)) pos.x = nextX;
+            if (!isBlocked(pos.x, nextZ, this.activeMapId)) pos.z = nextZ;
           }
 
-          // Step accumulator for wild encounters in spirit grass
-          ctl.stepDistanceAccumulator += Math.hypot(dx * currentSpeed, dz * currentSpeed);
-          if (ctl.stepDistanceAccumulator > 1.2) {
-            ctl.stepDistanceAccumulator = 0;
-            this.checkWildGrassEncounter(pos.x, pos.z);
-          }
+          if (!this.tryMapTransition(pos)) {
+            // Step accumulator for wild encounters in spirit grass
+            ctl.stepDistanceAccumulator += Math.hypot(dx * currentSpeed, dz * currentSpeed);
+            if (ctl.stepDistanceAccumulator > 1.2) {
+              ctl.stepDistanceAccumulator = 0;
+              this.checkWildGrassEncounter(pos.x, pos.z);
+            }
 
-          // Check proximity to NPC Tamers
-          this.checkTamerTriggers(pos.x, pos.z);
+            this.checkTamerTriggers(pos.x, pos.z);
+          }
 
         }
 
@@ -1213,7 +1273,10 @@ export class LuminatiRenderer {
     const zones = ecs.getWildZones();
     for (const zid of zones) {
       const z = ecs.wildZones.get(zid)!;
-      if (px >= z.minX && px <= z.maxX && pz >= z.minZ && pz <= z.maxZ) {
+      if (
+        (z.mapId ?? 'villa_marionette') === this.activeMapId &&
+        px >= z.minX && px <= z.maxX && pz >= z.minZ && pz <= z.maxZ
+      ) {
         // Roll encounter rate
         if (Math.random() < z.encounterRate) {
           // Select species from pool based on weights
@@ -1249,7 +1312,7 @@ export class LuminatiRenderer {
       const pos = ecs.positions.get(tid)!;
       const dist = Math.hypot(px - pos.x, pz - pos.z);
 
-      if (dist < tamer.triggerDistance && !tamer.defeated) {
+      if ((tamer.mapId ?? 'villa_marionette') === this.activeMapId && dist < tamer.triggerDistance && !tamer.defeated) {
         // Stop player and trigger challenger dialogue
         gameStore.setDialogue(
           `${tamer.title} ${tamer.name}`,
@@ -1347,10 +1410,12 @@ export class LuminatiRenderer {
     }
 
     // Exterior facility doors: press the Action key near one to enter.
-    for (const def of FACILITY_DOORS) {
-      if (Math.hypot(pos.x - def.entrance.x, pos.z - def.entrance.z) < 2.2) {
-        this.enterInterior(def.facility);
-        return;
+    if (this.activeMapId === 'villa_marionette') {
+      for (const def of FACILITY_DOORS) {
+        if (Math.hypot(pos.x - def.entrance.x, pos.z - def.entrance.z) < 2.2) {
+          this.enterInterior(def.facility);
+          return;
+        }
       }
     }
 
@@ -1361,7 +1426,7 @@ export class LuminatiRenderer {
       const shrine = ecs.shrines.get(sid)!;
       const dist = Math.hypot(pos.x - shrinePos.x, pos.z - shrinePos.z);
 
-      if (dist < 3.0) {
+      if (this.activeMapId === 'villa_marionette' && dist < 3.0) {
         gameStore.setDialogue(
           shrine.name,
           `${shrine.prompt}\n\n¡La energía primordial del cristal fluye hacia tus SoulDolls!`,
@@ -1378,7 +1443,14 @@ export class LuminatiRenderer {
       const tamer = ecs.tamers.get(tid)!;
       const dist = Math.hypot(pos.x - tpos.x, pos.z - tpos.z);
 
-      if (dist < 2.5) {
+      if ((tamer.mapId ?? 'villa_marionette') === this.activeMapId && dist < 2.5) {
+        if (state.playerParty.length === 0) {
+          gameStore.setDialogue(
+            `${tamer.title} ${tamer.name}`,
+            'Primero elige un SoulDoll compañero en el laboratorio de Villa Marionette.'
+          );
+          return;
+        }
         const text = tamer.defeated ? tamer.dialogueDefeated : tamer.dialogueIntro;
         gameStore.setDialogue(`${tamer.title} ${tamer.name}`, text, () => {
           if (!tamer.defeated) {
@@ -1396,7 +1468,7 @@ export class LuminatiRenderer {
       const shop = ecs.shops.get(sid)!;
       const dist = Math.hypot(pos.x - spos.x, pos.z - spos.z);
 
-      if (dist < 2.5) {
+      if (this.activeMapId === 'villa_marionette' && dist < 2.5) {
          gameStore.setDialogue(shop.name, '¡Bienvenido! ¿Qué buscas hoy?', () => {
              gameStore.setState({ activeShopId: sid });
              gameStore.setView('SHOP');
@@ -1456,7 +1528,8 @@ export class LuminatiRenderer {
     battleVfx.unregisterSink(this.vfxDirector);
     this.vfxDirector.dispose();
     this.overworldBuildings.dispose();
-    this.overworldProps.dispose();
+    this.overworldPropsByMap.forEach((props) => props.dispose());
+    this.overworldPropsByMap.clear();
     this.npcMaterials.forEach((material) => material.dispose());
     this.npcTextures.forEach((texture) => texture.dispose());
     this.npcMaterials.length = 0;

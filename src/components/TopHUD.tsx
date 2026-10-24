@@ -3,7 +3,7 @@ import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { sound } from '../game/audio/SoundEffects';
 import { BookOpen, Users, Briefcase, Heart, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
 import { SoulDollSprite } from './ui/SoulDollSprite';
-import { MAP_NAMES } from '../game/graphics/OverworldTiles';
+import { MAP_NAMES } from '../game/data/world';
 
 export const TopHUD: React.FC = () => {
   const state = useGameStore();
@@ -21,11 +21,8 @@ export const TopHUD: React.FC = () => {
     const mapId = state.activeMapId;
     const px = state.playerPosition.x;
     const pz = state.playerPosition.z;
-    if (Math.hypot(px, pz) < 7) return 'Plaza de Marionette';
-    if (mapId in MAP_NAMES) {
-      return MAP_NAMES[mapId as keyof typeof MAP_NAMES];
-    }
-    return 'Villa Marionette';
+    if (mapId === 'villa_marionette' && Math.hypot(px, pz) < 7) return 'Plaza de Marionette';
+    return MAP_NAMES[mapId];
   };
 
   return (

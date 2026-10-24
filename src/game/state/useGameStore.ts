@@ -6,6 +6,7 @@ import { createMoveInstance, MOVES_DATABASE } from '../data/moves';
 import { combatEngine } from '../combat/CombatEngine';
 import { AffinityValidator } from '../combat/AffinityValidator';
 import { sound } from '../audio/SoundEffects';
+import { MapId } from '../data/world';
 
 export interface GameState {
   view: GameView;
@@ -23,7 +24,7 @@ export interface GameState {
   activeShopId: number | null;
   introStep: IntroStep;
   selectedStarterId: string | null;
-  activeMapId: string;
+  activeMapId: MapId;
   wipeCount: number;
   wipeLabel: string | null;
   wipeFlash: boolean;

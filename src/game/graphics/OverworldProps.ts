@@ -37,6 +37,7 @@ export class OverworldProps {
   readonly group = new THREE.Group();
   private sprites: THREE.Sprite[] = [];
   private materials: THREE.SpriteMaterial[] = [];
+  private disposed = false;
 
   constructor(private baseUrl: string) {}
 
@@ -58,6 +59,10 @@ export class OverworldProps {
         texture.minFilter = THREE.NearestFilter;
         texture.generateMipmaps = false;
         texture.colorSpace = THREE.SRGBColorSpace;
+        if (this.disposed) {
+          texture.dispose();
+          return;
+        }
         this.spawn(kind, def, texture, placements);
       });
     }
@@ -95,6 +100,7 @@ export class OverworldProps {
 
   /** Removes every billboard (used when the scene is rebuilt). */
   public dispose(): void {
+    this.disposed = true;
     this.group.clear();
     this.sprites.length = 0;
     for (const material of this.materials) {

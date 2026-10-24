@@ -39,6 +39,7 @@ export interface SoulDollDataComponent {
 }
 
 export interface WildZoneComponent {
+  mapId?: string;
   name: string;
   minX: number;
   maxX: number;
@@ -49,6 +50,7 @@ export interface WildZoneComponent {
 }
 
 export interface TamerChallengerComponent {
+  mapId?: string;
   name: string;
   title: string;
   tamerType: 'apprentice' | 'master' | 'sage';
@@ -82,4 +84,3 @@ export interface ShopComponent {
   name: string;
   items: { id: string; price: number }[];
 }
-

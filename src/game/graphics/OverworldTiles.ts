@@ -14,6 +14,7 @@
  * plan, gardens, building footprints, and tile texture are generated locally.
  */
 import * as THREE from 'three';
+import { MAP_IDS, MAP_NAMES, MapId } from '../data/world';
 import { VILLA_BUILDINGS } from './OverworldBuildings';
 
 /** Source size of a tile (Kenney Roguelike tiles are 16x16). */
@@ -67,38 +68,131 @@ const VOID_COLOR = '#393939';
 // Villa Marionette
 // ---------------------------------------------------------------------------
 
-export type MapId = 'villa_marionette';
+export { MAP_NAMES, MAP_IDS };
+export type { MapId };
 
-export const MAP_NAMES: Record<MapId, string> = {
-  villa_marionette: 'Villa Marionette',
+export interface MapWildZone {
+  name: string;
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+  encounterRate: number;
+  speciesPool: { speciesId: string; minLevel: number; maxLevel: number; weight: number }[];
+}
+
+export interface MapConnection {
+  at: { x: number; z: number };
+  toMap: MapId;
+  arrival: { x: number; z: number };
+}
+
+export const MAP_CONNECTIONS: Record<MapId, readonly MapConnection[]> = {
+  villa_marionette: [
+    { at: { x: 0, z: -26 }, toMap: 'ruta_1', arrival: { x: 0, z: 25.5 } },
+  ],
+  ruta_1: [
+    { at: { x: 0, z: 26 }, toMap: 'villa_marionette', arrival: { x: 0, z: -25.5 } },
+  ],
 };
 
 interface MapLayoutDef {
   /** Patches of spirit grass where wild SoulDolls appear. */
-  wildZones: { minX: number; maxX: number; minZ: number; maxZ: number }[];
+  wildZones: MapWildZone[];
   /** The town's central stone plaza. */
-  plaza: { x: number; z: number; radius: number };
+  plaza: { x: number; z: number; radius: number } | null;
   /** Centers of the main roads, in world units. */
   roadXs: number[];
   roadZs: number[];
+  /** Optional hand-drawn trail centerline for routes and winding paths. */
+  roadPath?: { x: number; z: number }[];
   /** Half width of each road. */
   roadHalfWidth: number;
   /** Fraction of plain grass tiles that get a baked flower patch. */
   flowerDensity: number;
+  decorations: {
+    tallTrees: number;
+    shortTrees: number;
+    bushes: number;
+    rocks: number;
+    flowers: number;
+    tufts: number;
+  };
 }
 
 const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
   villa_marionette: {
     // A compact hillside village with a central square and branching lanes.
     wildZones: [
-      { minX: -8, maxX: -3, minZ: -25, maxZ: -20 },
-      { minX: 3, maxX: 8, minZ: -25, maxZ: -20 },
+      {
+        name: 'Villa Marionette · Prado Oeste',
+        minX: -8, maxX: -3, minZ: -25, maxZ: -20,
+        encounterRate: 0.08,
+        speciesPool: [
+          { speciesId: 'florabun', minLevel: 6, maxLevel: 10, weight: 30 },
+          { speciesId: 'runika', minLevel: 7, maxLevel: 11, weight: 25 },
+          { speciesId: 'sparkit', minLevel: 7, maxLevel: 10, weight: 25 },
+          { speciesId: 'geotort', minLevel: 6, maxLevel: 9, weight: 20 },
+        ],
+      },
+      {
+        name: 'Villa Marionette · Prado Este',
+        minX: 3, maxX: 8, minZ: -25, maxZ: -20,
+        encounterRate: 0.08,
+        speciesPool: [
+          { speciesId: 'aquafox', minLevel: 7, maxLevel: 11, weight: 35 },
+          { speciesId: 'cryopup', minLevel: 7, maxLevel: 10, weight: 30 },
+          { speciesId: 'aerochick', minLevel: 6, maxLevel: 10, weight: 25 },
+          { speciesId: 'lumiwisp', minLevel: 8, maxLevel: 12, weight: 10 },
+        ],
+      },
     ],
     plaza: { x: 0, z: 0, radius: 5.5 },
     roadXs: [-12, 0, 12],
     roadZs: [-21, -12, 0, 12, 21],
     roadHalfWidth: 1.5,
     flowerDensity: 0.08,
+    decorations: { tallTrees: 12, shortTrees: 18, bushes: 22, rocks: 8, flowers: 32, tufts: 12 },
+  },
+  ruta_1: {
+    wildZones: [
+      {
+        name: 'Ruta 1 · Prado del arroyo',
+        minX: -12, maxX: -7, minZ: -12, maxZ: -4,
+        encounterRate: 0.1,
+        speciesPool: [
+          { speciesId: 'florabun', minLevel: 8, maxLevel: 11, weight: 30 },
+          { speciesId: 'sparkit', minLevel: 8, maxLevel: 12, weight: 30 },
+          { speciesId: 'aerochick', minLevel: 8, maxLevel: 11, weight: 25 },
+          { speciesId: 'geotort', minLevel: 9, maxLevel: 12, weight: 15 },
+        ],
+      },
+      {
+        name: 'Ruta 1 · Prado del claro',
+        minX: 4, maxX: 10, minZ: 7, maxZ: 17,
+        encounterRate: 0.1,
+        speciesPool: [
+          { speciesId: 'cryopup', minLevel: 8, maxLevel: 12, weight: 35 },
+          { speciesId: 'aquafox', minLevel: 9, maxLevel: 12, weight: 30 },
+          { speciesId: 'runika', minLevel: 9, maxLevel: 13, weight: 25 },
+          { speciesId: 'lumiwisp', minLevel: 10, maxLevel: 13, weight: 10 },
+        ],
+      },
+    ],
+    plaza: null,
+    roadXs: [],
+    roadZs: [],
+    roadPath: [
+      { x: 0, z: 27 },
+      { x: 0, z: 8 },
+      { x: -4.5, z: 3 },
+      { x: -4.5, z: -10 },
+      { x: 0, z: -17 },
+      { x: 0, z: -27 },
+    ],
+    roadHalfWidth: 1.5,
+    flowerDensity: 0.025,
+    decorations: { tallTrees: 20, shortTrees: 28, bushes: 26, rocks: 18, flowers: 10, tufts: 16 },
   },
 };
 
@@ -114,6 +208,15 @@ const MAP_CLEAR_POINTS: Record<MapId, { x: number; z: number; r: number }[]> = {
       { x: building.x, z: building.z, r: 4.5 },
       { x: building.entrance.x, z: building.entrance.z, r: 3.5 },
     ]),
+  ],
+  ruta_1: [
+    { x: 0, z: 25, r: 4 },
+    { x: 0, z: -25, r: 4 },
+    { x: 0, z: -18, r: 4 },
+    { x: 0, z: 0, r: 3.5 },
+    { x: 0, z: 26, r: 4 },
+    { x: 0, z: -26, r: 4 },
+    { x: 3, z: -15, r: 3 },
   ],
 };
 
@@ -162,6 +265,20 @@ function hashString(text: string): number {
 
 const tileCenter = (index: number): number => (index - MAP_TILES / 2 + 0.5) * TILE_UNITS;
 
+function distanceToSegment(
+  point: { x: number; z: number },
+  start: { x: number; z: number },
+  end: { x: number; z: number }
+): number {
+  const dx = end.x - start.x;
+  const dz = end.z - start.z;
+  const lengthSquared = dx * dx + dz * dz;
+  const t = lengthSquared === 0
+    ? 0
+    : THREE.MathUtils.clamp(((point.x - start.x) * dx + (point.z - start.z) * dz) / lengthSquared, 0, 1);
+  return Math.hypot(point.x - (start.x + t * dx), point.z - (start.z + t * dz));
+}
+
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -185,13 +302,16 @@ function kindAt(col: number, row: number, layout: MapLayoutDef): TileKind {
   const wx = tileCenter(col);
   const wz = tileCenter(row);
 
-  if (Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
+  if (layout.plaza && Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
     return 'gravel';
   }
-  if (
-    layout.roadXs.some((x) => Math.abs(wx - x) <= layout.roadHalfWidth) ||
-    layout.roadZs.some((z) => Math.abs(wz - z) <= layout.roadHalfWidth)
-  ) {
+  const onRoad = layout.roadPath
+    ? layout.roadPath.slice(1).some((end, index) =>
+        distanceToSegment({ x: wx, z: wz }, layout.roadPath![index], end) <= layout.roadHalfWidth
+      )
+    : layout.roadXs.some((x) => Math.abs(wx - x) <= layout.roadHalfWidth) ||
+      layout.roadZs.some((z) => Math.abs(wz - z) <= layout.roadHalfWidth);
+  if (onRoad) {
     return 'path';
   }
 
@@ -263,6 +383,7 @@ function buildLayout(map: MapId): MapLayout {
       const z = tileCenter(row);
       if (grid[row][col] === 'water') blocked.add(`${col},${row}`);
       if (
+        map === 'villa_marionette' &&
         VILLA_BUILDINGS.some((building) => {
           return (
             Math.abs(x - building.x) <= building.halfWidth + TILE_UNITS / 2 &&
@@ -274,7 +395,14 @@ function buildLayout(map: MapId): MapLayout {
       }
     }
   }
-  const decorations = buildDecorations(grid, MAP_CLEAR_POINTS[map], blocked, hashString(map));
+  const decorations = buildDecorations(
+    grid,
+    MAP_CLEAR_POINTS[map],
+    blocked,
+    hashString(map),
+    MAP_LAYOUTS[map].decorations,
+    map
+  );
   return { grid, decorations, blocked };
 }
 
@@ -311,6 +439,88 @@ export function isBlocked(worldX: number, worldZ: number, map: MapId = 'villa_ma
   return getLayout(map).blocked.has(`${col},${row}`);
 }
 
+/** Wild encounter areas and their species are authored once per map. */
+export function getMapWildZones(map: MapId): MapWildZone[] {
+  return MAP_LAYOUTS[map].wildZones;
+}
+
+/** Checks map connections and verifies that encounters are reachable on foot. */
+export function validateWorldMaps(): string[] {
+  const errors: string[] = [];
+  const mapIds = MAP_IDS;
+  const halfMap = (MAP_TILES * TILE_UNITS) / 2;
+  const inBounds = (point: { x: number; z: number }) =>
+    Math.abs(point.x) < halfMap - TILE_UNITS && Math.abs(point.z) < halfMap - TILE_UNITS;
+  const isReachable = (map: MapId, from: { x: number; z: number }, to: { x: number; z: number }) => {
+    const layout = getLayout(map);
+    const toCol = Math.floor(to.x / TILE_UNITS + MAP_TILES / 2);
+    const toRow = Math.floor(to.z / TILE_UNITS + MAP_TILES / 2);
+    const startCol = Math.floor(from.x / TILE_UNITS + MAP_TILES / 2);
+    const startRow = Math.floor(from.z / TILE_UNITS + MAP_TILES / 2);
+    const queue: [number, number][] = [[startCol, startRow]];
+    const visited = new Set([`${startCol},${startRow}`]);
+    const offsets: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
+    for (let index = 0; index < queue.length; index++) {
+      const [col, row] = queue[index];
+      if (col === toCol && row === toRow) return true;
+      for (const [dc, dr] of offsets) {
+        const nextCol = col + dc;
+        const nextRow = row + dr;
+        const key = `${nextCol},${nextRow}`;
+        if (
+          nextCol < BORDER_TILES ||
+          nextRow < BORDER_TILES ||
+          nextCol >= MAP_TILES - BORDER_TILES ||
+          nextRow >= MAP_TILES - BORDER_TILES ||
+          visited.has(key) ||
+          layout.blocked.has(key)
+        ) continue;
+        visited.add(key);
+        queue.push([nextCol, nextRow]);
+      }
+    }
+    return false;
+  };
+
+  for (const map of mapIds) {
+    const connections = MAP_CONNECTIONS[map];
+    if (connections.length === 0) errors.push(`${map} has no connection to another area`);
+    for (const connection of connections) {
+      if (!MAP_NAMES[connection.toMap]) {
+        errors.push(`${map} connects to unknown area "${connection.toMap}"`);
+        continue;
+      }
+      if (!inBounds(connection.at) || !inBounds(connection.arrival)) {
+        errors.push(`${map} has an out-of-bounds connection to ${connection.toMap}`);
+        continue;
+      }
+      if (isBlocked(connection.at.x, connection.at.z, map)) {
+        errors.push(`${map} connection to ${connection.toMap} is blocked`);
+      }
+      if (isBlocked(connection.arrival.x, connection.arrival.z, connection.toMap)) {
+        errors.push(`${connection.toMap} arrival from ${map} is blocked`);
+      }
+      const reciprocal = MAP_CONNECTIONS[connection.toMap].some(
+        (candidate) =>
+          candidate.toMap === map &&
+          Math.hypot(candidate.at.x - connection.arrival.x, candidate.at.z - connection.arrival.z) <= 1 &&
+          Math.hypot(candidate.arrival.x - connection.at.x, candidate.arrival.z - connection.at.z) <= 1
+      );
+      if (!reciprocal) errors.push(`${map} connection to ${connection.toMap} has no matching return`);
+    }
+
+    for (const zone of MAP_LAYOUTS[map].wildZones) {
+      const center = { x: (zone.minX + zone.maxX) / 2, z: (zone.minZ + zone.maxZ) / 2 };
+      if (!inBounds(center)) errors.push(`${zone.name} is outside ${map}`);
+      if (!connections.some((connection) => isReachable(map, connection.at, center))) {
+        errors.push(`${zone.name} is unreachable from every map entrance`);
+      }
+    }
+  }
+  return errors;
+}
+
 function buildTileGrid(layout: MapLayoutDef): TileKind[][] {
   const grid: TileKind[][] = [];
   for (let row = 0; row < MAP_TILES; row++) {
@@ -325,7 +535,9 @@ function buildDecorations(
   grid: TileKind[][],
   clearPoints: { x: number; z: number; r: number }[],
   blocked: Set<string>,
-  seed: number
+  seed: number,
+  profile: MapLayoutDef['decorations'],
+  map: MapId
 ): Decoration[] {
   const random = makeRandom(seed);
   const decorations: Decoration[] = [];
@@ -373,19 +585,24 @@ function buildDecorations(
     return false;
   };
 
-  // Small garden trees and planted borders around the walkable lanes.
-  for (let i = 0; i < 12; i++) place('tree-tall', 2, 4);
-  for (let i = 0; i < 18; i++) place('tree-short', 2, 2);
-  for (let i = 0; i < 22; i++) place('bush', 1, 1);
-  for (let i = 0; i < 8; i++) place('rock', 1, 1);
-  for (let i = 0; i < 32; i++) place(random() < 0.5 ? 'flower-a' : 'flower-b', 1, 1);
-  for (let i = 0; i < 12; i++) place('grass-tuft', 1, 1, 'tallgrass');
+  // Each area owns a deterministic decoration budget suited to its identity.
+  for (let i = 0; i < profile.tallTrees; i++) place('tree-tall', 2, 4);
+  for (let i = 0; i < profile.shortTrees; i++) place('tree-short', 2, 2);
+  for (let i = 0; i < profile.bushes; i++) place('bush', 1, 1);
+  for (let i = 0; i < profile.rocks; i++) place('rock', 1, 1);
+  for (let i = 0; i < profile.flowers; i++) place(random() < 0.5 ? 'flower-a' : 'flower-b', 1, 1);
+  for (let i = 0; i < profile.tufts; i++) place('grass-tuft', 1, 1, 'tallgrass');
 
-  // Signposts mark the village entrance lanes.
-  const signSpots: [number, number][] = [
-    [MAP_TILES / 2 - 2, MAP_TILES - BORDER_TILES - 2],
-    [MAP_TILES / 2 + 2, BORDER_TILES + 2],
-  ];
+  // Signposts mark the incoming and outgoing trail at each area's edge.
+  const signSpots: [number, number][] = map === 'villa_marionette'
+    ? [
+        [MAP_TILES / 2 - 2, MAP_TILES - BORDER_TILES - 2],
+        [MAP_TILES / 2 + 2, BORDER_TILES + 2],
+      ]
+    : [
+        [MAP_TILES / 2 - 3, MAP_TILES - BORDER_TILES - 2],
+        [MAP_TILES / 2 + 3, BORDER_TILES + 2],
+      ];
   for (const [col, row] of signSpots) {
     if (col < 0 || row < 0 || col >= MAP_TILES || row >= MAP_TILES) continue;
     if (grid[row][col] !== 'grass' || taken.has(key(col, row))) continue;

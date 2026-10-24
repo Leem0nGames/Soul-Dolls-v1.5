@@ -16,6 +16,7 @@ npm run bake:sprites   # cookies las hojas de personajes -> WebP con alfa
 npm run bake:props     # cookies los props del mapa -> PNG con alfa
 npm run bake:npc-sprites # genera el atlas billboard de NPCs desde las poses CC0
 npm run soul:harness   # analiza + hornea + informa del estado de las hojas
+npm run world:harness  # valida conexiones, accesos y encuentros del mundo
 ```
 
 `npm run lint` must stay green before every commit. The build must stay green too.
@@ -94,32 +95,45 @@ Current line of fire:
 
 ---
 
-## 2. Overworld map
+## 2. Overworld maps
 
-The current starter map is **Villa Marionette**, an original village layout.
-Its ground is baked from the **modern tileset** in `modern/`: tiles cut out
+The map progression and reusable authoring/validation workflow are in
+[`WORLD_DESIGN.md`](./WORLD_DESIGN.md). Read that guide before adding an area;
+every map must pass `npm run world:harness`.
+
+The opening maps are **Villa Marionette** and **Ruta 1 · Sendero de los
+Susurros**, an original village and its first connected route. Map IDs, names,
+and scene palettes live in `src/game/data/world.ts`; terrain, encounters,
+connections, collision, and decoration layouts live in
+`src/game/graphics/OverworldTiles.ts`. The game store is the single source of
+truth for the active map.
+
+Ground is baked from the **modern tileset** in `modern/`: tiles cut out
 of Kenney's Roguelike pack (CC0, 16x16, 1px spacing) by
 `tools/bake-modern-tiles.py` from the vendored sheet
-`tools/modern-source/RoguelikeSheet_misa.png`. The Gen 2 tileset
-(`nikouu/Pokemon-gen-2-style-tilemap`, MIT) is kept next to it but is not
-loaded anymore.
+`tools/modern-source/RoguelikeSheet_misa.png`.
 
 ```
 public/tilesets/overworld/modern/     <- the cut tiles in use (16x16) + LICENSE.txt
-public/tilesets/overworld/            <- legacy Gen 2 tileset (8x8) + LICENSE + README
+public/tilesets/overworld/            <- archived, inactive Gen 2 source assets + license
 public/assets/buildings/              <- Kenney City Kit Suburban GLB exteriors (CC0)
 public/assets/npcs/                   <- Kenney Toon Characters, used as NPC billboards (CC0)
 tools/bake-npc-sprites.ts             <- packs the poses into the NPC billboard atlas
 tools/bake-modern-tiles.py            <- regenerates the cut tiles (pure stdlib)
 tools/modern-source/                  <- vendored Kenney sheet (source of truth)
+tools/world-harness.ts                <- validates map links, bounds and encounter reachability
 src/game/graphics/OverworldTiles.ts   <- the grid, the transitions, the layout
 src/game/graphics/OverworldBuildings.ts <- Villa Marionette building placement and GLB loading
 src/game/graphics/OverworldProps.ts   <- the billboards (trees, rocks, flowers)
+src/game/data/world.ts                <- canonical map IDs, names, and palettes
 public/assets/props/                  <- the baked modern props with alpha (CC0)
 tools/bake-modern-props.py            <- extracts props from the vendored Kenney sheet
 ```
 
-- 1 tile = 1.5 world units, Villa Marionette is 40x40 tiles (60x60 units).
+- 1 tile = 1.5 world units; each current area is 40x40 tiles (60x60 units).
+- Villa Marionette connects north to Ruta 1; the route returns south to the
+  village. Continue the progression by adding the next area and reciprocal
+  links instead of extending an unrelated map.
 - Exteriors use eight CC0 GLB models from Kenney's City Kit (Suburban); the
   source and license are recorded in `public/assets/buildings/LICENSE.txt`.
 - The whole ground is **one canvas** baked at runtime and used as the texture
@@ -145,9 +159,9 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
   the assets.
 
 Rebake the modern props with `npm run bake:props`. Their sprites are extracted
-from the transparent Kenney sheet; the legacy Gen 2 prop baker remains in
-`tools/bake-props.ts` but is not used by the modern overworld. Add each new
-prop's size to `PROP_DEFS` in `OverworldProps.ts`.
+from the transparent Kenney sheet. Add each new prop's size to `PROP_DEFS` in
+`OverworldProps.ts`. The root-level Gen 2 tiles are archived for provenance
+and are not part of any runtime or bake pipeline.
 
 ---
 
