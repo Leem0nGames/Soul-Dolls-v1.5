@@ -15,11 +15,11 @@ type BrandPanelProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 export function BrandPanel({ variant = 'surface', className = '', ...props }: BrandPanelProps) {
-  return <div className={`sd-brand-panel sd-brand-panel-${variant} ${className}`} {...props} />;
+  return <div className={`sd-brand-panel sd-brand-panel-${variant} sd-ornate-frame ${className}`} {...props} />;
 }
 
 type BrandButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'quiet' | 'danger';
+  variant?: 'primary' | 'secondary' | 'quiet' | 'danger' | 'ki' | 'soul' | 'select';
 };
 
 export function BrandButton({

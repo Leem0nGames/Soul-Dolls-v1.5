@@ -3,7 +3,8 @@ import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { ecs } from '../game/ecs/World';
 import { ITEMS_DATABASE } from '../game/data/items';
 import { GameCabinetModal } from './ui/GameCabinetModal';
-import { ShoppingBag, X } from 'lucide-react';
+import { BrandButton } from './ui/BrandKit';
+import { ShoppingBag } from 'lucide-react';
 
 export const ShopModal: React.FC = () => {
   const state = useGameStore();
@@ -50,12 +51,13 @@ export const ShopModal: React.FC = () => {
                   <div className="font-pixel text-xs text-amber-100">{itemData.name}</div>
                   <div className="font-sans text-[10px] text-amber-200/70">{itemData.description}</div>
                 </div>
-                <button
+                <BrandButton
                   onClick={() => handleBuy(item.id, item.price)}
-                  className="sd-brand-button sd-brand-button-primary text-[10px] px-3 py-1.5"
+                  variant="primary"
+                  className="text-[10px] px-3 py-1.5"
                 >
                   {item.price} 🪙
-                </button>
+                </BrandButton>
               </div>
             );
           })}

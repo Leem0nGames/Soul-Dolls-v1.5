@@ -5,6 +5,7 @@ import { Briefcase, Check } from 'lucide-react';
 import { ItemCategory } from '../types/game';
 import { GameCabinetModal } from './ui/GameCabinetModal';
 import { SoulDollSprite } from './ui/SoulDollSprite';
+import { BrandButton } from './ui/BrandKit';
 
 export const BagModal: React.FC = () => {
   const state = useGameStore();
@@ -49,7 +50,7 @@ export const BagModal: React.FC = () => {
             { id: 'evolution', label: 'ARTEFACTOS' },
           ] as { id: ItemCategory; label: string }[]
         ).map(cat => (
-          <button
+          <BrandButton
             key={cat.id}
             onClick={() => {
               sound.playSelect();
@@ -57,14 +58,16 @@ export const BagModal: React.FC = () => {
               const first = items.find(it => it.category === cat.id);
               if (first) setSelectedItemId(first.id);
             }}
-            className={`px-4 py-2 rounded-lg font-pixel text-[10px] transition-all cursor-pointer ${
+            variant={activeCategory === cat.id ? 'primary' : 'secondary'}
+            aria-pressed={activeCategory === cat.id}
+            className={`px-4 py-2 text-[10px] ${
               activeCategory === cat.id
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                : 'bg-[#14101c] text-amber-200/80 hover:bg-[#35263b] border border-[#7a4921]'
+                ? 'font-bold'
+                : 'text-amber-200/80'
             }`}
           >
             {cat.label}
-          </button>
+          </BrandButton>
         ))}
       </div>
 
@@ -75,17 +78,15 @@ export const BagModal: React.FC = () => {
           {filteredItems.map(item => {
             const isSelected = selectedItemId === item.id;
             return (
-              <button
+              <BrandButton
                 key={item.id}
                 onClick={() => {
                   sound.playSelect();
                   setSelectedItemId(item.id);
                 }}
-                className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-violet-900/50 border-amber-400 shadow-inner'
-                    : 'bg-[#14101c]/80 hover:bg-[#2a1f2d] border-[#7a4921]'
-                }`}
+                variant="select"
+                aria-pressed={isSelected}
+                className="w-full p-3 rounded-xl flex items-center justify-between gap-2"
               >
                 <div>
                   <div className="font-pixel text-[11px] text-amber-200 font-bold">{item.name}</div>
@@ -96,7 +97,7 @@ export const BagModal: React.FC = () => {
                 <span className="font-pixel text-xs text-amber-300 bg-[#14101c] px-2.5 py-1 rounded border border-[#8c5a2b] font-bold">
                   x{item.count}
                 </span>
-              </button>
+              </BrandButton>
             );
           })}
         </div>
@@ -125,14 +126,12 @@ export const BagModal: React.FC = () => {
                   </div>
                   <div className="space-y-1.5 max-h-36 overflow-y-auto scrollbar-thin">
                     {state.playerParty.map(doll => (
-                      <button
+                      <BrandButton
                         key={doll.uuid}
                         onClick={() => setTargetDollUuid(doll.uuid)}
-                        className={`w-full text-left p-2 rounded-lg flex justify-between items-center border cursor-pointer ${
-                          targetDollUuid === doll.uuid
-                            ? 'bg-violet-900/50 border-amber-400 text-white shadow-inner'
-                            : 'bg-[#211a2d] border-[#7a4921] text-amber-200/80 hover:bg-[#35263b]'
-                        }`}
+                        variant="select"
+                        aria-pressed={targetDollUuid === doll.uuid}
+                        className="w-full p-2 rounded-lg flex justify-between items-center gap-2"
                       >
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
@@ -150,7 +149,7 @@ export const BagModal: React.FC = () => {
                         <span className="font-pixel text-[9px] text-amber-300">
                           {doll.currentHp}/{doll.maxHp} HP
                         </span>
-                      </button>
+                      </BrandButton>
                     ))}
                   </div>
                 </div>
@@ -163,14 +162,15 @@ export const BagModal: React.FC = () => {
           )}
 
           {selectedItem && (
-            <button
+            <BrandButton
               disabled={selectedItem.count <= 0}
               onClick={handleUseItem}
-              className="mt-3 w-full py-3 px-6 rounded-xl font-pixel text-xs font-bold bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 shadow-lg border-2 border-amber-300 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-40"
+              variant="primary"
+              className="mt-3 w-full py-3 px-6 text-xs flex items-center justify-center gap-2"
             >
-              <Check className="w-4 h-4 text-slate-950" />
+              <Check className="w-4 h-4" />
               USAR OBJETO
-            </button>
+            </BrandButton>
           )}
         </div>
       </div>

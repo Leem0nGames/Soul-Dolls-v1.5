@@ -6,6 +6,7 @@ import { sound } from '../game/audio/SoundEffects';
 import { Users, Sparkles, ArrowUpCircle } from 'lucide-react';
 import { GameCabinetModal } from './ui/GameCabinetModal';
 import { SoulDollSprite } from './ui/SoulDollSprite';
+import { BrandButton } from './ui/BrandKit';
 
 export const PartyModal: React.FC = () => {
   const state = useGameStore();
@@ -61,17 +62,15 @@ export const PartyModal: React.FC = () => {
             const hpPct = Math.floor((doll.currentHp / doll.maxHp) * 100);
 
             return (
-              <button
+              <BrandButton
                 key={doll.uuid}
                 onClick={() => {
                   sound.playSelect();
                   setSelectedIdx(idx);
                 }}
-                className={`w-full text-left p-2 rounded-xl border flex items-center gap-3 transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-violet-900/50 border-emerald-400/50 shadow-inner'
-                    : 'bg-[#14101c]/80 hover:bg-[#2a1f2d] border-[#7a4921]/40'
-                }`}
+                variant="select"
+                aria-pressed={isSelected}
+                className="w-full p-2 rounded-xl flex items-center gap-3"
               >
                   <div className="w-12 h-12 rounded-lg bg-black/40 border border-[#8c5a2b]/30 p-0.5 flex items-center justify-center shrink-0">
                     <SoulDollSprite
@@ -89,7 +88,7 @@ export const PartyModal: React.FC = () => {
                       <div className={`h-full ${hpPct > 50 ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ width: `${hpPct}%` }} />
                     </div>
                   </div>
-              </button>
+              </BrandButton>
             );
           })}
         </div>
@@ -190,23 +189,25 @@ export const PartyModal: React.FC = () => {
           {/* Actions Footer */}
           <div className="flex flex-col gap-2 pt-2 border-t border-[#8c5a2b] shrink-0 mt-2">
             {selectedIdx !== 0 && (
-              <button
+              <BrandButton
                 onClick={handleMakeLeader}
-                className="sd-brand-button sd-brand-button-secondary w-full py-2.5 px-4 text-[10px] flex items-center justify-center gap-1.5"
+                variant="secondary"
+                className="w-full py-2.5 px-4 text-[10px] flex items-center justify-center gap-1.5"
               >
                 <ArrowUpCircle className="w-3.5 h-3.5 text-amber-400" />
                 NOMBRAR LÍDER DE EQUIPO
-              </button>
+              </BrandButton>
             )}
 
             {species.evolution && (
-              <button
+              <BrandButton
                 onClick={handleTriggerEvolution}
-                className="sd-brand-button sd-brand-button-primary w-full py-3 px-4 text-xs flex items-center justify-center gap-1.5"
+                variant="primary"
+                className="w-full py-3 px-4 text-xs flex items-center justify-center gap-1.5"
               >
                 <Sparkles className="w-4 h-4 text-slate-950" />
                 DESPERTAR METAMORFOSIS ASCENDIDA
-              </button>
+              </BrandButton>
             )}
           </div>
         </div>

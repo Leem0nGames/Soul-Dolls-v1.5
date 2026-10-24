@@ -515,17 +515,18 @@ export const SoulDexModal: React.FC = () => {
                   <div className="font-fantasy text-sm font-bold text-amber-100 flex items-center gap-1.5 mt-0.5">
                     <span>{selectedSpecies.name}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
-                    <button
+                    <BrandButton
                       onClick={() => {
                         sound.playSelect();
                         if (selectedSpecies.evolution) {
                           setSelectedSpeciesId(selectedSpecies.evolution.evolvesInto);
                         }
                       }}
-                      className="underline text-amber-300 hover:text-amber-100 font-bold"
+                      variant="quiet"
+                      className="min-h-0 p-0 border-0 bg-transparent text-amber-300 underline hover:text-amber-100 font-bold"
                     >
                       {SOULDOLL_SPECIES[selectedSpecies.evolution.evolvesInto]?.name || 'Forma Ascendida'}
-                    </button>
+                    </BrandButton>
                   </div>
                 </div>
                 <span className="font-pixel text-[9px] bg-[#211a2d] text-amber-200 px-2 py-1 rounded-lg border border-[#8a6a3b] shadow-sm">
@@ -615,23 +616,27 @@ export const SoulDexModal: React.FC = () => {
             <div className="w-full flex justify-between items-center z-10 gap-2 mb-2">
               {/* Previous / Next buttons */}
               <div className="flex items-center gap-1 bg-[#0d0a13]/70 p-1 rounded-lg border border-[#7a4921]/50">
-                <button
+                <BrandButton
                   onClick={handlePrev}
-                  className="p-1 rounded-md hover:bg-[#35263b] text-amber-300 transition-all"
+                  variant="quiet"
+                  aria-label="SoulDoll anterior"
+                  className="min-w-[40px] min-h-[40px] p-1 flex items-center justify-center text-amber-300"
                   title="Anterior SoulDoll"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                </button>
+                </BrandButton>
                 <span className="font-pixel text-[9px] text-amber-200 px-1 font-bold">
                   #{String(currentIndex + 1).padStart(2, '0')}/{speciesList.length}
                 </span>
-                <button
+                <BrandButton
                   onClick={handleNext}
-                  className="p-1 rounded-md hover:bg-[#35263b] text-amber-300 transition-all"
+                  variant="quiet"
+                  aria-label="Siguiente SoulDoll"
+                  className="min-w-[40px] min-h-[40px] p-1 flex items-center justify-center text-amber-300"
                   title="Siguiente SoulDoll"
                 >
                   <ChevronRight className="w-4 h-4" />
-                </button>
+                </BrandButton>
               </div>
 
               {/* Status Ribbon (Capturado / Avistado / En Equipo) */}
@@ -664,17 +669,19 @@ export const SoulDexModal: React.FC = () => {
             <div className="relative flex-1 w-full flex flex-col items-center justify-center">
               {/* Front / Back View Toggle */}
               {isSeen && (
-                <button
+                <BrandButton
                   onClick={() => {
                     sound.playSelect();
                     setIsBackView(!isBackView);
                   }}
-                  className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-md bg-[#211a2d]/90 hover:bg-[#35263b] text-amber-200 border border-[#8c5a2b]/50 font-pixel text-[8px] flex items-center gap-1 shadow-sm transition-all"
+                  variant="quiet"
+                  aria-pressed={isBackView}
+                  className="absolute top-2 right-2 z-20 min-h-[40px] px-2 py-0.5 text-amber-200 font-pixel text-[8px] flex items-center gap-1 shadow-sm"
                   title="Girar vista del SoulDoll"
                 >
                   <RotateCw className="w-3 h-3 text-amber-400" />
                   <span>{isBackView ? 'ESPALDA' : 'FRENTE'}</span>
-                </button>
+                </BrandButton>
               )}
 
               {/* Character Sprite */}
@@ -735,26 +742,26 @@ export const SoulDexModal: React.FC = () => {
                   ÍNDICE COMPLETO DE ALMAS PRIMORDIALES
                 </h3>
               </div>
-              <button
+              <BrandButton
                 onClick={() => setShowDrawer(false)}
-                className="p-1 rounded-lg bg-[#211a2d] hover:bg-[#35263b] text-amber-200 border border-[#8c5a2b]"
+                variant="quiet"
+                aria-label="Cerrar índice"
+                className="min-w-[40px] min-h-[40px] p-1 text-amber-200"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </BrandButton>
             </div>
 
             {/* Element Filter Buttons */}
             <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
-              <button
+              <BrandButton
                 onClick={() => setTypeFilter('ALL')}
-                className={`px-2.5 py-1 rounded-lg font-pixel text-[9px] transition-all ${
-                  typeFilter === 'ALL'
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                    : 'bg-[#2e180c] text-amber-200 border border-[#7a4921]'
-                }`}
+                variant={typeFilter === 'ALL' ? 'primary' : 'secondary'}
+                aria-pressed={typeFilter === 'ALL'}
+                className="px-2.5 py-1 whitespace-nowrap text-[9px]"
               >
                 TODOS ({speciesList.length})
-              </button>
+              </BrandButton>
               {(
                 [
                   'Fire',
@@ -772,19 +779,19 @@ export const SoulDexModal: React.FC = () => {
                 const elementOrb = getElementOrb(t);
                 const count = speciesList.filter((s) => s.types.includes(t)).length;
                 return (
-                  <button
+                  <BrandButton
                     key={t}
                     onClick={() => setTypeFilter(t)}
-                    className={`px-2.5 py-1 rounded-lg font-pixel text-[9px] whitespace-nowrap transition-all flex items-center gap-1 ${
-                      typeFilter === t
-                        ? 'ring-2 ring-white text-white font-bold'
-                        : 'opacity-80 hover:opacity-100 text-slate-200'
+                    variant={typeFilter === t ? 'primary' : 'secondary'}
+                    aria-pressed={typeFilter === t}
+                    className={`px-2.5 py-1 whitespace-nowrap text-[9px] flex items-center gap-1 ${
+                      typeFilter !== t ? 'opacity-80 hover:opacity-100' : ''
                     }`}
                     style={{ backgroundColor: elementOrb.borderColor }}
                   >
                     <span>{t}</span>
                     <span className="text-[8px] opacity-80">({count})</span>
-                  </button>
+                  </BrandButton>
                 );
               })}
             </div>
@@ -798,18 +805,16 @@ export const SoulDexModal: React.FC = () => {
                 const isSelected = selectedSpeciesId === species.id;
 
                 return (
-                  <button
+                  <BrandButton
                     key={species.id}
                     onClick={() => {
                       sound.playSelect();
                       setSelectedSpeciesId(species.id);
                       setShowDrawer(false);
                     }}
-                    className={`p-2.5 rounded-xl border flex items-center gap-2.5 text-left transition-all ${
-                      isSelected
-                        ? 'bg-amber-900/60 border-amber-400 ring-2 ring-amber-300'
-                        : 'bg-[#211a2d] hover:bg-[#35263b] border-[#7a4921]'
-                    }`}
+                    variant="select"
+                    aria-pressed={isSelected}
+                    className="p-2.5 rounded-xl flex items-center gap-2.5"
                   >
                     {/* Species Authentic Sprite or Mysterious Silhouette */}
                     <div className="w-10 h-10 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shadow shrink-0 relative overflow-hidden">
@@ -842,7 +847,7 @@ export const SoulDexModal: React.FC = () => {
                         {seen && !caught && <Eye className="w-3 h-3 text-sky-400" />}
                       </div>
                     </div>
-                  </button>
+                  </BrandButton>
                 );
               })}
             </div>

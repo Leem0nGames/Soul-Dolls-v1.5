@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 import { Sparkles, CheckCircle } from 'lucide-react';
 import { GameCabinetModal } from './ui/GameCabinetModal';
 import { SoulDollSprite } from './ui/SoulDollSprite';
+import { BrandButton } from './ui/BrandKit';
 
 export const EvolutionModal: React.FC = () => {
   const state = useGameStore();
@@ -220,17 +221,18 @@ export const EvolutionModal: React.FC = () => {
 
         {/* Action Button */}
         {step === 'complete' && (
-          <button
+          <BrandButton
             onClick={() => {
               sound.playSelect();
               gameStore.setState({ evolutionCandidate: null });
               gameStore.setView('OVERWORLD');
             }}
-            className="sd-brand-button sd-brand-button-primary w-full py-3 px-6 text-xs sm:text-sm flex items-center justify-center gap-2 mt-2"
+            variant="primary"
+            className="w-full py-3 px-6 text-xs sm:text-sm flex items-center justify-center gap-2 mt-2"
           >
             <CheckCircle className="w-4 h-4 text-slate-950" />
             ¡CONTINUAR LA AVENTURA!
-          </button>
+          </BrandButton>
         )}
       </div>
     </GameCabinetModal>

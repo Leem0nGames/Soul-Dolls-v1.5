@@ -244,6 +244,30 @@
     box-shadow: 0 0 0 1px var(--sd-ink), 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 24px rgba(0, 0, 0, 0.7);
   }
 
+  .sd-ornate-frame {
+    position: relative;
+  }
+
+  .sd-ornate-frame::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    z-index: 20;
+    border: 1px solid rgba(232, 184, 74, 0.34);
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--sd-gold), var(--sd-gold)) left top / 18px 2px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) left top / 2px 18px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) right top / 18px 2px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) right top / 2px 18px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) left bottom / 18px 2px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) left bottom / 2px 18px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) right bottom / 18px 2px no-repeat,
+      linear-gradient(var(--sd-gold), var(--sd-gold)) right bottom / 2px 18px no-repeat;
+    opacity: 0.72;
+  }
+
   .sd-modal-backdrop {
     background: rgba(5, 4, 9, 0.86);
     backdrop-filter: blur(8px);
@@ -331,6 +355,31 @@
     color: #ffe4e6;
     background: linear-gradient(180deg, #9f3349, #5d1d34);
     border-color: #c85d6d;
+  }
+
+  .sd-brand-button-ki {
+    color: #e6fffb;
+    background: linear-gradient(180deg, #0f766e, #134e4a);
+    border-color: var(--sd-ki);
+  }
+
+  .sd-brand-button-soul {
+    color: #f3e8ff;
+    background: linear-gradient(180deg, #6b3aa5, #352050);
+    border-color: var(--sd-soul);
+  }
+
+  .sd-brand-button-select {
+    color: #f3e9d4;
+    background: #14101c;
+    border-color: rgba(138, 106, 59, 0.7);
+    text-align: left;
+  }
+
+  .sd-brand-button-select[aria-pressed='true'] {
+    background: linear-gradient(120deg, rgba(107, 58, 165, 0.58), rgba(42, 31, 45, 0.96));
+    border-color: var(--sd-gold);
+    box-shadow: inset 0 0 12px rgba(155, 107, 255, 0.22), 0 0 10px rgba(232, 184, 74, 0.14);
   }
 
   .sd-brand-badge {

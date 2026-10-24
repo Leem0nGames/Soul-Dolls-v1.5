@@ -3,6 +3,7 @@ import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { sound } from '../game/audio/SoundEffects';
 import { BookOpen, Users, Briefcase, Heart, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
 import { SoulDollSprite } from './ui/SoulDollSprite';
+import { BrandButton } from './ui/BrandKit';
 import { MAP_NAMES } from '../game/data/maps';
 
 export const TopHUD: React.FC = () => {
@@ -48,21 +49,23 @@ export const TopHUD: React.FC = () => {
       </div>
 
       <nav aria-label="Menú de exploración" className="pointer-events-auto self-end sm:self-auto flex items-center gap-1 sd-panel p-1 rounded-xl backdrop-blur-sm border-2 border-sd-bronze">
-        <button
+        <BrandButton
           onClick={() => gameStore.healParty()}
+          variant="ki"
           title="Sanar equipo en el Santuario"
           aria-label="Sanar equipo"
-          className="pixel-btn bg-emerald-700 hover:bg-emerald-600 text-white min-w-[42px] min-h-[42px] rounded-lg font-pixel text-[10px] flex items-center justify-center gap-1 px-2"
+          className="min-w-[42px] min-h-[42px] text-[10px] flex items-center justify-center gap-1 px-2"
         >
           <Heart className="w-4 h-4 text-rose-300 fill-rose-300" />
           <span className="hidden lg:inline">SANAR</span>
-        </button>
+        </BrandButton>
 
-        <button
+        <BrandButton
           onClick={() => gameStore.setView('PARTY')}
+          variant="soul"
           title="Ver equipo de SoulDolls"
           aria-label="Equipo"
-          className="pixel-btn bg-indigo-700 hover:bg-indigo-600 text-white min-w-[42px] min-h-[42px] rounded-lg font-pixel text-[10px] flex items-center justify-center gap-1.5 px-2"
+          className="min-w-[42px] min-h-[42px] text-[10px] flex items-center justify-center gap-1.5 px-2"
         >
           {state.playerParty[0] ? (
             <div className="w-5 h-5 rounded bg-black/40 border border-indigo-300/40 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
@@ -73,36 +76,39 @@ export const TopHUD: React.FC = () => {
           )}
           <span className="hidden lg:inline">EQUIPO ({state.playerParty.length})</span>
           <span className="lg:hidden text-[9px]">({state.playerParty.length})</span>
-        </button>
+        </BrandButton>
 
-        <button
+        <BrandButton
           onClick={() => gameStore.setView('BAG')}
+          variant="primary"
           title="Mochila e inventario"
           aria-label="Mochila"
-          className="pixel-btn bg-amber-700 hover:bg-amber-600 text-slate-950 min-w-[42px] min-h-[42px] rounded-lg font-pixel text-[10px] flex items-center justify-center gap-1 font-bold px-2"
+          className="min-w-[42px] min-h-[42px] text-[10px] flex items-center justify-center gap-1 px-2"
         >
-          <Briefcase className="w-4 h-4 text-slate-950" />
+          <Briefcase className="w-4 h-4" />
           <span className="hidden lg:inline">MOCHILA</span>
-        </button>
+        </BrandButton>
 
-        <button
+        <BrandButton
           onClick={() => gameStore.setView('SOULDEX')}
+          variant="soul"
           title="Registro SoulDex"
           aria-label="SoulDex"
-          className="pixel-btn bg-purple-700 hover:bg-purple-600 text-white min-w-[42px] min-h-[42px] rounded-lg font-pixel text-[10px] flex items-center justify-center gap-1 px-2"
+          className="min-w-[42px] min-h-[42px] text-[10px] flex items-center justify-center gap-1 px-2"
         >
           <BookOpen className="w-4 h-4 text-purple-200" />
           <span className="hidden lg:inline">SOULDEX</span>
-        </button>
+        </BrandButton>
 
-        <button
+        <BrandButton
           onClick={toggleAudio}
-          className="min-w-[42px] min-h-[42px] p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center"
+          variant="quiet"
+          className="min-w-[42px] min-h-[42px] p-2 text-slate-300 flex items-center justify-center"
           title={audioMuted ? 'Activar sonido' : 'Silenciar'}
           aria-label={audioMuted ? 'Activar sonido' : 'Silenciar'}
         >
           {audioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-        </button>
+        </BrandButton>
       </nav>
     </div>
   );

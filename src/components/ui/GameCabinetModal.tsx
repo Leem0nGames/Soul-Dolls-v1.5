@@ -24,7 +24,7 @@ export const GameCabinetModal: React.FC<GameCabinetModalProps> = ({
 }) => {
   return (
     <div className="sd-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 select-none touch-manipulation overflow-hidden">
-      <div className={`sd-cabinet-frame relative w-full ${maxWidth} h-full max-h-[96dvh] rounded-2xl flex flex-col overflow-hidden`}>
+      <div className={`sd-cabinet-frame sd-ornate-frame relative w-full ${maxWidth} h-full max-h-[96dvh] rounded-2xl flex flex-col overflow-hidden`}>
         {/* TOP HEADER STATUS BAR */}
         <div className="sd-cabinet-header relative z-10 px-3 sm:px-5 py-2.5 flex justify-between items-center gap-2 shrink-0">
           <div className="flex items-center gap-2 overflow-hidden">

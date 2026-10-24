@@ -25,13 +25,24 @@ palette.
 Import primitives from `src/components/ui/BrandKit.tsx`:
 
 - `BrandPanel` — `surface`, `raised`, or `inset` content container.
-- `BrandButton` — `primary`, `secondary`, `quiet`, or `danger` action.
+  Panels include the shared inset bronze-and-amber corner frame.
+- `BrandButton` — `primary`, `secondary`, `quiet`, `danger`, `ki`, or `soul`
+  action. Use `select` with `aria-pressed` for selected rows and toggle
+  controls; it applies a shared gold/violet selected state.
 - `BrandBadge` — compact status and metadata label.
 - `GameCabinetModal` — shared responsive modal frame, title bar, and close
   action; add screen-specific actions through `headerRight`.
+- `sd-ornate-frame` — reusable ornamental inset border for modal shells and
+  content panels; use it instead of drawing one-off corner treatments.
 
 Battle-specific styles such as `sd-battle-frame`, `sd-dialog-ornate`, and
 `sd-action-btn` remain available for battle overlays and dialogue.
+
+Use BrandButton for navigation, modal actions, tabs, and selectable rows in
+the HUD, inventory, party, shop, evolution, and SoulDex. Keep virtual movement
+controls and battle action buttons specialized to preserve their game-specific
+interaction and visual affordances. Icon-only buttons should have an
+`aria-label` and a touch target of at least 40px.
 
 ## Validation
 
