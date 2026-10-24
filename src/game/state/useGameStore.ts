@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SoulDollInstance, Item, BattleState, GameView, BattleAction, Move } from '../../types/game';
+import { SoulDollInstance, Item, BattleState, GameView, BattleAction, Move, IntroStep } from '../../types/game';
 import { createSoulDoll, SOULDOLL_SPECIES } from '../data/souldolls';
 import { ITEMS_DATABASE } from '../data/items';
 import { createMoveInstance, MOVES_DATABASE } from '../data/moves';
@@ -21,6 +21,8 @@ export interface GameState {
   toastMessage: string | null;
   playerPosition: { x: number; y: number; z: number };
   activeShopId: number | null;
+  introStep: IntroStep;
+  selectedStarterId: string | null;
 }
 
 // Initial state setup with Tomo + Aquafox starter party
@@ -41,6 +43,8 @@ const initialInventory: Record<string, Item> = {
 
 let globalState: GameState = {
   view: 'OVERWORLD',
+  introStep: 'title',
+  selectedStarterId: null,
   playerParty: initialParty,
   soulBox: [
     createSoulDoll('runika', 10),
@@ -103,6 +107,22 @@ export const gameStore = {
       globalState.activeDialogue.onDismiss();
     }
     globalState.activeDialogue = null;
+    notify();
+  },
+
+  setIntroStep(step: IntroStep) {
+    globalState.introStep = step;
+    notify();
+  },
+
+  // Choose the initial Souldoll: replaces the starting party with the chosen doll
+  chooseStarter(speciesId: string) {
+    globalState.selectedStarterId = speciesId;
+    const doll = createSoulDoll(speciesId, 12);
+    globalState.playerParty = [doll];
+    globalState.introStep = 'gameplay';
+    globalState.view = 'OVERWORLD';
+    globalState.playerPosition = { x: 0, y: 0.8, z: 0 };
     notify();
   },
 

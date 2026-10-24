@@ -3,6 +3,7 @@ import { LuminatiRenderer } from './game/graphics/LuminatiRenderer';
 import { useGameStore, gameStore } from './game/state/useGameStore';
 import { TopHUD } from './components/TopHUD';
 import { BattleUI } from './components/BattleUI';
+import { IntroSequence } from './components/IntroSequence';
 import { EvolutionModal } from './components/EvolutionModal';
 import { PartyModal } from './components/PartyModal';
 import { BagModal } from './components/BagModal';
@@ -27,6 +28,10 @@ export default function App() {
 
     // Keyboard handlers
     const handleKeyDown = (e: KeyboardEvent) => {
+      // The intro sequence owns the input until the gameplay starts.
+      if (gameStore.getState().introStep !== 'gameplay') {
+        return;
+      }
       renderer.keys[e.code] = true;
       renderer.keys[e.key] = true;
 
@@ -113,6 +118,9 @@ export default function App() {
 
       {/* SoulDex Modal */}
       <SoulDexModal />
+
+      {/* Intro sequence (title / oak / starter choice) */}
+      <IntroSequence />
 
       {/* Dialogue Overlay */}
       <DialogueBox />
