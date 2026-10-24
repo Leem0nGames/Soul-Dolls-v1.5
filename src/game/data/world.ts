@@ -1,4 +1,4 @@
-export type MapId = 'villa_marionette' | 'ruta_1' | 'bosque_del_eco';
+export type MapId = 'villa_marionette' | 'ruta_1' | 'bosque_del_eco' | 'cueva_del_eco';
 
 export type DecorationKind =
   | 'tree-short'
@@ -11,7 +11,9 @@ export type DecorationKind =
   | 'sign'
   | 'craftpix-fern'
   | 'craftpix-flowering-bush'
-  | 'craftpix-autumn-bush';
+  | 'craftpix-autumn-bush'
+  | 'cave-wall'
+  | 'cave-cache';
 
 export type MapDecorationBudget = {
   tallTrees: number;
@@ -48,13 +50,19 @@ export interface MapLayoutDefinition {
   roadHalfWidth: number;
   flowerDensity: number;
   decorations: MapDecorationBudget;
+  caveMaze?: {
+    rows: string[];
+    entrance: { col: number; row: number };
+    goal: { col: number; row: number };
+  };
+  fixedDecorations?: { kind: DecorationKind; x: number; z: number }[];
   buildingFootprints?: { x: number; z: number; halfWidth: number; halfDepth: number }[];
 }
 
 export interface WorldMapDefinition {
   id: MapId;
   name: string;
-  palette: { background: string; fog: string };
+  palette: { background: string; fog: string; fogDensity?: number };
   connections: MapConnection[];
   layout: MapLayoutDefinition;
   clearPoints: { x: number; z: number; r: number }[];

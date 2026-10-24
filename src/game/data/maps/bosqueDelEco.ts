@@ -23,6 +23,7 @@ export const bosqueDelEco: WorldMapDefinition = {
   palette: { background: '#b9c9aa', fog: '#b9c9aa' },
   connections: [
     { at: { x: 0, z: 26 }, toMap: 'ruta_1', arrival: { x: 0, z: -25.5 }, facing: 'down' },
+    { at: { x: 0, z: -24.5 }, toMap: 'cueva_del_eco', arrival: { x: 0, z: 26 }, facing: 'up' },
   ],
   layout: {
     wildZones: [
@@ -88,6 +89,7 @@ export const bosqueDelEco: WorldMapDefinition = {
     { x: 0, z: 27, r: 4 },
     { x: 0, z: -25, r: 4.5 },
     { x: 0, z: -27, r: 4 },
+    { x: 0, z: -24.5, r: 4 },
     { x: 0, z: 15, r: 3.5 },
     { x: 3, z: 4, r: 3.5 },
     { x: -2, z: -11, r: 3.5 },

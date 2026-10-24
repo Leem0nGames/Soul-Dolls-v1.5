@@ -119,11 +119,12 @@ The map progression and reusable authoring/validation workflow are in
 every map must pass `npm run world:harness`.
 
 The opening maps are **Villa Marionette** and **Ruta 1 · Sendero de los
-Susurros**, an original village and its first connected route. Map IDs, names,
-and scene palettes live in `src/game/data/world.ts`; terrain, encounters,
-connections, collision, and decoration layouts live in
-`src/game/graphics/OverworldTiles.ts`. The game store is the single source of
-truth for the active map.
+Susurros**, followed by **Bosque de los Ecos** and **Cueva del Eco**. Map IDs,
+names, and scene palettes live in `src/game/data/world.ts`; each map's terrain,
+encounters, connections, and decoration layout live in its module under
+`src/game/data/maps/`. Shared collision, map generation, and validation live
+in `src/game/graphics/OverworldTiles.ts`. The game store is the single source
+of truth for the active map.
 
 Ground is baked from the **modern tileset** in `modern/`: tiles cut out
 of Kenney's Roguelike pack (CC0, 16x16, 1px spacing) by
@@ -165,7 +166,8 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 - Optional CraftPix map props are catalogued under `public/assets/props/`.
   Check each folder's README and LICENSE before adding them to maps. Bushes
   are individual billboards; dungeon artwork is packed into sheets and needs
-  cropping before it can be used by `OverworldProps`.
+  cropping before it can be used by `OverworldProps`. The cave cache is a
+  cropped dungeon prop.
 - All Villa Marionette building facades face north toward the plaza/camera.
   Keep each entrance on the building's +Z side, enlarge its collision
   footprint with its model scale, and route a walkable path to the door.
@@ -174,6 +176,10 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 - The tall-tree billboard uses one complete source tile, avoiding a seam from
   stacking two separate tree sprites.
 - The trees block the player (slide collision), the rest of the props do not.
+- The cave labyrinth is authored as ASCII rows in `src/game/data/maps/`, with
+  `.` corridors and `#` solid wall cells. Its shared tile generator bakes cave
+  floors, wall collision, and instanced wall meshes; keep its entrance, goal,
+  and encounters reachable through `npm run world:harness`.
 - The important places stay clear: shrine, tamers and the spawn.
 - The player begins inside the garden home; the first SoulDoll is chosen by
   speaking to the researcher inside the laboratory. The party and SoulDex start

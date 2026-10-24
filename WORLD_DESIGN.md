@@ -13,6 +13,9 @@ starting the browser.
    encounters, an optional tamer, and the northbound route for future growth.
 3. **Bosque de los Ecos** — the forest beyond Ruta 1, with stronger wild
    SoulDolls, a guardian tamer, and CraftPix ferns and flowering shrubs.
+4. **Cueva del Eco** — a cave labyrinth branching off the forest, with
+   walkable corridors, solid instanced walls, stronger encounters, and a
+   visible supply cache at its goal.
 
 The first route introduces exploration and encounters after the player has
 chosen a SoulDoll. Keep its wild levels close to the starter's level; use
@@ -59,6 +62,11 @@ renderer or tile generator.
    cover them. In Villa Marionette, every building faces north toward the
    plaza/camera, so front doors and the path grid belong on each building's
    `+Z` side.
+   For a labyrinth, define `layout.caveMaze` as equal-width ASCII rows (`.`
+   for corridor and `#` for wall), with open `entrance` and `goal` cells.
+   The shared generator bakes its floor, blocks wall tiles, creates instanced
+   wall geometry, and validates that the goal is reachable. Keep encounter
+   zones on open cells and place important props in `fixedDecorations`.
 4. **Author encounters and trainers in map data.** Each encounter zone needs a unique name, an
    in-bounds rectangle, a measured encounter rate, and weighted species with
    sensible level ranges. Trainer data includes map-local position, portrait,
@@ -102,7 +110,8 @@ connection, clear point, or obstacle layout rather than bypassing the check.
   `public/assets/props/craftpix-bushes/`; their usage counts are authored in
   each map's decoration budget. Do not use the dungeon atlas as a billboard:
   crop objects into separate sprites first and author any interactions or
-  collision in the shared map data.
+  collision in the shared map data. The cave cache is cropped from the
+  dungeon artwork; keep its source and license record with the asset.
 - Keep tiles nearest-neighbor and the ground as one baked canvas per map.
 - Trees are solid; decorative bushes, flowers, grass tufts, and rocks are not.
 - NPC billboards, encounter zones, interactions, and props must not leak into

@@ -1,12 +1,14 @@
 import { MapId, WorldMapDefinition } from '../world';
 import { ruta1 } from './ruta1';
 import { bosqueDelEco } from './bosqueDelEco';
+import { cuevaDelEco } from './cuevaDelEco';
 import { villaMarionette } from './villaMarionette';
 
 export const WORLD_MAPS: Record<MapId, WorldMapDefinition> = {
   villa_marionette: villaMarionette,
   ruta_1: ruta1,
   bosque_del_eco: bosqueDelEco,
+  cueva_del_eco: cuevaDelEco,
 };
 
 export const MAP_IDS = Object.keys(WORLD_MAPS) as MapId[];

@@ -33,7 +33,17 @@ const TILE_BASE = `${import.meta.env?.BASE_URL ?? '/'}tilesets/overworld/modern`
   '/tilesets'
 );
 
-export type TileKind = 'void' | 'grass' | 'tallgrass' | 'path' | 'gravel' | 'sand' | 'water';
+export type TileKind =
+  | 'void'
+  | 'grass'
+  | 'tallgrass'
+  | 'path'
+  | 'gravel'
+  | 'sand'
+  | 'water'
+  | 'cave-floor'
+  | 'cave-moss'
+  | 'cave-wall';
 
 /** Flat base tiles: grass is also the base of the 9-patch kinds below. */
 const FLAT_FILES: Partial<Record<TileKind, string>> = {
@@ -75,6 +85,7 @@ interface Decoration {
   /** Tile coordinates (top left of the sprite). */
   col: number;
   row: number;
+  position?: { x: number; z: number };
 }
 
 /** Decoration kinds that stop the player. */
@@ -141,6 +152,23 @@ function kindAt(col: number, row: number, layout: MapLayoutDefinition): TileKind
 
   const wx = tileCenter(col);
   const wz = tileCenter(row);
+
+  if (layout.caveMaze) {
+    const { rows, entrance } = layout.caveMaze;
+    const originCol = Math.floor((MAP_TILES - rows[0].length * 2) / 2);
+    const originRow = Math.floor((MAP_TILES - rows.length * 2) / 2);
+    const mazeCol = Math.floor((col - originCol) / 2);
+    const mazeRow = Math.floor((row - originRow) / 2);
+    if (mazeRow < 0 || mazeCol < 0 || mazeRow >= rows.length || mazeCol >= rows[0].length) {
+      return mazeCol === entrance.col && mazeRow === entrance.row + 1 ? 'cave-floor' : 'cave-wall';
+    }
+    if (rows[mazeRow][mazeCol] === '#') return 'cave-wall';
+    return layout.wildZones.some(
+      (zone) => wx >= zone.minX && wx <= zone.maxX && wz >= zone.minZ && wz <= zone.maxZ
+    )
+      ? 'cave-moss'
+      : 'cave-floor';
+  }
 
   if (layout.plaza && Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
     return 'gravel';
@@ -227,6 +255,50 @@ function drawTallGrassDetails(
   ctx.fillRect(10, 14, 2, 1);
 }
 
+function drawCaveTile(
+  ctx: CanvasRenderingContext2D,
+  col: number,
+  row: number,
+  kind: 'cave-floor' | 'cave-moss' | 'cave-wall',
+  seed: number
+): void {
+  const random = makeRandom(seed ^ Math.imul(col + 1, 73856093) ^ Math.imul(row + 1, 19349663));
+  const base = kind === 'cave-wall' ? '#34323b' : kind === 'cave-moss' ? '#26352d' : '#24232b';
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, TILE_PX, TILE_PX);
+
+  if (kind === 'cave-wall') {
+    ctx.fillStyle = '#201f27';
+    ctx.fillRect(0, 13, TILE_PX, 3);
+    ctx.fillStyle = '#494650';
+    ctx.fillRect(1, 1, 14, 2);
+    ctx.fillRect(1, 3, 2, 9);
+    ctx.fillStyle = '#292730';
+    ctx.fillRect(3, 4, 11, 7);
+    ctx.fillStyle = '#5b5760';
+    ctx.fillRect(4, 4, 4, 1);
+    ctx.fillRect(10, 8, 3, 1);
+    ctx.fillStyle = '#1c1b22';
+    ctx.fillRect(7, 5, 1, 3);
+    ctx.fillRect(11, 9, 1, 2);
+    return;
+  }
+
+  for (let i = 0; i < 7; i++) {
+    const x = 1 + Math.floor(random() * 14);
+    const y = 1 + Math.floor(random() * 14);
+    ctx.fillStyle = kind === 'cave-moss'
+      ? (random() < 0.6 ? '#405b3c' : '#547143')
+      : (random() < 0.5 ? '#34323b' : '#1c1b23');
+    ctx.fillRect(x, y, 1 + Math.floor(random() * 2), 1);
+  }
+  if (kind === 'cave-moss') {
+    ctx.fillStyle = '#91b75b';
+    ctx.fillRect(5, 5, 1, 1);
+    ctx.fillRect(11, 10, 1, 1);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Map generation (one cached layout per area)
 // ---------------------------------------------------------------------------
@@ -250,7 +322,7 @@ function buildLayout(map: MapId): MapLayout {
     for (let col = 0; col < MAP_TILES; col++) {
       const x = tileCenter(col);
       const z = tileCenter(row);
-      if (grid[row][col] === 'water') blocked.add(`${col},${row}`);
+      if (grid[row][col] === 'water' || grid[row][col] === 'cave-wall') blocked.add(`${col},${row}`);
       if (def.buildingFootprints?.some((building) =>
         Math.abs(x - building.x) <= building.halfWidth + TILE_UNITS / 2 &&
         Math.abs(z - building.z) <= building.halfDepth + TILE_UNITS / 2
@@ -267,6 +339,28 @@ function buildLayout(map: MapId): MapLayout {
     def.decorations,
     mapDefinition.signSpots
   );
+  if (def.caveMaze) {
+    const originCol = Math.floor((MAP_TILES - def.caveMaze.rows[0].length * 2) / 2);
+    const originRow = Math.floor((MAP_TILES - def.caveMaze.rows.length * 2) / 2);
+    for (let mazeRow = 0; mazeRow < def.caveMaze.rows.length; mazeRow++) {
+      for (let mazeCol = 0; mazeCol < def.caveMaze.rows[mazeRow].length; mazeCol++) {
+        if (def.caveMaze.rows[mazeRow][mazeCol] !== '#') continue;
+        decorations.push({
+          kind: 'cave-wall',
+          col: originCol + mazeCol * 2 + 0.5,
+          row: originRow + mazeRow * 2 + 0.5,
+        });
+      }
+    }
+  }
+  for (const decoration of def.fixedDecorations ?? []) {
+    decorations.push({
+      kind: decoration.kind,
+      col: 0,
+      row: 0,
+      position: { x: decoration.x, z: decoration.z },
+    });
+  }
   return { grid, decorations, blocked };
 }
 
@@ -291,8 +385,8 @@ export interface PlacedDecoration {
 export function getDecorations(map: MapId = 'villa_marionette'): PlacedDecoration[] {
   return getLayout(map).decorations.map((decor) => ({
     kind: decor.kind,
-    x: tileCenter(decor.col),
-    z: tileCenter(decor.row),
+    x: decor.position?.x ?? tileCenter(decor.col),
+    z: decor.position?.z ?? tileCenter(decor.row),
   }));
 }
 
@@ -347,11 +441,51 @@ export function validateWorldMaps(): string[] {
     return false;
   };
 
+  const mazeCellCenter = (
+    rows: string[],
+    cell: { col: number; row: number }
+  ): { x: number; z: number } => {
+    const originCol = Math.floor((MAP_TILES - rows[0].length * 2) / 2);
+    const originRow = Math.floor((MAP_TILES - rows.length * 2) / 2);
+    return {
+      x: tileCenter(originCol + cell.col * 2 + 0.5),
+      z: tileCenter(originRow + cell.row * 2 + 0.5),
+    };
+  };
+
   for (const map of mapIds) {
     const definition = WORLD_MAPS[map];
     if (definition.id !== map) errors.push(`${map} has mismatched definition id "${definition.id}"`);
     if (definition.name.trim().length === 0) errors.push(`${map} has no display name`);
     const connections = WORLD_MAPS[map].connections;
+    const maze = definition.layout.caveMaze;
+    if (maze) {
+      const width = maze.rows[0]?.length ?? 0;
+      if (
+        width === 0 ||
+        maze.rows.some((line) => line.length !== width || /[^.#]/.test(line)) ||
+        width * 2 > MAP_TILES - BORDER_TILES * 2 ||
+        maze.rows.length * 2 > MAP_TILES - BORDER_TILES * 2
+      ) {
+        errors.push(`${map} has malformed or out-of-bounds cave maze rows`);
+      } else {
+        const isOpenCell = (cell: { col: number; row: number }) =>
+          cell.col >= 0 &&
+          cell.row >= 0 &&
+          cell.row < maze.rows.length &&
+          cell.col < width &&
+          maze.rows[cell.row][cell.col] === '.';
+        if (!isOpenCell(maze.entrance)) errors.push(`${map} cave entrance must be an open maze cell`);
+        if (!isOpenCell(maze.goal)) errors.push(`${map} cave goal must be an open maze cell`);
+        if (
+          isOpenCell(maze.entrance) &&
+          isOpenCell(maze.goal) &&
+          !isReachable(map, mazeCellCenter(maze.rows, maze.entrance), mazeCellCenter(maze.rows, maze.goal))
+        ) {
+          errors.push(`${map} cave goal is unreachable from its entrance`);
+        }
+      }
+    }
     if (connections.length === 0) errors.push(`${map} has no connection to another area`);
     for (const connection of connections) {
       if (!MAP_NAMES[connection.toMap]) {
@@ -551,7 +685,7 @@ export async function buildOverworldMap(map: MapId = 'villa_marionette'): Promis
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('No se pudo crear el contexto 2D del mapa');
   ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = VOID_COLOR;
+  ctx.fillStyle = WORLD_MAPS[map].layout.caveMaze ? '#17161d' : VOID_COLOR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // 1. Base layer: flat tiles; the 9-patch kinds keep a grass floor beneath.
@@ -559,6 +693,13 @@ export async function buildOverworldMap(map: MapId = 'villa_marionette'): Promis
     for (let col = 0; col < MAP_TILES; col++) {
       const kind = grid[row][col];
       if (kind === 'void') continue;
+      if (kind === 'cave-floor' || kind === 'cave-moss' || kind === 'cave-wall') {
+        ctx.save();
+        ctx.translate(col * px, row * px);
+        drawCaveTile(ctx, col, row, kind, hashString(map));
+        ctx.restore();
+        continue;
+      }
       const file =
         kind === 'water' && row > 0 && grid[row - 1][col] === 'sand'
           ? 'Sand.png'
