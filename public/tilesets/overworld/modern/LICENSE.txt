@@ -1,0 +1,7 @@
+Modern overworld tiles
+======================
+Cut from Kenney - Roguelike pack (www.kenney.nl).
+License: Creative Commons Zero (CC0) - http://creativecommons.org/publicdomain/zero/1.0/
+Credit "Kenney" is appreciated but not required.
+Individual tiles were extracted from the original spritesheet
+(16x16, 1px spacing) with tools/bake-modern-tiles.py.

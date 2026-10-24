@@ -95,21 +95,32 @@ Current line of fire:
 
 ## 2. Overworld map
 
-The map is a tilemap baked from the Gen 2 inspired tileset
-(`nikouu/Pokemon-gen-2-style-tilemap`, MIT, original artwork in `Custom/`).
+The map ground is baked from the **modern tileset** in `modern/`: tiles cut out
+of Kenney's Roguelike pack (CC0, 16x16, 1px spacing) by
+`tools/bake-modern-tiles.py` from the vendored sheet
+`tools/modern-source/RoguelikeSheet_misa.png`. The Gen 2 tileset
+(`nikouu/Pokemon-gen-2-style-tilemap`, MIT) is kept next to it but is not
+loaded anymore.
 
 ```
-public/tilesets/overworld/   <- the tileset (8x8 tiles) + LICENSE + README
+public/tilesets/overworld/modern/     <- the cut tiles in use (16x16) + LICENSE.txt
+public/tilesets/overworld/            <- legacy Gen 2 tileset (8x8) + LICENSE + README
+tools/bake-modern-tiles.py            <- regenerates the cut tiles (pure stdlib)
+tools/modern-source/                  <- vendored Kenney sheet (source of truth)
 src/game/graphics/OverworldTiles.ts   <- the grid, the transitions, the layout
 src/game/graphics/OverworldProps.ts   <- the billboards (trees, rocks, flowers)
-public/assets/props/         <- the baked props with alpha
+public/assets/props/                  <- the baked props with alpha (Gen 2 trees)
 ```
 
 - 1 tile = 1.5 world units, the map is 40x40 tiles (60x60 units).
 - The whole ground is **one canvas** baked at runtime and used as the texture
   of a single plane (one draw call).
-- **Transitions**: the grass is dithered over the path and over the tall grass
-  with a 50% checkerboard.
+- **9-patch overlays**: water (Pueblo Paleta south coast, blocked for walking),
+  the spirit grass tufts (wild encounter patches) and the gravel plaza island
+  pick their piece from the exposed cardinal edges; sand sits between grass and
+  water (Pueblo Paleta shore).
+- **Transitions**: grass is dithered over path/sand with a 50% checkerboard;
+  water and the gravel island carry their own rounded shore pieces.
 - The props are **billboards** (sprites) so the player walks behind them.
 - The trees block the player (slide collision), the rest of the props do not.
 - The important places stay clear: shrine, tamers and the spawn.

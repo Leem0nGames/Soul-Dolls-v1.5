@@ -1,13 +1,14 @@
 /**
  * Overworld tilemap
  * ---------------------------------------------------------------------------
- * The overworld ground is baked from the Gen 2 inspired tileset
- * (nikouu/Pokemon-gen-2-style-tilemap, MIT licence) into a single canvas
- * that is used as the texture of one plane: one draw call for the whole map.
+ * The overworld ground is baked from the modern Kenney Roguelike tileset
+ * (CC0, 16x16 tiles, cut into individual pngs by tools/bake-modern-tiles.py)
+ * into a single canvas that is used as the texture of one plane: one draw call
+ * for the whole map.
  *
- * The tiles are 8x8 pixels and the world is 60x60 units, so one tile covers
- * 1.5 world units (the same pixel density as the rest of the art, which is
- * ~10.7 px per world unit).
+ * The tiles are 16x16 pixels drawn at scale 1, and the world is 60x60 units,
+ * so one tile covers 1.5 world units (the same pixel density as the rest of
+ * the art, which is ~10.7 px per world unit).
  *
  * Option B (Kanto clone): the world is a set of connected areas
  * (Pueblo Paleta <-> Ruta 1 <-> Ciudad Verde). Each area has its own layout,
@@ -16,10 +17,10 @@
  */
 import * as THREE from 'three';
 
-/** Source size of a tile in the tileset (Game Boy tiles are 8x8). */
-const TILE_PX = 8;
+/** Source size of a tile (Kenney Roguelike tiles are 16x16). */
+const TILE_PX = 16;
 /** Pixel scale used when the map is baked. */
-const SCALE = 2;
+const SCALE = 1;
 /** World units covered by one tile. */
 export const TILE_UNITS = 1.5;
 /** Map size in tiles (40 * 1.5 = 60 world units, the size of the terrain). */
@@ -27,17 +28,41 @@ export const MAP_TILES = 40;
 /** Tiles of void framing the playable area. */
 const BORDER_TILES = 2;
 
-const TILE_BASE = `${import.meta.env?.BASE_URL ?? '/'}tilesets/overworld`.replace('//tilesets', '/tilesets');
+const TILE_BASE = `${import.meta.env?.BASE_URL ?? '/'}tilesets/overworld/modern`.replace(
+  '//tilesets',
+  '/tilesets'
+);
 
-export type TileKind = 'void' | 'grass' | 'tallgrass' | 'path' | 'gravel';
+export type TileKind = 'void' | 'grass' | 'tallgrass' | 'path' | 'gravel' | 'sand' | 'water';
 
-const TILE_FILES: Record<TileKind, string> = {
-  void: 'Void.png',
-  grass: 'Grass-flat.png',
-  tallgrass: 'Grass-tall.png',
+/** Flat base tiles: grass is also the base of the 9-patch kinds below. */
+const FLAT_FILES: Partial<Record<TileKind, string>> = {
+  grass: 'Grass.png',
   path: 'Path.png',
-  gravel: 'Path-Gravel.png',
+  sand: 'Sand.png',
 };
+
+/** 9-patch overlays keyed by relative neighbour (t = neighbour out of kind). */
+const TUFT_PARTS: Record<string, string> = {
+  tl: 'TallTuft-TL.png', t: 'TallTuft-T.png', tr: 'TallTuft-TR.png',
+  l: 'TallTuft-L.png', c: 'TallTuft-C.png', r: 'TallTuft-R.png',
+  bl: 'TallTuft-BL.png', b: 'TallTuft-B.png', br: 'TallTuft-BR.png',
+};
+
+const ISLAND_PARTS: Record<string, string> = {
+  tl: 'Island-TL.png', t: 'Island-T.png', tr: 'Island-TR.png',
+  l: 'Island-L.png', c: 'Island-C.png', r: 'Island-R.png',
+  bl: 'Island-BL.png', b: 'Island-B.png', br: 'Island-BR.png',
+};
+
+const WATER_PARTS: Record<string, string> = {
+  tl: 'Water-TL.png', t: 'Water-T.png', tr: 'Water-TR.png',
+  l: 'Water-L.png', c: 'Water-C.png', r: 'Water-R.png',
+  bl: 'Water-BL.png', b: 'Water-B.png', br: 'Water-BR.png',
+};
+
+/** Colour of the void frame (matches the Gen2 Void tile the map used before). */
+const VOID_COLOR = '#393939';
 
 // ---------------------------------------------------------------------------
 // World areas (Kanto clone, Option B)
@@ -62,15 +87,18 @@ interface MapLayoutDef {
   pathHalfWidth: number;
   /** Fraction of plain grass tiles that get a baked flower patch. */
   flowerDensity: number;
+  /** Southern coast: sand beach and sea rows (like Paleta by the water). */
+  shore?: { sandStartZ: number; waterStartZ: number };
 }
 
 const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
   pallet_town: {
-    // Pallet Town: a quiet village, no wild grass (like Kanto's starter town).
+    // Pallet Town: a quiet village between a forest and the sea.
     wildZones: [],
     plaza: { x: 0, z: 0, radius: 5.5 },
     pathHalfWidth: 1.75,
     flowerDensity: 0.09,
+    shore: { sandStartZ: 19.5, waterStartZ: 22.5 },
   },
   route_1: {
     // Route 1: north-south corridor flanked by spirit grass bands.
@@ -223,12 +251,19 @@ function kindAt(col: number, row: number, layout: MapLayoutDef): TileKind {
     }
   }
 
+  // Southern coast (Pueblo Paleta): sea at the bottom with a sand beach.
+  if (layout.shore) {
+    if (wz >= layout.shore.waterStartZ) return 'water';
+    if (wz >= layout.shore.sandStartZ) return 'sand';
+  }
+
   if (layout.plaza && Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
     return 'gravel';
   }
   if (
-    Math.abs(wx - (layout.plaza?.x ?? 0)) <= layout.pathHalfWidth ||
-    Math.abs(wz - (layout.plaza?.z ?? 0)) <= layout.pathHalfWidth
+    (Math.abs(wx - (layout.plaza?.x ?? 0)) <= layout.pathHalfWidth ||
+      Math.abs(wz - (layout.plaza?.z ?? 0)) <= layout.pathHalfWidth) &&
+    (!layout.shore || wz < layout.shore.sandStartZ)
   ) {
     return 'path';
   }
@@ -288,6 +323,12 @@ function buildLayout(map: MapId): MapLayout {
   const def = MAP_LAYOUTS[map];
   const grid = buildTileGrid(def);
   const blocked = new Set<string>();
+  // Sea tiles stop the player (the beach is walkable, the water is not).
+  for (let row = 0; row < MAP_TILES; row++) {
+    for (let col = 0; col < MAP_TILES; col++) {
+      if (grid[row][col] === 'water') blocked.add(`${col},${row}`);
+    }
+  }
   const decorations = buildDecorations(grid, MAP_CLEAR_POINTS[map], blocked, hashString(map));
   return { grid, decorations, blocked };
 }
@@ -428,15 +469,26 @@ export interface OverworldMap {
 
 /**
  * Bakes the whole overworld of an area: loads the tiles, bakes the ground with
- * its transitions and the decorations into a single texture.
+ * its transitions, the 9-patch overlays and the flowers into a single texture.
  */
 export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<OverworldMap> {
   const grid = getLayout(map).grid;
 
-  const tileImages: Partial<Record<TileKind, HTMLImageElement>> = {};
+  // Load every image the bake can use.
+  const sources = [
+    ...Object.values(FLAT_FILES),
+    ...Object.values(TUFT_PARTS),
+    ...Object.values(ISLAND_PARTS),
+    ...Object.values(WATER_PARTS),
+    'Flower-orange-0.png',
+    'Flower-orange-1.png',
+    'Flower-white-0.png',
+    'Flower-white-1.png',
+  ] as string[];
+  const images = new Map<string, HTMLImageElement>();
   await Promise.all(
-    (Object.keys(TILE_FILES) as TileKind[]).map(async (kind) => {
-      tileImages[kind] = await loadImage(`${TILE_BASE}/${TILE_FILES[kind]}`);
+    sources.map(async (file) => {
+      images.set(file, await loadImage(`${TILE_BASE}/${file}`));
     })
   );
 
@@ -447,28 +499,76 @@ export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<Ove
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('No se pudo crear el contexto 2D del mapa');
   ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = VOID_COLOR;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 1. Base layer.
+  // 1. Base layer: flat tiles; the 9-patch kinds keep a grass floor beneath.
   for (let row = 0; row < MAP_TILES; row++) {
     for (let col = 0; col < MAP_TILES; col++) {
-      const img = tileImages[grid[row][col]];
-      if (img) ctx.drawImage(img, 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
+      const kind = grid[row][col];
+      if (kind === 'void') continue;
+      const file =
+        kind === 'water' && row > 0 && grid[row - 1][col] === 'sand'
+          ? 'Sand.png'
+          : FLAT_FILES[kind] ?? 'Grass.png';
+      ctx.drawImage(images.get(file)!, 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
     }
   }
 
-  // 2. Transitions: the neighbour "eats" into the tile with a 50% dither.
-  const BAND = 2;
-  const neighbours: { dc: number; dr: number; edge: 'n' | 's' | 'e' | 'w' }[] = [
-    { dc: 0, dr: -1, edge: 'n' },
-    { dc: 0, dr: 1, edge: 's' },
-    { dc: -1, dr: 0, edge: 'w' },
-    { dc: 1, dr: 0, edge: 'e' },
+  // 2. 9-patch overlays: water, spirit grass tufts and the gravel island.
+  const PART_SETS: Partial<Record<TileKind, Record<string, string>>> = {
+    water: WATER_PARTS,
+    tallgrass: TUFT_PARTS,
+    gravel: ISLAND_PARTS,
+  };
+  const neighbours: { dc: number; dr: number }[] = [
+    { dc: 0, dr: -1 },
+    { dc: 0, dr: 1 },
+    { dc: -1, dr: 0 },
+    { dc: 1, dr: 0 },
   ];
 
   for (let row = 0; row < MAP_TILES; row++) {
     for (let col = 0; col < MAP_TILES; col++) {
+      const kind = grid[row][col];
+      const parts = PART_SETS[kind];
+      if (!parts) continue;
+
+      const same = (dc: number, dr: number) => {
+        const c = col + dc;
+        const r = row + dr;
+        return c >= 0 && r >= 0 && c < MAP_TILES && r < MAP_TILES && grid[r][c] === kind;
+      };
+      const nOut = !same(0, -1);
+      const sOut = !same(0, 1);
+      const wOut = !same(-1, 0);
+      const eOut = !same(1, 0);
+
+      // Piece matching the exposed edges of this tile.
+      const key =
+        nOut && wOut ? 'tl'
+        : nOut && eOut ? 'tr'
+        : sOut && wOut ? 'bl'
+        : sOut && eOut ? 'br'
+        : nOut ? 't'
+        : sOut ? 'b'
+        : wOut ? 'l'
+        : eOut ? 'r'
+        : 'c';
+      const file = parts[key];
+      if (file) {
+        ctx.drawImage(images.get(file)!, 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
+      }
+    }
+  }
+
+  // 3. Transitions: grass sidles over path/sand with the classic dither band.
+  //    Water and the gravel island carry their own rounded shore pieces.
+  const BAND = 3;
+  for (let row = 0; row < MAP_TILES; row++) {
+    for (let col = 0; col < MAP_TILES; col++) {
       const current = grid[row][col];
-      if (current === 'void') continue;
+      if (current === 'void' || current === 'water' || current === 'gravel') continue;
 
       for (const n of neighbours) {
         const nCol = col + n.dc;
@@ -476,19 +576,20 @@ export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<Ove
         if (nCol < 0 || nRow < 0 || nCol >= MAP_TILES || nRow >= MAP_TILES) continue;
         const other = grid[nRow][nCol];
         if (other === current || other === 'void') continue;
-        // Only grass grows over its neighbours.
+        // Only grass (and the tufted spirit grass above it) grows over its
+        // neighbours.
         if (other !== 'grass' && other !== 'tallgrass') continue;
 
-        const img = tileImages[other];
+        const img = images.get(FLAT_FILES[other] ?? 'Grass.png');
         if (!img) continue;
 
         const mask = (x: number, y: number) => {
           const inBand =
-            n.edge === 'n'
+            n.dc === 0 && n.dr === -1
               ? y < BAND
-              : n.edge === 's'
+              : n.dc === 0 && n.dr === 1
               ? y >= TILE_PX - BAND
-              : n.edge === 'w'
+              : n.dc === -1
               ? x < BAND
               : x >= TILE_PX - BAND;
           return inBand && (x + y) % 2 === 0;
@@ -500,18 +601,18 @@ export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<Ove
     }
   }
 
-  // 3. Flower patches over plain grass (baked in): deterministic per area, so
+  // 4. Flower petals over plain grass (baked in): deterministic per area, so
   // no extra props and no adjacency seams — grass keeps being grass.
-  const FLOWER_FILES = ['Flower-johto-00.png', 'Flower-johto-01.png'];
+  const FLOWER_FILES = ['Flower-orange-0.png', 'Flower-orange-1.png', 'Flower-white-0.png', 'Flower-white-1.png'];
   const flowerDensity = MAP_LAYOUTS[map].flowerDensity;
   if (flowerDensity > 0) {
-    const flowerImgs = await Promise.all(FLOWER_FILES.map((file) => loadImage(`${TILE_BASE}/${file}`)));
     for (let row = BORDER_TILES; row < MAP_TILES - BORDER_TILES; row++) {
       for (let col = BORDER_TILES; col < MAP_TILES - BORDER_TILES; col++) {
         if (grid[row][col] !== 'grass') continue;
         const roll = hashString(`${map}:${col}:${row}`) % 1000;
         if (roll >= flowerDensity * 1000) continue;
-        ctx.drawImage(flowerImgs[roll % 2], 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
+        const img = images.get(FLOWER_FILES[roll % FLOWER_FILES.length])!;
+        ctx.drawImage(img, 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
       }
     }
   }
