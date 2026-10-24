@@ -22,6 +22,7 @@ const requiredClasses = [
   '.sd-brand-badge',
   '.sd-cabinet-frame',
   '.sd-ornate-frame',
+  '.sd-brand-panel::after',
   '.sd-cabinet-header',
   '.sd-modal-backdrop',
   '.sd-dialog-ornate',

@@ -244,11 +244,13 @@
     box-shadow: 0 0 0 1px var(--sd-ink), 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 24px rgba(0, 0, 0, 0.7);
   }
 
-  .sd-ornate-frame {
+  .sd-ornate-frame,
+  .sd-brand-panel {
     position: relative;
   }
 
-  .sd-ornate-frame::after {
+  .sd-ornate-frame::after,
+  .sd-brand-panel::after {
     content: "";
     position: absolute;
     inset: 4px;

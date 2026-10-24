@@ -511,14 +511,6 @@ export const BattleUI: React.FC = () => {
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-1.5 sm:gap-2 pointer-events-auto">
         {/* Top Ornate Header Bar */}
         <div className="w-full flex items-center justify-between px-0.5 sm:px-1">
-          {/* Left: Tamer / Level Pill */}
-          <div className="sd-battle-frame px-2 py-0.5 min-[360px]:px-2.5 min-[360px]:py-1 rounded-full flex items-center gap-1 min-[360px]:gap-1.5 text-[7px] min-[360px]:text-[8px] sm:text-[9px] font-pixel text-[#e8b84a] shadow-md">
-            <span className="text-[#9b6bff]">👁️</span>
-            <span className="truncate max-w-[110px] sm:max-w-none">
-              {battle.isTrainerBattle ? battle.trainerName : `Nv. ${opponentDoll.level}`}
-            </span>
-          </div>
-
           {/* Center: Spire Diamond Star Ornament */}
           <div className="flex items-center gap-1 sm:gap-2 text-[#8a6a3b] shrink-0">
             <div className="h-[1px] w-3 min-[360px]:w-6 sm:w-12 bg-gradient-to-r from-transparent to-[#8a6a3b]" />
