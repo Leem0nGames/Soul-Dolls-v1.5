@@ -33,6 +33,12 @@ export const IntroSequence: React.FC = () => {
     );
   }, [step]);
 
+  // Touch-first entry point: the title advances on tap; keyboard stays as a desktop fallback.
+  const startIntro = () => {
+    sound.playSelect();
+    gameStore.setIntroStep('oak');
+  };
+
   // Keyboard input for the intro flow (title / oak / starter_choice).
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -41,27 +47,32 @@ export const IntroSequence: React.FC = () => {
 
       if (cur === 'title') {
         if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
-          sound.playSelect();
-          gameStore.setIntroStep('oak');
+          e.preventDefault();
+          startIntro();
         }
       } else if (cur === 'oak') {
         if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
+          e.preventDefault();
           gameStore.clearDialogue();
         }
       } else if (cur === 'starter_choice') {
         if (e.code === 'Escape') {
+          e.preventDefault();
           gameStore.setIntroStep('oak');
           return;
         }
         if (e.code === 'ArrowDown') {
+          e.preventDefault();
           setHighlight((h) => Math.min(h + 1, STARTER_SPECIES.length - 1));
           return;
         }
         if (e.code === 'ArrowUp') {
+          e.preventDefault();
           setHighlight((h) => Math.max(h - 1, 0));
           return;
         }
         if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
+          e.preventDefault();
           sound.playSelect();
           gameStore.chooseStarter(STARTER_SPECIES[highlight]);
         }
@@ -81,7 +92,10 @@ export const IntroSequence: React.FC = () => {
 
   if (step === 'title') {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 pointer-events-auto">
+      <div
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 pointer-events-auto cursor-pointer select-none touch-none"
+        onClick={startIntro}
+      >
         <div className="pixel-box rounded-xl border-4 border-amber-400/80 bg-slate-900/90 px-8 py-10 md:px-14 md:py-14 shadow-2xl flex flex-col items-center">
           <h1 className="font-pixel text-4xl md:text-6xl text-amber-300 drop-shadow-[0_0_18px_rgba(251,191,36,0.35)]">SOULDolls</h1>
           <p className="font-pixel text-[10px] md:text-xs text-slate-300 mt-3 tracking-[0.25em]">EL REINO DEL ALMA</p>
@@ -93,7 +107,8 @@ export const IntroSequence: React.FC = () => {
 
   if (step === 'starter_choice') {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 pointer-events-auto">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/90 pointer-events-auto">
+        <div className="min-h-full flex flex-col items-center justify-center py-6">
         <h2 className="font-pixel text-xl md:text-2xl text-amber-300 mb-2">ELIGE TU SOULDOLL INICIAL</h2>
         <p className="font-pixel text-[8px] md:text-[10px] text-slate-400 mb-8">CADA ALMA GUARDA UNA MEMORIA DE UN MUNDO QUE YA NO EXISTE</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl px-4">
@@ -103,6 +118,7 @@ export const IntroSequence: React.FC = () => {
             return (
               <button
                 key={id}
+                onPointerDown={() => setHighlight(idx)}
                 onClick={() => handleSelect(id)}
                 className={`pixel-box flex flex-col items-center gap-1 rounded-xl p-3 border-4 transition-colors ${
                   idx === highlight ? 'border-amber-400 bg-slate-800/90' : 'border-slate-700 bg-slate-900/70'
@@ -116,7 +132,8 @@ export const IntroSequence: React.FC = () => {
             );
           })}
         </div>
-        <p className="font-pixel text-[8px] text-slate-400 mt-8">FLICK: SELECCIONAR · A/S D/S: MOVER · E: CONFIRMAR · ESC: ATRÁS</p>
+        <p className="font-pixel text-[7px] text-slate-400 mt-8 text-center px-4">TOCA UNA CARTA PARA ELEGIR · FLECHAS: MOVER · E / ESPACIO: CONFIRMAR · ESC: ATRÁS</p>
+        </div>
       </div>
     );
   }
