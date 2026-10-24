@@ -144,6 +144,8 @@ src/game/graphics/OverworldBuildings.ts <- Villa Marionette building placement a
 src/game/graphics/OverworldProps.ts   <- the billboards (trees, rocks, flowers)
 src/game/data/world.ts                <- canonical map IDs, names, and palettes
 public/assets/props/                  <- the baked modern props with alpha (CC0)
+public/assets/props/craftpix-bushes/   <- optional CraftPix bush billboards + license
+public/assets/props/craftpix-dungeon/  <- CraftPix dungeon object sheets + license
 tools/bake-modern-props.py            <- extracts props from the vendored Kenney sheet
 ```
 
@@ -160,6 +162,10 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 - **Transitions**: grass is dithered over path/sand with a 50% checkerboard;
   water and the gravel island carry their own rounded shore pieces.
 - The props are **billboards** (sprites) so the player walks behind them.
+- Optional CraftPix map props are catalogued under `public/assets/props/`.
+  Check each folder's README and LICENSE before adding them to maps. Bushes
+  are individual billboards; dungeon artwork is packed into sheets and needs
+  cropping before it can be used by `OverworldProps`.
 - All Villa Marionette building facades face north toward the plaza/camera.
   Keep each entrance on the building's +Z side, enlarge its collision
   footprint with its model scale, and route a walkable path to the door.
