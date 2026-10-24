@@ -108,6 +108,7 @@ export class LuminatiRenderer {
   private activeInteriorKind: FacilityKind | null = null;
   private interiorReturnPos = { x: 0, y: 0.8, z: 0 };
   private mapTransitionLock: { map: MapId; x: number; z: number } | null = null;
+  private wildEncounterRequiresGrassExit = false;
 
   private get activeMapId(): MapId {
     return gameStore.getState().activeMapId;
@@ -1105,7 +1106,8 @@ export class LuminatiRenderer {
       name: 'Tienda de Objetos',
       items: [
         { id: 'animus_vial', price: 100 },
-        { id: 'evolution_prism', price: 500 }
+        { id: 'evolution_prism', price: 500 },
+        { id: 'anima_candy', price: 750 },
       ]
     });
 
@@ -1173,6 +1175,18 @@ export class LuminatiRenderer {
     const canMove = state.view === 'OVERWORLD' && !state.activeDialogue;
 
     const playerEntity = ecs.getPlayerEntity();
+    if (playerEntity && !canMove) {
+      const controls = ecs.playerControls.get(playerEntity);
+      if (controls) controls.stepDistanceAccumulator = 0;
+      for (const key of [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'KeyW', 'KeyA', 'KeyS', 'KeyD',
+        'ShiftLeft', 'ShiftRight', 'KeyB',
+      ]) {
+        this.keys[key] = false;
+      }
+    }
+
     if (playerEntity && canMove) {
       const pos = ecs.positions.get(playerEntity)!;
       const ctl = ecs.playerControls.get(playerEntity)!;
@@ -1232,7 +1246,9 @@ export class LuminatiRenderer {
             if (!isBlocked(pos.x, nextZ, this.activeMapId)) pos.z = nextZ;
           }
 
-          if (!this.tryMapTransition(pos)) {
+          const transitioned = this.tryMapTransition(pos);
+          this.updateWildEncounterRearm(pos.x, pos.z);
+          if (!transitioned) {
             // Step accumulator for wild encounters in spirit grass
             ctl.stepDistanceAccumulator += Math.hypot(dx * currentSpeed, dz * currentSpeed);
             if (ctl.stepDistanceAccumulator > 1.2) {
@@ -1292,6 +1308,7 @@ export class LuminatiRenderer {
    */
   private checkWildGrassEncounter(px: number, pz: number) {
     if (gameStore.getState().playerParty.length === 0) return;
+    if (this.wildEncounterRequiresGrassExit) return;
     const zones = ecs.getWildZones();
     for (const zid of zones) {
       const z = ecs.wildZones.get(zid)!;
@@ -1316,11 +1333,24 @@ export class LuminatiRenderer {
 
           const level = Math.floor(Math.random() * (picked.maxLevel - picked.minLevel + 1)) + picked.minLevel;
           const wildDoll = createSoulDoll(picked.speciesId, level, true);
+          this.wildEncounterRequiresGrassExit = true;
           gameStore.startBattle(wildDoll, false);
           return;
         }
       }
     }
+  }
+
+  private updateWildEncounterRearm(px: number, pz: number): void {
+    if (!this.wildEncounterRequiresGrassExit) return;
+    const stillInWildGrass = ecs.getWildZones().some((zoneId) => {
+      const zone = ecs.wildZones.get(zoneId);
+      return zone &&
+        (zone.mapId ?? 'villa_marionette') === this.activeMapId &&
+        px >= zone.minX && px <= zone.maxX &&
+        pz >= zone.minZ && pz <= zone.maxZ;
+    });
+    if (!stillInWildGrass) this.wildEncounterRequiresGrassExit = false;
   }
 
   /**

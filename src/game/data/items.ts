@@ -63,5 +63,14 @@ export const ITEMS_DATABASE: Record<string, Item> = {
     count: 1,
     price: 2000,
     evolutionTargetItem: true,
+  },
+  anima_candy: {
+    id: 'anima_candy',
+    name: 'Caramelo de Ánima',
+    category: 'special',
+    description: 'Un dulce cristalizado que concede la experiencia necesaria para subir un nivel.',
+    count: 1,
+    price: 750,
+    grantsLevel: true,
   }
 };

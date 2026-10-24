@@ -204,8 +204,26 @@ export class CombatEngine {
     const trainerBonus = isTrainer ? 1.5 : 1.0;
     const expGained = Math.floor((defeatedSpecies.baseExpReward * defeated.level * trainerBonus) / 7);
 
+    const result = this.applyExperience(winner, expGained);
+    return {
+      ...result,
+      messages: [`¡${winner.nickname} ganó ${expGained} puntos de EXP!`, ...result.messages],
+    };
+  }
+
+  public grantExperience(
+    doll: SoulDollInstance,
+    expGained: number
+  ): { expGained: number; leveledUp: boolean; evolutionReady: boolean; messages: string[] } {
+    return this.applyExperience(doll, expGained);
+  }
+
+  private applyExperience(
+    winner: SoulDollInstance,
+    expGained: number
+  ): { expGained: number; leveledUp: boolean; evolutionReady: boolean; messages: string[] } {
     winner.currentXp += expGained;
-    const msgs: string[] = [`¡${winner.nickname} ganó ${expGained} puntos de EXP!`];
+    const msgs: string[] = [];
     let leveledUp = false;
     let evolutionReady = false;
 

@@ -147,6 +147,7 @@ export const gameStore = {
 
   // Start Wild or Trainer Battle
   startBattle(opponent: SoulDollInstance, isTrainer = false, trainerName?: string) {
+    if (globalState.battleState?.isActive) return;
     if (globalState.playerParty.length === 0) {
       this.showToast('Primero elige a tu SoulDoll inicial en el laboratorio.');
       return;
@@ -262,6 +263,24 @@ export const gameStore = {
         this.showToast('¡Este SoulDoll no posee una metamorfosis ascendida!');
         return false;
       }
+    }
+
+    if (item.grantsLevel) {
+      if (doll.level >= 100) {
+        this.showToast(`${doll.nickname} ya alcanzó el nivel máximo.`);
+        return false;
+      }
+      const expNeeded = doll.xpToNext - doll.currentXp;
+      const result = combatEngine.grantExperience(doll, expNeeded);
+      item.count--;
+      sound.playLevelUp();
+      this.showToast(`¡${doll.nickname} subió al nivel ${doll.level} gracias al Caramelo de Ánima!`);
+      if (result.evolutionReady) {
+        this.startEvolutionSequence(doll);
+      } else {
+        notify();
+      }
+      return true;
     }
 
     return false;

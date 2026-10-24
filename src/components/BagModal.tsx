@@ -48,6 +48,7 @@ export const BagModal: React.FC = () => {
             { id: 'vial', label: 'VIALES' },
             { id: 'medicine', label: 'REMEDIOS' },
             { id: 'evolution', label: 'ARTEFACTOS' },
+            { id: 'special', label: 'EXPERIENCIA' },
           ] as { id: ItemCategory; label: string }[]
         ).map(cat => (
           <BrandButton
@@ -147,7 +148,9 @@ export const BagModal: React.FC = () => {
                           </span>
                         </div>
                         <span className="font-pixel text-[9px] text-amber-300">
-                          {doll.currentHp}/{doll.maxHp} HP
+                          {selectedItem.grantsLevel
+                            ? `${doll.currentXp.toLocaleString()} / ${doll.xpToNext.toLocaleString()} EXP`
+                            : `${doll.currentHp}/${doll.maxHp} HP`}
                         </span>
                       </BrandButton>
                     ))}

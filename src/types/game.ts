@@ -134,6 +134,7 @@ export interface Item {
   reviveRatio?: number;
   curesStatus?: boolean;
   evolutionTargetItem?: boolean;
+  grantsLevel?: boolean;
 }
 
 export interface BattleAction {
