@@ -14,6 +14,7 @@
     "bake:npc-sprites": "tsx tools/bake-npc-sprites.ts",
     "soul:harness": "tsx tools/soul-harness.ts",
     "souldoll:validate": "tsx tools/souldoll-harness.ts",
+    "brand:harness": "tsx tools/brand-harness.ts",
     "world:harness": "tsx tools/world-harness.ts"
   },
   "dependencies": {

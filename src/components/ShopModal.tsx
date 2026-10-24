@@ -45,14 +45,14 @@ export const ShopModal: React.FC = () => {
           {shop.items.map(item => {
             const itemData = ITEMS_DATABASE[item.id];
             return (
-              <div key={item.id} className="bg-[#2b170c] p-3 rounded-lg border border-[#7a4921] flex justify-between items-center">
+              <div key={item.id} className="sd-brand-panel sd-brand-panel-surface p-3 flex justify-between items-center">
                 <div>
                   <div className="font-pixel text-xs text-amber-100">{itemData.name}</div>
                   <div className="font-sans text-[10px] text-amber-200/70">{itemData.description}</div>
                 </div>
                 <button
                   onClick={() => handleBuy(item.id, item.price)}
-                  className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-pixel text-[10px] px-3 py-1.5 rounded-lg border border-amber-300"
+                  className="sd-brand-button sd-brand-button-primary text-[10px] px-3 py-1.5"
                 >
                   {item.price} 🪙
                 </button>

@@ -7,6 +7,8 @@ import { pixelGenerator } from '../game/graphics/PixelArtGenerator';
 import { TYPE_COLORS, getTypeEffectiveness } from '../game/data/typesChart';
 import { ElementalType, SoulDollSpecies, SoulDollInstance } from '../types/game';
 import { SoulDollSprite } from './ui/SoulDollSprite';
+import { GameCabinetModal } from './ui/GameCabinetModal';
+import { BrandBadge, BrandButton, BrandPanel } from './ui/BrandKit';
 import {
   X,
   ChevronLeft,
@@ -209,122 +211,45 @@ export const SoulDexModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 select-none touch-manipulation overflow-hidden">
-      <style>{`
-        @keyframes soulPhase {
-          0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-soul-phase {
-          animation: soulPhase 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}</style>
-      {/* Outer Ornate Bronze & Engraved Wood Frame (Brave Frontier Inspired Cabinet) */}
-      <div
-        className="relative w-full max-w-4xl h-full max-h-[96dvh] rounded-3xl flex flex-col overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.95)] border-4 border-[#8c5a2b]"
-        style={{
-          background: 'linear-gradient(135deg, #3d2212 0%, #24140a 50%, #3d2212 100%)',
-          boxShadow:
-            'inset 0 0 0 2px #d49b55, inset 0 0 30px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.9)',
-        }}
-      >
-        {/* Ornate Acanthus Wood Engraving Texture Overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage: `radial-gradient(circle at 50% 50%, #d49b55 1px, transparent 1px), radial-gradient(circle at 0% 0%, #a26934 1px, transparent 1px)`,
-            backgroundSize: '24px 24px',
-          }}
-        />
-
-        {/* 1. TOP HEADER STATUS BAR (Real Game Progression & Inventory) */}
-        <div className="relative z-10 px-3 sm:px-5 py-2.5 bg-[#2b170c] border-b-2 border-[#8c5a2b] shadow-md flex justify-between items-center gap-2">
-          {/* Left: SoulDex Title & Real Discovery Stats */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-amber-300" />
-              <span className="font-fantasy text-amber-200 text-xs sm:text-sm font-bold tracking-wider">
-                SOULDEX
-              </span>
-              <span className="text-[#a87d50] text-[10px] sm:text-xs font-semibold">•</span>
-              <span className="font-sans text-[11px] sm:text-xs text-[#d9c09e]">
-                Registro de Almas
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-[#d4b48f] font-sans">
-              <span className="flex items-center gap-1">
-                <Eye className="w-3 h-3 text-sky-400" />
-                Avistados: <strong className="text-amber-200 font-bold">{state.seenSoulDolls.size}</strong>/{speciesList.length}
-              </span>
-              <span className="text-[#7a4921]">|</span>
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                Capturados: <strong className="text-amber-200 font-bold">{state.caughtSoulDolls.size}</strong>/{speciesList.length}
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Real Inventory Resources & Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Real Game Resources: Soul Shards, Vials, Prisms */}
-            <div className="hidden sm:flex items-center gap-3 bg-[#190c06] px-3 py-1.5 rounded-xl border border-[#7a4921] shadow-inner text-[10px] font-pixel">
-              <div className="flex items-center gap-1 text-amber-300" title="Fragmentos de Alma">
-                <span>🪙</span>
-                <span className="font-bold">{state.soulShards}</span>
-              </div>
-              <div className="flex items-center gap-1 text-sky-300" title="Viales de Ánima en inventario">
-                <span>🧪</span>
-                <span className="font-bold">{state.inventory.animus_vial?.count || 0}</span>
-              </div>
-              <div className="flex items-center gap-1 text-purple-300" title="Prismas de Evolución">
-                <span>💎</span>
-                <span className="font-bold">{state.inventory.evolution_prism?.count || 0}</span>
-              </div>
-            </div>
-
-            {/* Collection Grid Drawer Button */}
-            <button
-              onClick={() => {
-                sound.playSelect();
-                setShowDrawer(!showDrawer);
-              }}
-              className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-[#4a2b16] hover:bg-[#5c371d] text-amber-200 border border-[#a26934] font-pixel text-[9px] flex items-center gap-1 shadow-sm transition-all"
-              title="Abrir lista completa de SoulDolls"
-            >
-              <Grid3X3 className="w-4 h-4 text-amber-300" />
-              <span className="hidden md:inline">ÍNDICE</span>
-            </button>
-
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                sound.playSelect();
-                gameStore.setView('OVERWORLD');
-              }}
-              className="p-1.5 rounded-lg bg-[#5c2419] hover:bg-[#782e20] text-amber-100 border border-[#b44835] shadow transition-all"
-              title="Cerrar SoulDex"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+    <GameCabinetModal
+      title="SOULDEX"
+      subtitle={`Registro de Almas · Avistados ${state.seenSoulDolls.size}/${speciesList.length} · Capturados ${state.caughtSoulDolls.size}/${speciesList.length}`}
+      icon={<BookOpen className="w-4 h-4 text-amber-300" />}
+      onClose={() => gameStore.setView('OVERWORLD')}
+      maxWidth="max-w-5xl"
+      headerRight={
+        <div className="flex items-center gap-2">
+          <BrandPanel variant="inset" className="hidden sm:flex items-center gap-3 px-3 py-2 text-[10px] font-pixel">
+            <span className="text-amber-300" title="Fragmentos de Alma">✦ {state.soulShards}</span>
+            <span className="text-sky-300" title="Viales de Ánima">◈ {state.inventory.animus_vial?.count || 0}</span>
+            <span className="text-purple-300" title="Prismas de Evolución">◇ {state.inventory.evolution_prism?.count || 0}</span>
+          </BrandPanel>
+          <BrandButton
+            onClick={() => {
+              sound.playSelect();
+              setShowDrawer(!showDrawer);
+            }}
+            variant="secondary"
+            className="flex items-center gap-1"
+            title="Abrir lista completa de SoulDolls"
+          >
+            <Grid3X3 className="w-4 h-4 text-amber-300" />
+            <span className="hidden md:inline">ÍNDICE</span>
+          </BrandButton>
         </div>
+      }
+    >
 
-        {/* 2. MAIN 2-COLUMN VIEWPORT (Parchment Profile on Left, 3D Sprite on Right) */}
+        {/* 2. MAIN 2-COLUMN VIEWPORT */}
         <div className="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-2 overflow-hidden">
           {/* ==================== LEFT COLUMN: REAL STATS & CARDS ==================== */}
           <div className="w-full p-3 sm:p-4 overflow-y-auto space-y-2.5 touch-pan-y scrollbar-thin">
             {/* CARD 1: CHARACTER HEADER (Name, Stars, Element Badge, Ownership & Level) */}
-            <div
-              className="relative p-3 sm:p-3.5 rounded-2xl border-2 border-[#967853] shadow-md overflow-hidden"
-              style={{
-                background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                color: '#3d2514',
-              }}
-            >
+            <BrandPanel variant="raised" className="relative p-3 sm:p-3.5 overflow-hidden">
               {/* Top Row: Name + 3D Element Orb */}
               <div className="flex justify-between items-start gap-2">
                 <div>
-                  <h1 className="font-fantasy text-xl sm:text-2xl font-bold tracking-tight text-[#452713] drop-shadow-sm">
+                  <h1 className="font-fantasy text-xl sm:text-2xl font-bold tracking-tight text-amber-100 drop-shadow-sm">
                     {isSeen ? selectedSpecies.name : '??? Desconocido'}
                   </h1>
 
@@ -338,7 +263,7 @@ export const SoulDexModal: React.FC = () => {
                         ★
                       </span>
                     ))}
-                    <span className="text-[10px] font-sans font-bold text-[#7a532f] ml-1">
+                    <span className="text-[10px] font-sans font-bold text-amber-200/70 ml-1">
                       Fase {selectedSpecies.stage}
                     </span>
                   </div>
@@ -384,22 +309,22 @@ export const SoulDexModal: React.FC = () => {
 
               {/* Real Player Instance Info OR Wild Data */}
               {ownedInstance ? (
-                <div className="space-y-1 text-[#3d2514]">
+                <div className="space-y-1 text-slate-100">
                   <div className="flex justify-between items-baseline font-sans text-xs">
-                    <span className="font-bold text-[#452713] flex items-center gap-1.5">
+                    <span className="font-bold text-amber-100 flex items-center gap-1.5">
                       <span className="text-emerald-700">●</span>
                       Nv. <strong className="text-base font-fantasy font-bold">{ownedInstance.level}</strong>
-                      <span className="text-[10px] font-semibold text-[#6d4323]">
+                      <span className="text-[10px] font-semibold text-amber-200/70">
                         ({isPartyMember ? 'En Equipo' : 'En Santuario'})
                       </span>
                     </span>
-                    <span className="text-[11px] font-semibold text-[#6d4323]">
+                    <span className="text-[11px] font-semibold text-amber-200/70">
                       {ownedInstance.currentXp} / {ownedInstance.xpToNext} EXP
                     </span>
                   </div>
 
                   {/* Real EXP Progress Bar */}
-                  <div className="w-full bg-[#3d2514]/30 h-2.5 rounded-full overflow-hidden p-[1px] shadow-inner border border-[#967853]/60">
+                  <div className="w-full bg-black/50 h-2.5 rounded-full overflow-hidden p-[1px] shadow-inner border border-amber-700/50">
                     <div
                       className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow transition-all duration-500"
                       style={{
@@ -411,38 +336,32 @@ export const SoulDexModal: React.FC = () => {
                     />
                   </div>
 
-                  <div className="flex justify-between items-center text-[10px] font-sans text-[#5c371d] pt-0.5">
+                  <div className="flex justify-between items-center text-[10px] font-sans text-amber-100/70 pt-0.5">
                     <span>Salud: {ownedInstance.currentHp}/{ownedInstance.maxHp} HP</span>
                     <span>Ratio Captura: {selectedSpecies.catchRate}</span>
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-between items-center text-xs font-sans text-[#5c371d]">
+                <div className="flex justify-between items-center text-xs font-sans text-amber-100/70">
                   <div>
-                    <span className="font-bold text-[#452713]">
+                    <span className="font-bold text-amber-100">
                       {isSeen ? 'Estado: Avistado en el Ecosistema' : 'Estado: Sin descubrir'}
                     </span>
                   </div>
-                  <div className="text-[10px] text-[#6d4323]">
+                  <div className="text-[10px] text-amber-200/70">
                     Ratio de Captura: <strong>{selectedSpecies.catchRate}</strong>
                   </div>
                 </div>
               )}
-            </div>
+            </BrandPanel>
 
             {/* CARD 2: REAL COMBAT STATS (6 Real Core Stats with values and gauges) */}
-            <div
-              className="p-3 rounded-2xl border-2 border-[#967853] shadow-md"
-              style={{
-                background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                color: '#3d2514',
-              }}
-            >
+            <BrandPanel variant="surface" className="p-3">
               <div className="flex justify-between items-center mb-2">
-                <span className="font-sans text-[11px] font-extrabold uppercase tracking-wider text-[#6d4323]">
+                <span className="font-sans text-[11px] font-extrabold uppercase tracking-wider text-amber-100/80">
                   {ownedInstance ? 'ESTADÍSTICAS DEL SOULDOLL' : 'ATRIBUTOS BASE DE LA ESPECIE'}
                 </span>
-                <span className="text-[9px] font-pixel text-[#8c5a2b]">
+                <span className="text-[9px] font-pixel text-amber-300">
                   {ownedInstance ? `Nv.${ownedInstance.level}` : 'Base'}
                 </span>
               </div>
@@ -533,29 +452,25 @@ export const SoulDexModal: React.FC = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </BrandPanel>
 
             {/* CARD 3: REAL LORE & ELEMENTAL AFFINITIES */}
             <div
-              className="p-3 rounded-2xl border-2 border-[#967853] shadow-md"
-              style={{
-                background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                color: '#3d2514',
-              }}
+              className="sd-brand-panel sd-brand-panel-surface p-3"
             >
-              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans font-extrabold uppercase tracking-wider text-[#6d4323] mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans font-extrabold uppercase tracking-wider text-amber-100/80 mb-1">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 <span>CRÓNICA DEL ALMA</span>
               </div>
-              <p className="font-sans text-xs text-[#5c371d] leading-relaxed mb-2.5">
+              <p className="font-sans text-xs text-amber-100/70 leading-relaxed mb-2.5">
                 {isSeen ? selectedSpecies.description : 'Información oculta. Avista o captura este SoulDoll para registrar su historia.'}
               </p>
 
               {/* Elemental Affinities */}
               {isSeen && (
-                <div className="pt-2 border-t border-[#967853]/40 flex flex-col gap-1.5 text-[10px] font-sans">
+                <div className="pt-2 border-t border-amber-700/40 flex flex-col gap-1.5 text-[10px] font-sans">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-emerald-800 shrink-0">Eficaz contra (x2.0):</span>
+                    <span className="font-bold text-emerald-300 shrink-0">Eficaz contra (x2.0):</span>
                     {affinities.strongAgainst.length > 0 ? (
                       affinities.strongAgainst.map((t) => (
                         <span
@@ -567,11 +482,11 @@ export const SoulDexModal: React.FC = () => {
                         </span>
                       ))
                     ) : (
-                      <span className="text-[#7a5836]">Ninguno directo</span>
+                      <span className="text-amber-100/50">Ninguno directo</span>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-rose-800 shrink-0">Vulnerable a (x2.0):</span>
+                    <span className="font-bold text-rose-300 shrink-0">Vulnerable a (x2.0):</span>
                     {affinities.weakAgainst.length > 0 ? (
                       affinities.weakAgainst.map((t) => (
                         <span
@@ -583,7 +498,7 @@ export const SoulDexModal: React.FC = () => {
                         </span>
                       ))
                     ) : (
-                      <span className="text-[#7a5836]">Equilibrado</span>
+                      <span className="text-amber-100/50">Equilibrado</span>
                     )}
                   </div>
                 </div>
@@ -593,17 +508,13 @@ export const SoulDexModal: React.FC = () => {
             {/* CARD 5: REAL EVOLUTION TREE */}
             {selectedSpecies.evolution && (
               <div
-                className="p-3 rounded-2xl border-2 border-[#967853] shadow-md flex items-center justify-between"
-                style={{
-                  background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                  color: '#3d2514',
-                }}
+                className="sd-brand-panel sd-brand-panel-surface p-3 flex items-center justify-between"
               >
                 <div>
-                  <div className="text-[9px] font-pixel text-[#8c5a2b]">LÍNEA EVOLUTIVA</div>
-                  <div className="font-fantasy text-sm font-bold text-[#452713] flex items-center gap-1.5 mt-0.5">
+                  <div className="text-[9px] font-pixel text-amber-300">LÍNEA EVOLUTIVA</div>
+                  <div className="font-fantasy text-sm font-bold text-amber-100 flex items-center gap-1.5 mt-0.5">
                     <span>{selectedSpecies.name}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-amber-700" />
+                    <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
                     <button
                       onClick={() => {
                         sound.playSelect();
@@ -611,13 +522,13 @@ export const SoulDexModal: React.FC = () => {
                           setSelectedSpeciesId(selectedSpecies.evolution.evolvesInto);
                         }
                       }}
-                      className="underline text-amber-800 hover:text-amber-950 font-bold"
+                      className="underline text-amber-300 hover:text-amber-100 font-bold"
                     >
                       {SOULDOLL_SPECIES[selectedSpecies.evolution.evolvesInto]?.name || 'Forma Ascendida'}
                     </button>
                   </div>
                 </div>
-                <span className="font-pixel text-[9px] bg-[#4a2b16] text-amber-200 px-2 py-1 rounded-lg border border-[#a26934] shadow-sm">
+                <span className="font-pixel text-[9px] bg-[#211a2d] text-amber-200 px-2 py-1 rounded-lg border border-[#8a6a3b] shadow-sm">
                   Nivel {selectedSpecies.evolution.level}
                 </span>
               </div>
@@ -625,18 +536,14 @@ export const SoulDexModal: React.FC = () => {
 
             {/* CARD 4: REAL LEARNSET & MOVES DATABASE (MOVED FROM RIGHT COLUMN) */}
             <div
-              className="w-full p-3 rounded-2xl border-2 border-[#967853] shadow-md mt-2"
-              style={{
-                background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                color: '#3d2514',
-              }}
+              className="sd-brand-panel sd-brand-panel-surface w-full p-3 mt-2"
             >
               <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans font-extrabold uppercase tracking-wider text-[#6d4323]">
-                  <Sword className="w-3.5 h-3.5 text-amber-700" />
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans font-extrabold uppercase tracking-wider text-amber-100/80">
+                  <Sword className="w-3.5 h-3.5 text-amber-300" />
                   <span>REPERTORIO DE HABILIDADES</span>
                 </div>
-                <span className="text-[9px] font-pixel text-[#8c5a2b]">
+                <span className="text-[9px] font-pixel text-amber-300">
                   {selectedSpecies.learnset.length} Movimientos
                 </span>
               </div>
@@ -653,24 +560,24 @@ export const SoulDexModal: React.FC = () => {
                         key={move.id + idx}
                         className={`p-2 rounded-xl border flex justify-between items-center gap-2 transition-all ${
                           isEquipped
-                            ? 'bg-[#e4d0b2] border-[#7a4921] shadow-inner'
-                            : 'bg-[#ede0c4] border-[#a88a65]/60'
+                            ? 'bg-violet-900/50 border-amber-400 shadow-inner'
+                              : 'bg-[#14101c]/70 border-[#8a6a3b]/60'
                         }`}
                       >
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <span className="font-pixel text-[8px] text-amber-800 bg-[#f7eedc] px-1.5 py-0.5 rounded border border-[#a88a65] shrink-0 font-bold">
+                          <span className="font-pixel text-[8px] text-amber-200 bg-[#14101c] px-1.5 py-0.5 rounded border border-[#8a6a3b] shrink-0 font-bold">
                             Nv.{item.level}
                           </span>
                           <div className="truncate">
-                            <div className="font-sans text-xs font-bold text-[#452713] flex items-center gap-1">
+                            <div className="font-sans text-xs font-bold text-amber-100 flex items-center gap-1">
                               <span>{move.name}</span>
                               {isEquipped && (
-                                <span className="text-[8px] font-pixel text-emerald-700 bg-emerald-200/80 px-1 rounded">
+                                <span className="text-[8px] font-pixel text-emerald-200 bg-emerald-900/80 px-1 rounded">
                                   ACTIVO
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-[#6d4323] truncate">
+                            <div className="text-[10px] text-amber-100/60 truncate">
                               {move.description}
                             </div>
                           </div>
@@ -686,7 +593,7 @@ export const SoulDexModal: React.FC = () => {
                           >
                             {move.type}
                           </span>
-                          <span className="font-pixel text-[8px] text-[#452713] font-bold">
+                          <span className="font-pixel text-[8px] text-amber-100 font-bold">
                             {move.power > 0 ? `${move.power}P` : 'EST'}
                           </span>
                         </div>
@@ -695,7 +602,7 @@ export const SoulDexModal: React.FC = () => {
                   })}
                 </div>
               ) : (
-                <div className="p-3 text-center text-xs font-sans text-[#7a5836]">
+                <div className="p-3 text-center text-xs font-sans text-amber-100/50">
                   Habilidades desconocidas hasta el avistamiento.
                 </div>
               )}
@@ -703,14 +610,14 @@ export const SoulDexModal: React.FC = () => {
           </div>
 
           {/* ==================== RIGHT COLUMN: SPRITE DISPLAY ==================== */}
-          <div className="w-full p-3 sm:p-5 flex flex-col items-center justify-center relative border-t-2 md:border-t-0 md:border-l-2 border-[#8c5a2b]/30 bg-[#1e1008]/40 overflow-y-auto space-y-3 scrollbar-thin">
+          <div className="w-full p-3 sm:p-5 flex flex-col items-center justify-center relative border-t-2 md:border-t-0 md:border-l-2 border-[#8c5a2b]/30 bg-[#14101c]/60 overflow-y-auto space-y-3 scrollbar-thin">
             {/* Top Bar: Navigation & Real Index Number */}
             <div className="w-full flex justify-between items-center z-10 gap-2 mb-2">
               {/* Previous / Next buttons */}
-              <div className="flex items-center gap-1 bg-[#190c06]/60 p-1 rounded-lg border border-[#7a4921]/30">
+              <div className="flex items-center gap-1 bg-[#0d0a13]/70 p-1 rounded-lg border border-[#7a4921]/50">
                 <button
                   onClick={handlePrev}
-                  className="p-1 rounded-md hover:bg-[#3d2212] text-amber-300 transition-all"
+                  className="p-1 rounded-md hover:bg-[#35263b] text-amber-300 transition-all"
                   title="Anterior SoulDoll"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -720,7 +627,7 @@ export const SoulDexModal: React.FC = () => {
                 </span>
                 <button
                   onClick={handleNext}
-                  className="p-1 rounded-md hover:bg-[#3d2212] text-amber-300 transition-all"
+                  className="p-1 rounded-md hover:bg-[#35263b] text-amber-300 transition-all"
                   title="Siguiente SoulDoll"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -728,7 +635,7 @@ export const SoulDexModal: React.FC = () => {
               </div>
 
               {/* Status Ribbon (Capturado / Avistado / En Equipo) */}
-              <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-lg border border-amber-600/20 text-[9px] font-pixel text-amber-300">
+              <BrandBadge className="flex items-center gap-1.5 text-[9px]">
                 {isPartyMember ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
@@ -750,7 +657,7 @@ export const SoulDexModal: React.FC = () => {
                     <span className="text-slate-400">DESCONOCIDO</span>
                   </>
                 )}
-              </div>
+              </BrandBadge>
             </div>
 
             {/* Central Sprite Display */}
@@ -762,7 +669,7 @@ export const SoulDexModal: React.FC = () => {
                     sound.playSelect();
                     setIsBackView(!isBackView);
                   }}
-                  className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-md bg-[#2b170c]/80 hover:bg-[#3d2212] text-amber-200 border border-[#8c5a2b]/30 font-pixel text-[8px] flex items-center gap-1 shadow-sm transition-all"
+                  className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-md bg-[#211a2d]/90 hover:bg-[#35263b] text-amber-200 border border-[#8c5a2b]/50 font-pixel text-[8px] flex items-center gap-1 shadow-sm transition-all"
                   title="Girar vista del SoulDoll"
                 >
                   <RotateCw className="w-3 h-3 text-amber-400" />
@@ -820,7 +727,7 @@ export const SoulDexModal: React.FC = () => {
 
         {/* 3. SLIDE-OUT SOULDOLL COLLECTION DRAWER */}
         {showDrawer && (
-          <div className="absolute inset-x-0 bottom-0 top-[52px] z-30 bg-[#1c0e07]/95 backdrop-blur-md border-t-2 border-[#8c5a2b] p-4 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-200">
+          <div className="absolute inset-x-0 bottom-0 top-[52px] z-30 bg-[#14101c]/95 backdrop-blur-md border-t-2 border-[#8c5a3b] p-4 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-200">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-amber-400" />
@@ -830,7 +737,7 @@ export const SoulDexModal: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowDrawer(false)}
-                className="p-1 rounded-lg bg-[#3d2212] hover:bg-[#522e18] text-amber-200 border border-[#8c5a2b]"
+                className="p-1 rounded-lg bg-[#211a2d] hover:bg-[#35263b] text-amber-200 border border-[#8c5a2b]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -901,7 +808,7 @@ export const SoulDexModal: React.FC = () => {
                     className={`p-2.5 rounded-xl border flex items-center gap-2.5 text-left transition-all ${
                       isSelected
                         ? 'bg-amber-900/60 border-amber-400 ring-2 ring-amber-300'
-                        : 'bg-[#2b170c] hover:bg-[#3d2212] border-[#7a4921]'
+                        : 'bg-[#211a2d] hover:bg-[#35263b] border-[#7a4921]'
                     }`}
                   >
                     {/* Species Authentic Sprite or Mysterious Silhouette */}
@@ -941,7 +848,6 @@ export const SoulDexModal: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </GameCabinetModal>
   );
 };

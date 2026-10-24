@@ -41,7 +41,7 @@ export const BagModal: React.FC = () => {
       maxWidth="max-w-3xl"
     >
       {/* Categories Bar */}
-      <div className="flex border-b-2 border-[#8c5a2b] bg-[#2b170c] p-2 gap-2 shrink-0">
+      <div className="flex border-b border-[#8c5a2b] bg-[#17121f] p-2 gap-2 shrink-0">
         {(
           [
             { id: 'vial', label: 'VIALES' },
@@ -59,8 +59,8 @@ export const BagModal: React.FC = () => {
             }}
             className={`px-4 py-2 rounded-lg font-pixel text-[10px] transition-all cursor-pointer ${
               activeCategory === cat.id
-                ? 'bg-amber-600 text-slate-950 font-bold shadow-md'
-                : 'bg-[#190c06] text-amber-200/80 hover:bg-[#3d2212] border border-[#7a4921]'
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
+                : 'bg-[#14101c] text-amber-200/80 hover:bg-[#35263b] border border-[#7a4921]'
             }`}
           >
             {cat.label}
@@ -69,7 +69,7 @@ export const BagModal: React.FC = () => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#241309]/90">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#14101c]/90">
         {/* Items list */}
         <div className="w-full md:w-1/2 p-3 sm:p-4 border-b md:border-b-0 md:border-r border-[#8c5a2b] flex flex-col gap-2 max-h-[35vh] md:max-h-none overflow-y-auto touch-pan-y shrink-0 md:shrink scrollbar-thin">
           {filteredItems.map(item => {
@@ -83,8 +83,8 @@ export const BagModal: React.FC = () => {
                 }}
                 className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#4a2b16] border-amber-400 shadow-inner'
-                    : 'bg-[#190c06]/80 hover:bg-[#2b170c] border-[#7a4921]'
+                    ? 'bg-violet-900/50 border-amber-400 shadow-inner'
+                    : 'bg-[#14101c]/80 hover:bg-[#2a1f2d] border-[#7a4921]'
                 }`}
               >
                 <div>
@@ -93,7 +93,7 @@ export const BagModal: React.FC = () => {
                     {item.description}
                   </div>
                 </div>
-                <span className="font-pixel text-xs text-amber-300 bg-[#2b170c] px-2.5 py-1 rounded border border-[#8c5a2b] font-bold">
+                <span className="font-pixel text-xs text-amber-300 bg-[#14101c] px-2.5 py-1 rounded border border-[#8c5a2b] font-bold">
                   x{item.count}
                 </span>
               </button>
@@ -105,28 +105,21 @@ export const BagModal: React.FC = () => {
         <div className="w-full md:w-1/2 p-4 sm:p-5 flex flex-col justify-between overflow-y-auto scrollbar-thin">
           {selectedItem ? (
             <div className="space-y-4">
-              {/* Parchment details card */}
-              <div
-                className="p-4 rounded-2xl border-2 border-[#967853] shadow-md"
-                style={{
-                  background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-                  color: '#3d2514',
-                }}
-              >
-                <h3 className="font-fantasy text-sm text-[#452713] font-bold mb-1">
+              <div className="sd-brand-panel sd-brand-panel-raised p-4">
+                <h3 className="font-fantasy text-sm text-amber-100 font-bold mb-1">
                   {selectedItem.name}
                 </h3>
-                <p className="font-sans text-xs text-[#5c371d] leading-relaxed">
+                <p className="font-sans text-xs text-amber-100/70 leading-relaxed">
                   {selectedItem.description}
                 </p>
-                <div className="mt-2 text-[10px] font-pixel text-[#8c5a2b] font-bold">
-                  Disponibles: <span className="text-[#3d2514]">{selectedItem.count} unidades</span>
+                <div className="mt-2 text-[10px] font-pixel text-amber-300 font-bold">
+                  Disponibles: <span className="text-amber-100">{selectedItem.count} unidades</span>
                 </div>
               </div>
 
               {/* Target SoulDoll Selection for Medicine & Artifacts */}
               {selectedItem.category !== 'vial' && (
-                <div className="bg-[#190c06] p-3 rounded-xl border border-[#7a4921]">
+                <div className="bg-[#0d0a13] p-3 rounded-xl border border-[#7a4921]">
                   <div className="font-pixel text-[10px] text-amber-300 mb-2 font-bold">
                     APLICAR SOBRE SOULDOLL:
                   </div>
@@ -137,8 +130,8 @@ export const BagModal: React.FC = () => {
                         onClick={() => setTargetDollUuid(doll.uuid)}
                         className={`w-full text-left p-2 rounded-lg flex justify-between items-center border cursor-pointer ${
                           targetDollUuid === doll.uuid
-                            ? 'bg-[#4a2b16] border-amber-400 text-white shadow-inner'
-                            : 'bg-[#2b170c] border-[#7a4921] text-amber-200/80 hover:bg-[#3d2212]'
+                            ? 'bg-violet-900/50 border-amber-400 text-white shadow-inner'
+                            : 'bg-[#211a2d] border-[#7a4921] text-amber-200/80 hover:bg-[#35263b]'
                         }`}
                       >
                         <div className="flex items-center gap-2.5">

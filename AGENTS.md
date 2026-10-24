@@ -17,6 +17,7 @@ npm run bake:props     # cookies los props del mapa -> PNG con alfa
 npm run bake:npc-sprites # genera el atlas billboard de NPCs desde las poses CC0
 npm run soul:harness   # analiza + hornea + informa del estado de las hojas
 npm run souldoll:validate # valida catálogo JSON, evoluciones, movimientos y arte
+npm run brand:harness  # valida los tokens y estilos compartidos de la marca
 npm run world:harness  # valida conexiones, accesos y encuentros del mundo
 ```
 
@@ -206,6 +207,16 @@ src/game/graphics/BattleVfxDirector.ts  <- the effects
 - The software WebGL fallback halves the amount of particles.
 - The battle arena lives at Y = -50; the VFX group is parented to
   `battleArenaPlatform` so every effect is authored in arena local space.
+
+### UI brand system
+
+The battle UI defines the shared visual identity: deep ink/wood surfaces,
+bronze framing, amber focus, and restrained soul-violet/ki accents. Use
+`src/components/ui/BrandKit.tsx` (`BrandPanel`, `BrandButton`, `BrandBadge`)
+and the `sd-brand-*` / `sd-cabinet-*` classes in `src/index.css` for new
+screens. Reuse `GameCabinetModal` for modal framing instead of creating a
+separate cabinet. Run `npm run brand:harness` after changing palette tokens
+or shared UI styles. See `BRAND_GUIDE.md` for the component contract.
 
 ---
 

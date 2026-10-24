@@ -19,9 +19,9 @@ export const DialogueBox: React.FC = () => {
       onClick={handleAdvance}
       className="fixed inset-x-4 bottom-6 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[680px] z-50 pointer-events-auto cursor-pointer select-none"
     >
-      <div className="bg-slate-950/95 pixel-box rounded-xl p-4 md:p-5 border-4 border-indigo-500/80 shadow-2xl">
+      <div className="sd-dialog-ornate rounded-xl p-4 md:p-5">
         {/* Speaker Name Tag */}
-        <div className="inline-block bg-indigo-900 border border-indigo-400 px-3 py-1 rounded font-pixel text-xs text-amber-300 font-bold mb-2">
+        <div className="inline-block bg-[#2a1f2d] border border-[#8a6a3b] px-3 py-1 rounded font-pixel text-xs text-amber-300 font-bold mb-2">
           {dialogue.speaker}
         </div>
 

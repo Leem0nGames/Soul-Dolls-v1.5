@@ -183,14 +183,7 @@ export const EvolutionModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Lore / Description Card (Parchment style) */}
-        <div
-          className="w-full p-3 rounded-xl border-2 border-[#967853] shadow-md my-2"
-          style={{
-            background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-            color: '#3d2514',
-          }}
-        >
+        <div className="sd-brand-panel sd-brand-panel-raised w-full p-3 my-2 text-amber-100">
           <p className="font-sans text-xs sm:text-sm font-bold text-center leading-relaxed">
             {step === 'complete'
               ? `¡Tu alma compañera ha trascendido a su forma legendaria! Ha despertado un poder elemental insondable.`
@@ -198,16 +191,10 @@ export const EvolutionModal: React.FC = () => {
           </p>
         </div>
 
-        {/* Stat Growth Comparison Grid (Parchment) */}
+        {/* Stat Growth Comparison Grid */}
         {step === 'complete' && (
-          <div
-            className="w-full p-3 rounded-xl border-2 border-[#967853] shadow-inner my-2"
-            style={{
-              background: 'linear-gradient(180deg, #f6eedb 0%, #ecd9b9 100%)',
-              color: '#3d2514',
-            }}
-          >
-            <div className="text-[10px] font-pixel text-[#6d4323] mb-2 font-bold uppercase tracking-wider text-center">
+          <div className="sd-brand-panel sd-brand-panel-surface w-full p-3 shadow-inner my-2">
+            <div className="text-[10px] font-pixel text-amber-200 mb-2 font-bold uppercase tracking-wider text-center">
               ESTADÍSTICAS TRAS LA METAMORFOSIS
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px] font-pixel">
@@ -221,10 +208,10 @@ export const EvolutionModal: React.FC = () => {
               ].map((st) => (
                 <div
                   key={st.label}
-                  className="bg-[#ecd5b3] p-2 rounded-lg flex justify-between items-center border border-[#b8976a]"
+                  className="bg-[#14101c] p-2 rounded-lg flex justify-between items-center border border-[#8a6a3b]/60"
                 >
-                  <span className="text-[#6d4323] font-bold">{st.label}</span>
-                  <span className="text-amber-950 font-extrabold">{st.val}</span>
+                  <span className="text-amber-200/70 font-bold">{st.label}</span>
+                  <span className="text-amber-100 font-extrabold">{st.val}</span>
                 </div>
               ))}
             </div>
@@ -239,7 +226,7 @@ export const EvolutionModal: React.FC = () => {
               gameStore.setState({ evolutionCandidate: null });
               gameStore.setView('OVERWORLD');
             }}
-            className="w-full py-3 px-6 rounded-xl font-pixel text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 shadow-lg border-2 border-amber-300 flex items-center justify-center gap-2 cursor-pointer transition-all mt-2"
+            className="sd-brand-button sd-brand-button-primary w-full py-3 px-6 text-xs sm:text-sm flex items-center justify-center gap-2 mt-2"
           >
             <CheckCircle className="w-4 h-4 text-slate-950" />
             ¡CONTINUAR LA AVENTURA!
