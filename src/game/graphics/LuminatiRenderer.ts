@@ -6,7 +6,7 @@ import { createSoulDoll } from '../data/souldolls';
 import { sound } from '../audio/SoundEffects';
 import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
-import { buildOverworldMap, isBlocked } from './OverworldTiles';
+import { buildOverworldMap, isBlocked, MapId, MapExit, MAP_EXITS, MAP_NAMES } from './OverworldTiles';
 import { OverworldProps } from './OverworldProps';
 import { buildFacilityInterior, FacilityKind, INTERIOR_W, INTERIOR_D, INTERIOR_DOOR_LOCAL, INTERIOR_SERVICE_LOCAL } from './FacilityInterior';
 
@@ -68,6 +68,15 @@ export class LuminatiRenderer {
   // Overworld
   private groundMaterial!: THREE.MeshLambertMaterial;
   private overworldProps!: OverworldProps;
+
+  // Option B (Kanto clone): the world is a set of connected areas. This is the
+  // current area, its baked texture cache and the landmark groups that only
+  // exist on the starter town.
+  private activeMapId: MapId = 'pallet_town';
+  private bakedMapTextures = new Map<MapId, THREE.CanvasTexture>();
+  private facilityDoorsGroup = new THREE.Group();
+  private palletLandmarksGroup = new THREE.Group();
+  private shopSprite: THREE.Sprite | null = null;
 
   // Phase 3: facility interior flow (visual only; input-gated by these flags)
   private activeInteriorKind: FacilityKind | null = null;
@@ -202,6 +211,8 @@ export class LuminatiRenderer {
     // mounted on rooftop anchors and reached through the exterior doors).
 
     // Build World Geometry & Entities
+    this.worldGroup.add(this.palletLandmarksGroup);
+    this.worldGroup.add(this.facilityDoorsGroup);
     this.buildTerrain();
     this.buildSanctuaryShrine();
     this.buildBattleArena();
@@ -209,7 +220,7 @@ export class LuminatiRenderer {
     this.buildOverworldProps();
     this.buildFacilityInteriors();
     this.buildFacilityDoors();
-    this.loadOverworldMap();
+    this.loadOverworldMap(this.activeMapId);
 
     // Battle visual effects (driven by this renderer's own tick)
     this.vfxDirector = new BattleVfxDirector(
@@ -241,16 +252,6 @@ export class LuminatiRenderer {
     terrain.rotation.x = -Math.PI / 2;
     terrain.receiveShadow = true;
     this.worldGroup.add(terrain);
-  }
-
-  /**
-   * Spawns the billboards of the map (trees, bushes, flowers, rocks and
-   * signposts). They are sprites, so the player walks behind them.
-   */
-  private buildOverworldProps() {
-    this.overworldProps = new OverworldProps(`${import.meta.env?.BASE_URL ?? '/'}assets/props`);
-    this.overworldProps.load();
-    this.worldGroup.add(this.overworldProps.group);
   }
 
   /**
@@ -305,7 +306,7 @@ export class LuminatiRenderer {
       roof.position.set(0, 2.85, 0);
       group.add(roof);
 
-      this.worldGroup.add(group);
+      this.facilityDoorsGroup.add(group);
     });
   }
 
@@ -384,24 +385,74 @@ export class LuminatiRenderer {
     }
   }
 
+  private buildOverworldProps() {
+    this.overworldProps = new OverworldProps(`${import.meta.env?.BASE_URL ?? '/'}assets/props`);
+    this.overworldProps.load(this.activeMapId);
+    this.worldGroup.add(this.overworldProps.group);
+  }
+
   /**
-   * Bakes the tilemap and applies it to the ground. The world stays playable
-   * while the tiles are loading.
+   * Bakes the active area's tilemap and applies it to the ground. The world
+   * stays playable while the tiles are loading. Baked textures are cached per
+   * area so border crossings are instant.
    */
-  private async loadOverworldMap(): Promise<void> {
+  private async loadOverworldMap(map: MapId): Promise<void> {
     try {
-      const map = await buildOverworldMap();
-      if (this.isDestroyed) {
-        map.texture.dispose();
-        return;
+      let texture = this.bakedMapTextures.get(map);
+      if (!texture) {
+        const baked = await buildOverworldMap(map);
+        if (this.isDestroyed) {
+          baked.texture.dispose();
+          return;
+        }
+        texture = baked.texture;
+        this.bakedMapTextures.set(map, texture);
       }
-      this.groundMaterial.map = map.texture;
+      this.groundMaterial.map = texture;
       this.groundMaterial.color.set('#ffffff');
       this.groundMaterial.needsUpdate = true;
     } catch (error) {
       // Keep the flat green ground if the tiles cannot be loaded.
       console.warn('[Luminati] No se pudo cargar el mapa de tiles:', error);
     }
+  }
+
+  /**
+   * Option B: swaps the active overworld area when the player walks through a
+   * border gap (Pueblo Paleta <-> Ruta 1 <-> Ciudad Verde). Battle/ECS logic is
+   * untouched: only the visual layer and the player position change.
+   */
+  private switchMap(exit: MapExit): void {
+    const playerEntity = ecs.getPlayerEntity();
+    if (!playerEntity) return;
+
+    const nextMap = exit.targetMap;
+    if (nextMap === this.activeMapId) return;
+
+    const pos = ecs.positions.get(playerEntity)!;
+    pos.x = exit.spawn.x;
+    pos.z = exit.spawn.z;
+    this.activeMapId = nextMap;
+    gameStore.setState({ activeMapId: nextMap });
+    sound.playSelect();
+    gameStore.showToast(`Ahora en ${MAP_NAMES[nextMap]}`);
+
+    // Landmarks of the starter town only exist on Pueblo Paleta.
+    const isPallet = nextMap === 'pallet_town';
+    this.palletLandmarksGroup.visible = isPallet;
+    this.facilityDoorsGroup.visible = nextMap !== 'route_1';
+    this.tamerSprites.forEach(({ sprite }) => (sprite.visible = isPallet));
+    if (this.shopSprite) this.shopSprite.visible = isPallet;
+
+    // Rebuild the billboards from the new area's decoration layout.
+    this.overworldProps.dispose();
+    this.worldGroup.remove(this.overworldProps.group);
+    const url = `${import.meta.env?.BASE_URL ?? '/'}assets/props`;
+    this.overworldProps = new OverworldProps(url);
+    this.overworldProps.load(nextMap);
+    this.worldGroup.add(this.overworldProps.group);
+
+    this.loadOverworldMap(nextMap);
   }
 
   /**
@@ -480,7 +531,7 @@ export class LuminatiRenderer {
     crystalLight.position.set(0, 2.0, 0);
     shrine.add(crystalLight);
 
-    this.worldGroup.add(shrine);
+    this.palletLandmarksGroup.add(shrine);
   }
 
   /**
@@ -850,14 +901,14 @@ export class LuminatiRenderer {
     this.entitiesGroup.add(tamer2Sprite);
     this.tamerSprites.push({ sprite: tamer2Sprite, entityId: tamer2 });
 
-    // 4. Wild Zones
+    // 4. Wild Zones (Route 1 flames: wild grass only exists on the route).
     const wz1 = ecs.createEntity();
     ecs.wildZones.set(wz1, {
-      name: 'Claro Silvestre',
-      minX: -16,
-      maxX: -6,
-      minZ: -3,
-      maxZ: 7,
+      name: 'Ruta 1 · Arbóleda',
+      minX: -10,
+      maxX: -4,
+      minZ: -20,
+      maxZ: 16,
       encounterRate: 0.08,
       speciesPool: [
         { speciesId: 'florabun', minLevel: 6, maxLevel: 10, weight: 30 },
@@ -869,11 +920,11 @@ export class LuminatiRenderer {
 
     const wz2 = ecs.createEntity();
     ecs.wildZones.set(wz2, {
-      name: 'Pradera del Susurro',
-      minX: 6,
-      maxX: 16,
-      minZ: -3,
-      maxZ: 7,
+      name: 'Ruta 1 · Pradera del Susurro',
+      minX: 4,
+      maxX: 10,
+      minZ: -16,
+      maxZ: 20,
       encounterRate: 0.08,
       speciesPool: [
         { speciesId: 'aquafox', minLevel: 7, maxLevel: 11, weight: 35 },
@@ -908,6 +959,7 @@ export class LuminatiRenderer {
     shopSprite.scale.set(2.8, 2.8, 1);
     shopSprite.position.set(5, 1.0, -5);
     this.entitiesGroup.add(shopSprite);
+    this.shopSprite = shopSprite;
   }
 
   /**
@@ -1019,6 +1071,15 @@ export class LuminatiRenderer {
 
           // Check proximity to NPC Tamers
           this.checkTamerTriggers(pos.x, pos.z);
+
+          // Border crossings: reach a corridor gap at the edge to swap area.
+          for (const exit of MAP_EXITS[this.activeMapId]) {
+            const atEdge = exit.edge === 'n' ? pos.z <= -23.6 : pos.z >= 23.6;
+            if (atEdge && Math.abs(pos.x) <= exit.halfWidth) {
+              this.switchMap(exit);
+              break;
+            }
+          }
         }
 
         // Update sprite position & 6-frame walk animation from spritesheet
@@ -1064,9 +1125,11 @@ export class LuminatiRenderer {
   }
 
   /**
-   * Checks if player stepped into wild spirit grass and triggers battle
+   * Checks if player stepped into wild spirit grass and triggers battle.
+   * Wild grass only exists on Route 1 in the Kanto-like world.
    */
   private checkWildGrassEncounter(px: number, pz: number) {
+    if (this.activeMapId !== 'route_1') return;
     const zones = ecs.getWildZones();
     for (const zid of zones) {
       const z = ecs.wildZones.get(zid)!;

@@ -9,9 +9,10 @@
  * 1.5 world units (the same pixel density as the rest of the art, which is
  * ~10.7 px per world unit).
  *
- * The layout keeps the coordinates used by the ECS: the wild grass patches,
- * the sanctuary, the crossroads and the plaza stay exactly where the game
- * logic expects them.
+ * Option B (Kanto clone): the world is a set of connected areas
+ * (Pueblo Paleta <-> Ruta 1 <-> Ciudad Verde). Each area has its own layout,
+ * decorations and collisions, cached and baked on demand. The renderer swaps
+ * them through MAP_EXITS when the player walks into a border gap.
  */
 import * as THREE from 'three';
 
@@ -38,23 +39,108 @@ const TILE_FILES: Record<TileKind, string> = {
   gravel: 'Path-Gravel.png',
 };
 
-/** Patches of spirit grass where wild SoulDolls appear. */
-const WILD_ZONES = [
-  { minX: -16, maxX: -6, minZ: -3, maxZ: 7 },
-  { minX: 6, maxX: 16, minZ: -3, maxZ: 7 },
-];
-/** Radius of the sanctuary plaza. */
-const PLAZA_RADIUS = 5.5;
-/** Half width of the crossroads. */
-const PATH_HALF_WIDTH = 1.75;
+// ---------------------------------------------------------------------------
+// World areas (Kanto clone, Option B)
+// ---------------------------------------------------------------------------
 
-/** Places that must stay clear (shrine, tamers, spawn). */
-const CLEAR_POINTS = [
-  { x: 0, z: -4, r: 3.4 },
-  { x: -3.5, z: -8, r: 3.4 },
-  { x: 7.5, z: -7, r: 3.4 },
-  { x: 0, z: 2.5, r: 2.2 },
-];
+/** Playable area ids of the world. */
+export type MapId = 'pallet_town' | 'route_1' | 'viridian_city';
+
+/** Display names shown by the HUD when the player crosses a border. */
+export const MAP_NAMES: Record<MapId, string> = {
+  pallet_town: 'Pueblo Paleta',
+  route_1: 'Ruta 1',
+  viridian_city: 'Ciudad Verde',
+};
+
+interface MapLayoutDef {
+  /** Patches of spirit grass where wild SoulDolls appear. */
+  wildZones: { minX: number; maxX: number; minZ: number; maxZ: number }[];
+  /** Central plaza (gravel circle) or null for pure route areas. */
+  plaza: { x: number; z: number; radius: number } | null;
+  /** Half width of the crossroads. */
+  pathHalfWidth: number;
+}
+
+const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
+  pallet_town: {
+    // Pallet Town: a quiet village, no wild grass (like Kanto's starter town).
+    wildZones: [],
+    plaza: { x: 0, z: 0, radius: 5.5 },
+    pathHalfWidth: 1.75,
+  },
+  route_1: {
+    // Route 1: north-south corridor flanked by spirit grass bands.
+    wildZones: [
+      { minX: -10, maxX: -4, minZ: -20, maxZ: 16 },
+      { minX: 4, maxX: 10, minZ: -16, maxZ: 20 },
+    ],
+    plaza: null,
+    pathHalfWidth: 1.6,
+  },
+  viridian_city: {
+    // Green leaf city: bigger plaza, no wild grass inside.
+    wildZones: [],
+    plaza: { x: 0, z: 0, radius: 6 },
+    pathHalfWidth: 1.75,
+  },
+};
+
+/** Places that must stay clear of trees (spawn, tamers, doors, map gaps). */
+const MAP_CLEAR_POINTS: Record<MapId, { x: number; z: number; r: number }[]> = {
+  pallet_town: [
+    { x: 0, z: -4, r: 3.4 },
+    { x: -3.5, z: -8, r: 3.4 },
+    { x: 7.5, z: -7, r: 3.4 },
+    { x: 0, z: 2.5, r: 2.2 },
+    { x: -6, z: 9, r: 3.2 },
+    { x: -1.5, z: 9, r: 3.2 },
+    { x: 3, z: 9, r: 3.2 },
+    { x: 7.5, z: 9, r: 3.2 },
+    { x: 0, z: -16, r: 6.5 },
+    { x: 0, z: -22, r: 3 },
+  ],
+  route_1: [
+    { x: 0, z: 0, r: 3 },
+    { x: 0, z: -14, r: 7 },
+    { x: 0, z: 14, r: 7 },
+    { x: 0, z: -21.5, r: 4 },
+    { x: 0, z: 21.5, r: 4 },
+  ],
+  viridian_city: [
+    { x: 0, z: 0, r: 6.5 },
+    { x: 0, z: 14, r: 7 },
+    { x: 0, z: 21.5, r: 4 },
+    { x: -6, z: 9, r: 3.2 },
+    { x: -1.5, z: 9, r: 3.2 },
+    { x: 3, z: 9, r: 3.2 },
+    { x: 7.5, z: 9, r: 3.2 },
+  ],
+};
+
+/** Border crossings that connect the areas of the world. */
+export interface MapExit {
+  targetMap: MapId;
+  /** Edge of the current map that leads out. */
+  edge: 'n' | 's';
+  /** Half width of the crossing corridor in world units. */
+  halfWidth: number;
+  /** Player position right after the swap. */
+  spawn: { x: number; z: number };
+}
+
+export const MAP_EXITS: Record<MapId, MapExit[]> = {
+  pallet_town: [
+    { targetMap: 'route_1', edge: 'n', halfWidth: 3.5, spawn: { x: 0, z: 21.5 } },
+  ],
+  route_1: [
+    { targetMap: 'pallet_town', edge: 's', halfWidth: 3.5, spawn: { x: 0, z: -21.5 } },
+    { targetMap: 'viridian_city', edge: 'n', halfWidth: 3.5, spawn: { x: 0, z: 21.5 } },
+  ],
+  viridian_city: [
+    { targetMap: 'route_1', edge: 's', halfWidth: 3.5, spawn: { x: 0, z: -21.5 } },
+  ],
+};
 
 export type DecorationKind =
   | 'tree-short'
@@ -73,9 +159,6 @@ interface Decoration {
   row: number;
 }
 
-/** Tiles occupied by a tree, the player cannot walk through them. */
-const BLOCKED = new Set<string>();
-
 /** Decoration kinds that stop the player. */
 const SOLID_DECORATIONS: DecorationKind[] = ['tree-short', 'tree-tall'];
 
@@ -83,13 +166,23 @@ const SOLID_DECORATIONS: DecorationKind[] = ['tree-short', 'tree-tall'];
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Deterministic RNG so the map is always the same. */
+/** Deterministic RNG so every map is always the same. */
 function makeRandom(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
     state = (state * 1664525 + 1013904223) >>> 0;
     return state / 4294967296;
   };
+}
+
+/** FNV-1a so a text id maps to a stable seed. */
+function hashString(text: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 const tileCenter = (index: number): number => (index - MAP_TILES / 2 + 0.5) * TILE_UNITS;
@@ -103,8 +196,8 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Kind of tile at the given tile coordinates. */
-function kindAt(col: number, row: number): TileKind {
+/** Kind of tile at the given tile coordinates for a specific area layout. */
+function kindAt(col: number, row: number, layout: MapLayoutDef): TileKind {
   if (
     col < BORDER_TILES ||
     row < BORDER_TILES ||
@@ -117,14 +210,21 @@ function kindAt(col: number, row: number): TileKind {
   const wx = tileCenter(col);
   const wz = tileCenter(row);
 
-  for (const zone of WILD_ZONES) {
+  for (const zone of layout.wildZones) {
     if (wx >= zone.minX && wx <= zone.maxX && wz >= zone.minZ && wz <= zone.maxZ) {
       return 'tallgrass';
     }
   }
 
-  if (Math.hypot(wx, wz) <= PLAZA_RADIUS) return 'gravel';
-  if (Math.abs(wx) <= PATH_HALF_WIDTH || Math.abs(wz) <= PATH_HALF_WIDTH) return 'path';
+  if (layout.plaza && Math.hypot(wx - layout.plaza.x, wz - layout.plaza.z) <= layout.plaza.radius) {
+    return 'gravel';
+  }
+  if (
+    Math.abs(wx - (layout.plaza?.x ?? 0)) <= layout.pathHalfWidth ||
+    Math.abs(wz - (layout.plaza?.z ?? 0)) <= layout.pathHalfWidth
+  ) {
+    return 'path';
+  }
 
   return 'grass';
 }
@@ -165,12 +265,34 @@ function maskedTile(
 }
 
 // ---------------------------------------------------------------------------
-// Map generation
+// Map generation (one cached layout per area)
 // ---------------------------------------------------------------------------
 
-/** The map is deterministic, so it is computed once and shared. */
-const GRID = buildTileGrid();
-const DECORATIONS = buildDecorations(GRID);
+interface MapLayout {
+  grid: TileKind[][];
+  decorations: Decoration[];
+  /** Tiles occupied by a tree, the player cannot walk through them. */
+  blocked: Set<string>;
+}
+
+const LAYOUT_CACHE = new Map<MapId, MapLayout>();
+
+function buildLayout(map: MapId): MapLayout {
+  const def = MAP_LAYOUTS[map];
+  const grid = buildTileGrid(def);
+  const blocked = new Set<string>();
+  const decorations = buildDecorations(grid, MAP_CLEAR_POINTS[map], blocked, hashString(map));
+  return { grid, decorations, blocked };
+}
+
+function getLayout(map: MapId): MapLayout {
+  let layout = LAYOUT_CACHE.get(map);
+  if (!layout) {
+    layout = buildLayout(map);
+    LAYOUT_CACHE.set(map, layout);
+  }
+  return layout;
+}
 
 /** A decoration placed in the world, ready to become a billboard. */
 export interface PlacedDecoration {
@@ -180,34 +302,39 @@ export interface PlacedDecoration {
   z: number;
 }
 
-/** Every decoration of the map, in world coordinates. */
-export function getDecorations(): PlacedDecoration[] {
-  return DECORATIONS.map((decor) => ({
+/** Every decoration of an area, in world coordinates. */
+export function getDecorations(map: MapId = 'pallet_town'): PlacedDecoration[] {
+  return getLayout(map).decorations.map((decor) => ({
     kind: decor.kind,
     x: tileCenter(decor.col),
     z: tileCenter(decor.row),
   }));
 }
 
-/** True when a world position is inside a tree. */
-export function isBlocked(worldX: number, worldZ: number): boolean {
+/** True when a world position is inside a tree of the given area. */
+export function isBlocked(worldX: number, worldZ: number, map: MapId = 'pallet_town'): boolean {
   const col = Math.floor(worldX / TILE_UNITS + MAP_TILES / 2);
   const row = Math.floor(worldZ / TILE_UNITS + MAP_TILES / 2);
-  return BLOCKED.has(`${col},${row}`);
+  return getLayout(map).blocked.has(`${col},${row}`);
 }
 
-function buildTileGrid(): TileKind[][] {
+function buildTileGrid(layout: MapLayoutDef): TileKind[][] {
   const grid: TileKind[][] = [];
   for (let row = 0; row < MAP_TILES; row++) {
     const line: TileKind[] = [];
-    for (let col = 0; col < MAP_TILES; col++) line.push(kindAt(col, row));
+    for (let col = 0; col < MAP_TILES; col++) line.push(kindAt(col, row, layout));
     grid.push(line);
   }
   return grid;
 }
 
-function buildDecorations(grid: TileKind[][]): Decoration[] {
-  const random = makeRandom(0x5eed1234);
+function buildDecorations(
+  grid: TileKind[][],
+  clearPoints: { x: number; z: number; r: number }[],
+  blocked: Set<string>,
+  seed: number
+): Decoration[] {
+  const random = makeRandom(seed);
   const decorations: Decoration[] = [];
   const taken = new Set<string>();
   const key = (col: number, row: number) => `${col},${row}`;
@@ -229,7 +356,7 @@ function buildDecorations(grid: TileKind[][]): Decoration[] {
     // Keep the important places free.
     const cx = tileCenter(col + (width - 1) / 2);
     const cz = tileCenter(row + (height - 1) / 2);
-    for (const clear of CLEAR_POINTS) {
+    for (const clear of clearPoints) {
       if (Math.hypot(cx - clear.x, cz - clear.z) < clear.r) return false;
     }
     return true;
@@ -245,7 +372,7 @@ function buildDecorations(grid: TileKind[][]): Decoration[] {
       }
       if (SOLID_DECORATIONS.includes(kind)) {
         for (let c = col; c < col + width; c++) {
-          for (let r = row; r < row + height; r++) BLOCKED.add(key(c, r));
+          for (let r = row; r < row + height; r++) blocked.add(key(c, r));
         }
       }
       decorations.push({ kind, col, row });
@@ -293,11 +420,11 @@ export interface OverworldMap {
 }
 
 /**
- * Builds the whole overworld: loads the tiles, bakes the ground with its
- * transitions and the decorations into a single texture.
+ * Bakes the whole overworld of an area: loads the tiles, bakes the ground with
+ * its transitions and the decorations into a single texture.
  */
-export async function buildOverworldMap(): Promise<OverworldMap> {
-  const grid = GRID;
+export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<OverworldMap> {
+  const grid = getLayout(map).grid;
 
   const tileImages: Partial<Record<TileKind, HTMLImageElement>> = {};
   await Promise.all(

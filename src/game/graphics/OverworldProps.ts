@@ -9,7 +9,7 @@
  * (public/assets/props) and are placed where the map says so.
  */
 import * as THREE from 'three';
-import { DecorationKind, PlacedDecoration, getDecorations } from './OverworldTiles';
+import { DecorationKind, MapId, PlacedDecoration, getDecorations } from './OverworldTiles';
 
 interface PropDefinition {
   /** File inside /assets/props. */
@@ -39,11 +39,11 @@ export class OverworldProps {
 
   constructor(private baseUrl: string) {}
 
-  /** Loads every prop texture and spawns its billboards. */
-  public load(): void {
+  /** Loads every prop texture and spawns the billboards of the given area. */
+  public load(map: MapId = 'pallet_town'): void {
     const loader = new THREE.TextureLoader();
     const byKind = new Map<DecorationKind, PlacedDecoration[]>();
-    for (const decor of getDecorations()) {
+    for (const decor of getDecorations(map)) {
       const list = byKind.get(decor.kind);
       if (list) list.push(decor);
       else byKind.set(decor.kind, [decor]);

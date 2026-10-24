@@ -23,6 +23,7 @@ export interface GameState {
   activeShopId: number | null;
   introStep: IntroStep;
   selectedStarterId: string | null;
+  activeMapId: string;
 }
 
 // Initial state setup with Tomo + Aquafox starter party
@@ -45,6 +46,7 @@ let globalState: GameState = {
   view: 'OVERWORLD',
   introStep: 'title',
   selectedStarterId: null,
+  activeMapId: 'pallet_town',
   playerParty: initialParty,
   soulBox: [
     createSoulDoll('runika', 10),

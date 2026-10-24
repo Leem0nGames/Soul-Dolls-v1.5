@@ -3,6 +3,7 @@ import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { sound } from '../game/audio/SoundEffects';
 import { BookOpen, Users, Briefcase, Heart, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
 import { SoulDollSprite } from './ui/SoulDollSprite';
+import { MAP_NAMES } from '../game/graphics/OverworldTiles';
 
 export const TopHUD: React.FC = () => {
   const state = useGameStore();
@@ -17,12 +18,15 @@ export const TopHUD: React.FC = () => {
   };
 
   const getZoneName = () => {
+    const mapId = state.activeMapId;
+    // Outside the starter town the HUD shows the area name of the Kanto-like world.
+    if (mapId && mapId !== 'pallet_town' && mapId in MAP_NAMES) {
+      return MAP_NAMES[mapId as keyof typeof MAP_NAMES];
+    }
     const px = state.playerPosition.x;
     const pz = state.playerPosition.z;
-    if (px < -6 && pz > -3 && pz < 7) return 'Claro Silvestre';
-    if (px > 6 && pz > -3 && pz < 7) return 'Pradera del Susurro';
     if (Math.hypot(px, pz + 4) < 5) return 'Santuario de Almas';
-    return 'Valle Luminati';
+    return 'Pueblo Paleta';
   };
 
   return (
