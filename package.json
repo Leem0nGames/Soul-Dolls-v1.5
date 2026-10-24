@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit",
     "bake:sprites": "tsx tools/bake-sprites.ts",
     "bake:props": "python3 tools/bake-modern-props.py",
+    "bake:npc-sprites": "tsx tools/bake-npc-sprites.ts",
     "soul:harness": "tsx tools/soul-harness.ts"
   },
   "dependencies": {

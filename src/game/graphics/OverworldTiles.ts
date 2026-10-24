@@ -107,8 +107,8 @@ const MAP_CLEAR_POINTS: Record<MapId, { x: number; z: number; r: number }[]> = {
   villa_marionette: [
     { x: 0, z: 22, r: 4.5 },
     { x: 0, z: 0, r: 8 },
-    { x: -6, z: -5, r: 3.5 },
-    { x: 6, z: 5, r: 3.5 },
+    { x: -8, z: -7, r: 3.5 },
+    { x: 8, z: 7, r: 3.5 },
     { x: 17, z: -7, r: 3.5 },
     ...VILLA_BUILDINGS.flatMap((building) => [
       { x: building.x, z: building.z, r: 4.5 },

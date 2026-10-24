@@ -119,7 +119,7 @@ export default function App() {
       {/* SoulDex Modal */}
       <SoulDexModal />
 
-      {/* Intro sequence (title / oak / starter choice) */}
+      {/* Intro sequence (title / waking at home / lab starter choice) */}
       <IntroSequence />
 
       {/* Dialogue Overlay */}

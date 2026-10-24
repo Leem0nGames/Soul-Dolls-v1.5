@@ -8,8 +8,7 @@ import type { IntroStep } from '../types/game';
 /**
  * IntroSequence
  * ---------------------------------------------------------------------------
- * Pokémon Red-like opening flow for SoulDolls:
- *   title -> oak (dialogue) -> starter_choice -> gameplay
+ * Opening flow: wake at home, then choose a starter at the research lab.
  *
  * The overworld renderer only accepts input once the store reaches the
  * 'gameplay' intro step (see the key handlers in App.tsx).
@@ -21,14 +20,14 @@ export const IntroSequence: React.FC = () => {
   const step = state.introStep;
   const [highlight, setHighlight] = useState(0);
 
-  // Professor Oak dialogue while the intro sits on the 'oak' step.
+  // The player wakes at home; starter selection is reserved for the lab.
   useEffect(() => {
-    if (step !== 'oak') return;
+    if (step !== 'home_wake') return;
     gameStore.setDialogue(
-      'Profesor Oak',
-      '¡Bienvenido, joven Domador! Los SoulDolls guardan almas viejas en su interior...\n\nCada uno lleva un recuerdo de un mundo que ya no existe.\n\nAntes de que empieces tu aventura, elige al SoulDoll que será tu compañero inicial. Escucha tu alma.',
+      'Mamá',
+      '¡Por fin despiertas! La investigadora Iris te espera en el laboratorio de Villa Marionette. Allí podrás conocer a tu primer SoulDoll.\n\nSal de casa y sigue el camino hasta el edificio del laboratorio.',
       () => {
-        gameStore.setIntroStep('starter_choice');
+        gameStore.setIntroStep('gameplay');
       }
     );
   }, [step]);
@@ -36,10 +35,10 @@ export const IntroSequence: React.FC = () => {
   // Touch-first entry point: the title advances on tap; keyboard stays as a desktop fallback.
   const startIntro = () => {
     sound.playSelect();
-    gameStore.setIntroStep('oak');
+    gameStore.setIntroStep('home_wake');
   };
 
-  // Keyboard input for the intro flow (title / oak / starter_choice).
+  // Keyboard input for the title and the lab's starter choice.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
@@ -50,17 +49,12 @@ export const IntroSequence: React.FC = () => {
           e.preventDefault();
           startIntro();
         }
-      } else if (cur === 'oak') {
+      } else if (cur === 'home_wake') {
         if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
           e.preventDefault();
           gameStore.clearDialogue();
         }
       } else if (cur === 'starter_choice') {
-        if (e.code === 'Escape') {
-          e.preventDefault();
-          gameStore.setIntroStep('oak');
-          return;
-        }
         if (e.code === 'ArrowDown') {
           e.preventDefault();
           setHighlight((h) => Math.min(h + 1, STARTER_SPECIES.length - 1));
@@ -110,7 +104,7 @@ export const IntroSequence: React.FC = () => {
       <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/90 pointer-events-auto">
         <div className="min-h-full flex flex-col items-center justify-center py-6">
         <h2 className="font-pixel text-xl md:text-2xl text-amber-300 mb-2">ELIGE TU SOULDOLL INICIAL</h2>
-        <p className="font-pixel text-[8px] md:text-[10px] text-slate-400 mb-8">CADA ALMA GUARDA UNA MEMORIA DE UN MUNDO QUE YA NO EXISTE</p>
+        <p className="font-pixel text-[8px] md:text-[10px] text-slate-400 mb-8">ESCOGE A TU PRIMER COMPAÑERO EN EL LABORATORIO</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl px-4">
           {STARTER_SPECIES.map((id, idx) => {
             const sp = SOULDOLL_SPECIES[id];
@@ -132,13 +126,13 @@ export const IntroSequence: React.FC = () => {
             );
           })}
         </div>
-        <p className="font-pixel text-[7px] text-slate-400 mt-8 text-center px-4">TOCA UNA CARTA PARA ELEGIR · FLECHAS: MOVER · E / ESPACIO: CONFIRMAR · ESC: ATRÁS</p>
+        <p className="font-pixel text-[7px] text-slate-400 mt-8 text-center px-4">TOCA UNA CARTA PARA ELEGIR · FLECHAS: MOVER · E / ESPACIO: CONFIRMAR</p>
         </div>
       </div>
     );
   }
 
-  // 'oak' step is rendered by the shared DialogueBox through the store.
+  // 'home_wake' is rendered by the shared DialogueBox through the store.
   // 'gameplay' renders nothing (handled by the overworld).
   return null;
 };

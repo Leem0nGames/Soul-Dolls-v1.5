@@ -5,8 +5,8 @@
  * (sprites) instead of being painted into the ground texture, so the player
  * walks behind them and they get the depth of the diorama.
  *
- * The sprites are baked from the modern Kenney Roguelike tileset
- * (public/assets/props) and are placed where the map says so.
+ * Most sprites are baked from the modern Kenney Roguelike tileset; the round
+ * shrub is from Kenney Tiny Town. Their CC0 sources are in LICENSE.txt.
  */
 import * as THREE from 'three';
 import { DecorationKind, MapId, PlacedDecoration, getDecorations } from './OverworldTiles';
@@ -22,7 +22,7 @@ interface PropDefinition {
 const PROP_DEFS: Record<DecorationKind, PropDefinition> = {
   'tree-tall': { file: 'tree-tall.png', width: 3, height: 6 },
   'tree-short': { file: 'tree-short.png', width: 3, height: 3 },
-  bush: { file: 'bush.png', width: 2.25, height: 2.25 },
+  bush: { file: 'bush-round.png', width: 2.25, height: 2.25 },
   'flower-a': { file: 'flower-a.png', width: 1.5, height: 1.5 },
   'flower-b': { file: 'flower-b.png', width: 1.5, height: 1.5 },
   rock: { file: 'rock.png', width: 2.25, height: 2.25 },

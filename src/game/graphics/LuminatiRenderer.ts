@@ -24,6 +24,8 @@ const FACILITY_SIGN_STYLE: Record<FacilityKind, { label: string; color: string }
   house: { label: 'HOGAR', color: '#b4643a' },
   gym: { label: 'DOJO', color: '#d97706' },
 };
+const NPC_ATLAS_FRAME = { tyler: 0, vesper: 1, merchant: 2, iris: 3, mother: 4 } as const;
+const NPC_ATLAS_FRAME_COUNT = Object.keys(NPC_ATLAS_FRAME).length;
 
 /**
  * Interiors live on a hidden rooftop platform (mirroring the battle arena
@@ -66,6 +68,16 @@ export class LuminatiRenderer {
   // References
   private playerSprite!: THREE.Sprite;
   private playerShadow!: THREE.Mesh;
+  private npcTextures: THREE.Texture[] = [];
+  private npcMaterials: THREE.SpriteMaterial[] = [];
+  private npcBillboards: {
+    frame: number;
+    x: number;
+    y: number;
+    z: number;
+    width: number;
+    height: number;
+  }[] = [];
   private unsubscribePlayerSprite?: () => void;
   private unsubscribeSoulDollSprite?: () => void;
   private shrineCrystal!: THREE.Mesh;
@@ -381,10 +393,18 @@ export class LuminatiRenderer {
         break;
       }
       case 'research_lab':
-        gameStore.setDialogue(
-          'Investigadora Íris',
-          'Aquí estudiamos la evolución de las almas... Si tu SoulDoll madura con fuertes vínculos, regresará transformado a tu equipo.'
-        );
+        if (!gameStore.getState().selectedStarterId) {
+          gameStore.setDialogue(
+            'Investigadora Iris',
+            '¡Llegas justo a tiempo! Estos SoulDolls buscan un compañero. Elige aquí a quien te acompañará en tu aventura.',
+            () => gameStore.setIntroStep('starter_choice')
+          );
+        } else {
+          gameStore.setDialogue(
+            'Investigadora Iris',
+            'Aquí estudiamos la evolución de las almas... Si tu SoulDoll madura con fuertes vínculos, regresará transformado a tu equipo.'
+          );
+        }
         break;
       case 'gym':
         gameStore.setDialogue(
@@ -396,11 +416,15 @@ export class LuminatiRenderer {
         );
         break;
       case 'house':
-        gameStore.setDialogue(
-          'Domador Local',
-          '¿Cansado del viaje? Puedes descansar un momento en mi sofá para recuperar fuerzas.',
-          () => gameStore.healParty()
-        );
+        if (gameStore.getState().playerParty.length > 0) {
+          gameStore.setDialogue(
+            'Mamá',
+            'Me alegra que hayas vuelto. Descansa un poco; tus SoulDolls se ven con más energía.',
+            () => gameStore.healParty()
+          );
+        } else {
+          gameStore.setDialogue('Mamá', 'Ve al laboratorio de Villa Marionette. La investigadora Iris te está esperando.');
+        }
         break;
     }
   }
@@ -418,6 +442,56 @@ export class LuminatiRenderer {
     void this.overworldBuildings.load(baseUrl).catch((error) => {
       console.error('[Villa Marionette] No se pudieron cargar los edificios 3D:', error);
     });
+  }
+
+  private addNpcBillboard(
+    frame: number,
+    x: number,
+    y: number,
+    z: number,
+    width: number,
+    height: number
+  ): void {
+    this.npcBillboards.push({ frame, x, y, z, width, height });
+  }
+
+  private loadNpcBillboards(): void {
+    const url = `${import.meta.env?.BASE_URL ?? '/'}assets/npcs/npc-atlas.png`;
+    const atlas = new THREE.TextureLoader().load(
+      url,
+      (loadedAtlas) => {
+        if (this.isDestroyed) return;
+        loadedAtlas.magFilter = THREE.NearestFilter;
+        loadedAtlas.minFilter = THREE.NearestFilter;
+        loadedAtlas.generateMipmaps = false;
+        loadedAtlas.colorSpace = THREE.SRGBColorSpace;
+
+        for (const placement of this.npcBillboards) {
+          const texture = loadedAtlas.clone();
+          texture.repeat.set(1 / NPC_ATLAS_FRAME_COUNT, 1);
+          texture.offset.set(placement.frame / NPC_ATLAS_FRAME_COUNT, 0);
+          texture.needsUpdate = true;
+          this.npcTextures.push(texture);
+
+          const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            alphaTest: 0.1,
+            depthWrite: true,
+            fog: true,
+          });
+          this.npcMaterials.push(material);
+          const sprite = new THREE.Sprite(material);
+          sprite.center.set(0.5, 0);
+          sprite.scale.set(placement.width, placement.height, 1);
+          sprite.position.set(placement.x, placement.y, placement.z);
+          this.entitiesGroup.add(sprite);
+        }
+      },
+      undefined,
+      (error) => console.error(`[NPC] No se pudo cargar el atlas ${url}:`, error)
+    );
+    this.npcTextures.push(atlas);
   }
 
   /**
@@ -780,8 +854,19 @@ export class LuminatiRenderer {
     ecs.clear();
 
     // 1. Player Entity
+    const homeBuilding = FACILITY_DOORS.find((building) => building.facility === 'house');
+    if (!homeBuilding) throw new Error('Villa Marionette no tiene una casa inicial');
+    const homeAnchor = INTERIOR_ANCHORS.house;
+    const playerStart = {
+      x: homeAnchor.x + INTERIOR_DOOR_LOCAL.x,
+      y: INTERIOR_Y + 0.8,
+      z: homeAnchor.z - INTERIOR_D / 2 + 1.55,
+    };
+    this.activeInteriorKind = 'house';
+    this.interiorReturnPos = { x: homeBuilding.entrance.x, y: 0.8, z: homeBuilding.entrance.z };
+
     const playerEntity = ecs.createEntity();
-    ecs.positions.set(playerEntity, { x: 0, y: 0.8, z: 22 });
+    ecs.positions.set(playerEntity, { ...playerStart });
     ecs.velocities.set(playerEntity, { vx: 0, vy: 0, vz: 0 });
     ecs.playerControls.set(playerEntity, {
       speed: 4.8,
@@ -795,7 +880,7 @@ export class LuminatiRenderer {
     const playerMat = new THREE.SpriteMaterial({ map: playerTex, transparent: true });
     this.playerSprite = new THREE.Sprite(playerMat);
     this.playerSprite.scale.set(3.6, 3.6, 1);
-    this.playerSprite.position.set(0, 1.8, 22);
+    this.playerSprite.position.set(playerStart.x, playerStart.y + 1.0, playerStart.z);
     this.entitiesGroup.add(this.playerSprite);
 
     // Dynamic ground contact shadow disc for the player
@@ -808,7 +893,7 @@ export class LuminatiRenderer {
     });
     this.playerShadow = new THREE.Mesh(shadowGeo, shadowMat);
     this.playerShadow.rotation.x = -Math.PI / 2;
-    this.playerShadow.position.set(0, 0.02, 22);
+    this.playerShadow.position.set(playerStart.x, playerStart.y - 0.78, playerStart.z);
     this.worldGroup.add(this.playerShadow);
 
     // Listen for spritesheet ready event to refresh texture immediately
@@ -857,8 +942,9 @@ export class LuminatiRenderer {
     });
 
     // 2. NPC Tamer 1: Apprentice Tyler (beside the central square)
+    const tylerPosition = { x: -8, y: 0.8, z: -7 };
     const tamer1 = ecs.createEntity();
-    ecs.positions.set(tamer1, { x: -6.5, y: 0.8, z: -4 });
+    ecs.positions.set(tamer1, { ...tylerPosition });
     ecs.tamers.set(tamer1, {
       name: 'Tyler',
       title: 'Aprendiz de Almas',
@@ -870,15 +956,12 @@ export class LuminatiRenderer {
       triggerDistance: 3.2,
     });
 
-    const tamer1Tex = pixelGenerator.getTamerTexture('apprentice');
-    const tamer1Sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tamer1Tex, transparent: true }));
-    tamer1Sprite.scale.set(2.8, 2.8, 1);
-    tamer1Sprite.position.set(-6.5, 1.0, -4);
-    this.entitiesGroup.add(tamer1Sprite);
+    this.addNpcBillboard(NPC_ATLAS_FRAME.tyler, tylerPosition.x, 0.02, tylerPosition.z, 3, 4);
 
     // 3. NPC Tamer 2: Master Vesper (beside the central square)
+    const vesperPosition = { x: 8, y: 0.8, z: 7 };
     const tamer2 = ecs.createEntity();
-    ecs.positions.set(tamer2, { x: 6.5, y: 0.8, z: 4 });
+    ecs.positions.set(tamer2, { ...vesperPosition });
     ecs.tamers.set(tamer2, {
       name: 'Vesper',
       title: 'Maestro del Éter',
@@ -890,11 +973,7 @@ export class LuminatiRenderer {
       triggerDistance: 3.2,
     });
 
-    const tamer2Tex = pixelGenerator.getTamerTexture('master');
-    const tamer2Sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tamer2Tex, transparent: true }));
-    tamer2Sprite.scale.set(2.8, 2.8, 1);
-    tamer2Sprite.position.set(6.5, 1.0, 4);
-    this.entitiesGroup.add(tamer2Sprite);
+    this.addNpcBillboard(NPC_ATLAS_FRAME.vesper, vesperPosition.x, 0.02, vesperPosition.z, 3, 4);
 
     // 4. Wild Zones: small spirit-grass clearings at the north edge of town.
     const wz1 = ecs.createEntity();
@@ -949,11 +1028,27 @@ export class LuminatiRenderer {
       ]
     });
 
-    const shopTex = pixelGenerator.getTamerTexture('sage');
-    const shopSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: shopTex, transparent: true }));
-    shopSprite.scale.set(2.8, 2.8, 1);
-    shopSprite.position.set(18, 1.0, -7);
-    this.entitiesGroup.add(shopSprite);
+    this.addNpcBillboard(NPC_ATLAS_FRAME.merchant, 18, 0.02, -7, 3, 4);
+
+    const labService = INTERIOR_SERVICE_LOCAL.research_lab;
+    this.addNpcBillboard(
+      NPC_ATLAS_FRAME.iris,
+      INTERIOR_ANCHORS.research_lab.x + labService.x,
+      INTERIOR_Y + 0.02,
+      INTERIOR_ANCHORS.research_lab.z - 3.1,
+      2.7,
+      3.6
+    );
+    const homeService = INTERIOR_SERVICE_LOCAL.house;
+    this.addNpcBillboard(
+      NPC_ATLAS_FRAME.mother,
+      INTERIOR_ANCHORS.house.x + homeService.x,
+      INTERIOR_Y + 0.02,
+      INTERIOR_ANCHORS.house.z,
+      2.7,
+      3.6
+    );
+    this.loadNpcBillboards();
   }
 
   /**
@@ -1114,6 +1209,7 @@ export class LuminatiRenderer {
    * Checks whether the player stepped into Villa Marionette's spirit grass.
    */
   private checkWildGrassEncounter(px: number, pz: number) {
+    if (gameStore.getState().playerParty.length === 0) return;
     const zones = ecs.getWildZones();
     for (const zid of zones) {
       const z = ecs.wildZones.get(zid)!;
@@ -1146,6 +1242,7 @@ export class LuminatiRenderer {
    * Checks proximity to NPC Tamers
    */
   private checkTamerTriggers(px: number, pz: number) {
+    if (gameStore.getState().playerParty.length === 0) return;
     const tamers = ecs.getTamers();
     for (const tid of tamers) {
       const tamer = ecs.tamers.get(tid)!;
@@ -1360,6 +1457,10 @@ export class LuminatiRenderer {
     this.vfxDirector.dispose();
     this.overworldBuildings.dispose();
     this.overworldProps.dispose();
+    this.npcMaterials.forEach((material) => material.dispose());
+    this.npcTextures.forEach((texture) => texture.dispose());
+    this.npcMaterials.length = 0;
+    this.npcTextures.length = 0;
     this.bakedMapTextures.forEach((texture) => texture.dispose());
     this.bakedMapTextures.clear();
     this.renderer.dispose();

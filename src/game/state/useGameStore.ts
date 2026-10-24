@@ -29,12 +29,6 @@ export interface GameState {
   wipeFlash: boolean;
 }
 
-// Initial state setup with Tomo + Aquafox starter party
-const initialParty: SoulDollInstance[] = [
-  createSoulDoll('ignisaur', 12),
-  createSoulDoll('aquafox', 10),
-];
-
 const initialInventory: Record<string, Item> = {
   animus_vial: { ...ITEMS_DATABASE.animus_vial, count: 12 },
   great_vial: { ...ITEMS_DATABASE.great_vial, count: 5 },
@@ -53,22 +47,17 @@ let globalState: GameState = {
   wipeCount: 0,
   wipeLabel: null,
   wipeFlash: false,
-  playerParty: initialParty,
-  soulBox: [
-    createSoulDoll('runika', 10),
-    createSoulDoll('florabun', 8),
-    createSoulDoll('sparkit', 9),
-    createSoulDoll('geotort', 7),
-  ],
+  playerParty: [],
+  soulBox: [],
   inventory: initialInventory,
   soulShards: 1250,
-  seenSoulDolls: new Set(['ignisaur', 'aquafox', 'florabun', 'sparkit', 'geotort', 'runika']),
-  caughtSoulDolls: new Set(['ignisaur', 'aquafox', 'florabun', 'sparkit', 'geotort', 'runika']),
+  seenSoulDolls: new Set(),
+  caughtSoulDolls: new Set(),
   battleState: null,
   evolutionCandidate: null,
   activeDialogue: null,
   toastMessage: null,
-  playerPosition: { x: 0, y: 0.8, z: 0 },
+  playerPosition: { x: 44, y: 80.8, z: -2.45 },
   activeShopId: null,
 };
 
@@ -136,9 +125,10 @@ export const gameStore = {
     globalState.selectedStarterId = speciesId;
     const doll = createSoulDoll(speciesId, 12);
     globalState.playerParty = [doll];
+    globalState.seenSoulDolls = new Set(globalState.seenSoulDolls).add(speciesId);
+    globalState.caughtSoulDolls = new Set(globalState.caughtSoulDolls).add(speciesId);
     globalState.introStep = 'gameplay';
     globalState.view = 'OVERWORLD';
-    globalState.playerPosition = { x: 0, y: 0.8, z: 0 };
     notify();
   },
 
@@ -156,6 +146,10 @@ export const gameStore = {
 
   // Start Wild or Trainer Battle
   startBattle(opponent: SoulDollInstance, isTrainer = false, trainerName?: string) {
+    if (globalState.playerParty.length === 0) {
+      this.showToast('Primero elige a tu SoulDoll inicial en el laboratorio.');
+      return;
+    }
     sound.playEncounter();
     // Register as seen in SoulDex immutably
     globalState.seenSoulDolls = new Set(globalState.seenSoulDolls).add(opponent.speciesId);

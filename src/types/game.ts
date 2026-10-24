@@ -167,4 +167,4 @@ export interface BattleState {
 
 export type GameView = 'OVERWORLD' | 'BATTLE' | 'EVOLUTION' | 'PARTY' | 'BAG' | 'SOULDEX' | 'BOX' | 'SHOP';
 
-export type IntroStep = 'title' | 'oak' | 'starter_choice' | 'gameplay';
+export type IntroStep = 'title' | 'home_wake' | 'starter_choice' | 'gameplay';

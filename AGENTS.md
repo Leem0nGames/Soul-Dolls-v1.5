@@ -14,6 +14,7 @@ npm run build          # production build
 
 npm run bake:sprites   # cookies las hojas de personajes -> WebP con alfa
 npm run bake:props     # cookies los props del mapa -> PNG con alfa
+npm run bake:npc-sprites # genera el atlas billboard de NPCs desde las poses CC0
 npm run soul:harness   # analiza + hornea + informa del estado de las hojas
 ```
 
@@ -107,6 +108,8 @@ loaded anymore.
 public/tilesets/overworld/modern/     <- the cut tiles in use (16x16) + LICENSE.txt
 public/tilesets/overworld/            <- legacy Gen 2 tileset (8x8) + LICENSE + README
 public/assets/buildings/              <- Kenney City Kit Suburban GLB exteriors (CC0)
+public/assets/npcs/                   <- Kenney Toon Characters, used as NPC billboards (CC0)
+tools/bake-npc-sprites.ts             <- packs the poses into the NPC billboard atlas
 tools/bake-modern-tiles.py            <- regenerates the cut tiles (pure stdlib)
 tools/modern-source/                  <- vendored Kenney sheet (source of truth)
 src/game/graphics/OverworldTiles.ts   <- the grid, the transitions, the layout
@@ -128,6 +131,12 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 - The props are **billboards** (sprites) so the player walks behind them.
 - The trees block the player (slide collision), the rest of the props do not.
 - The important places stay clear: shrine, tamers and the spawn.
+- The player begins inside the garden home; the first SoulDoll is chosen by
+  speaking to the researcher inside the laboratory. The party and SoulDex start
+  empty, and wild/trainer battles stay unavailable until the choice is made.
+- NPC billboards use CC0 poses from Kenney Toon Characters; the round bush is
+  from Kenney Tiny Town. Their source commits and licenses are recorded beside
+  the assets.
 
 Rebake the modern props with `npm run bake:props`. Their sprites are extracted
 from the transparent Kenney sheet; the legacy Gen 2 prop baker remains in

@@ -1,0 +1,18 @@
+NPC billboard sprites
+=====================
+The PNG poses in this folder are from Kenney - Toon Characters:
+https://kenney.nl/assets/toon-characters
+
+Source mirror (pinned commit):
+https://github.com/shorepine/kenney/tree/3694c6879e487c108f55677be7dd2ca75b07cc3b/2d/Toon%20Characters
+
+Original poses:
+- tyler.png: Male adventurer, character_maleAdventurer_idle.png
+- vesper.png: Female adventurer, character_femaleAdventurer_idle.png
+- merchant.png: Male person, character_malePerson_idle.png
+- iris.png: Male person, character_malePerson_talk.png
+- mother.png: Female person, character_femalePerson_idle.png
+- npc-atlas.png: generated from the five poses above by npm run bake:npc-sprites
+
+License: Creative Commons Zero (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/
