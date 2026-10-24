@@ -209,6 +209,34 @@ function maskedTile(
   return canvas;
 }
 
+function drawTallGrassDetails(
+  ctx: CanvasRenderingContext2D,
+  col: number,
+  row: number,
+  seed: number
+): void {
+  const random = makeRandom(seed ^ Math.imul(col + 1, 73856093) ^ Math.imul(row + 1, 19349663));
+  const blades = 4 + Math.floor(random() * 3);
+
+  for (let i = 0; i < blades; i++) {
+    const x = 2 + Math.floor(random() * (TILE_PX - 4));
+    const y = 9 + Math.floor(random() * 5);
+    const height = 3 + Math.floor(random() * 4);
+    const lean = random() < 0.5 ? -1 : 1;
+    ctx.fillStyle = random() < 0.55 ? '#347b32' : '#4d9d36';
+    ctx.fillRect(x, y - height, 1, height);
+    ctx.fillRect(x + lean, y - height - 1, 1, 2);
+    if (random() < 0.6) {
+      ctx.fillStyle = '#9bd84b';
+      ctx.fillRect(x + lean, y - height - 1, 1, 1);
+    }
+  }
+
+  ctx.fillStyle = '#286a32';
+  ctx.fillRect(5, 14, 2, 1);
+  ctx.fillRect(10, 14, 2, 1);
+}
+
 // ---------------------------------------------------------------------------
 // Map generation (one cached layout per area)
 // ---------------------------------------------------------------------------
@@ -586,6 +614,18 @@ export async function buildOverworldMap(map: MapId = 'villa_marionette'): Promis
       if (file) {
         ctx.drawImage(images.get(file)!, 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
       }
+    }
+  }
+
+  // Give encounter patches distinct, pixel-crisp blades instead of a flat fill.
+  const detailSeed = hashString(map);
+  for (let row = 0; row < MAP_TILES; row++) {
+    for (let col = 0; col < MAP_TILES; col++) {
+      if (grid[row][col] !== 'tallgrass') continue;
+      ctx.save();
+      ctx.translate(col * px, row * px);
+      drawTallGrassDetails(ctx, col, row, detailSeed);
+      ctx.restore();
     }
   }
 

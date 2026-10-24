@@ -38,6 +38,8 @@ const NPC_ATLAS_FRAME_COUNT = Object.keys(NPC_ATLAS_FRAME).length;
  * trick at Y = -50): the camera only reaches them when the player teleports in.
  */
 const INTERIOR_Y = 80;
+const MAP_CONNECTION_RADIUS = 1.4;
+const MAP_CONNECTION_REARM_DISTANCE = 2.5;
 const INTERIOR_ANCHORS: Record<FacilityKind, { x: number; z: number }> = {
   pokemon_center: { x: 0, z: 0 },
   poke_mart: { x: 20, z: 0 },
@@ -102,6 +104,7 @@ export class LuminatiRenderer {
   // Phase 3: facility interior flow (visual only; input-gated by these flags)
   private activeInteriorKind: FacilityKind | null = null;
   private interiorReturnPos = { x: 0, y: 0.8, z: 0 };
+  private mapTransitionLock: { map: MapId; x: number; z: number } | null = null;
 
   private get activeMapId(): MapId {
     return gameStore.getState().activeMapId;
@@ -555,6 +558,7 @@ export class LuminatiRenderer {
     const pos = ecs.positions.get(playerEntity)!;
     const controls = ecs.playerControls.get(playerEntity)!;
 
+    this.mapTransitionLock = { map, x: arrival.x, z: arrival.z };
     gameStore.setState({ activeMapId: map, playerPosition: { x: arrival.x, y: 0.8, z: arrival.z } });
     pos.x = arrival.x;
     pos.y = 0.8;
@@ -580,8 +584,19 @@ export class LuminatiRenderer {
   }
 
   private tryMapTransition(pos: { x: number; z: number }): boolean {
+    if (this.mapTransitionLock) {
+      const lock = this.mapTransitionLock;
+      if (
+        lock.map === this.activeMapId &&
+        Math.hypot(pos.x - lock.x, pos.z - lock.z) < MAP_CONNECTION_REARM_DISTANCE
+      ) {
+        return false;
+      }
+      this.mapTransitionLock = null;
+    }
+
     const connection = WORLD_MAPS[this.activeMapId].connections.find(
-      (candidate) => Math.hypot(pos.x - candidate.at.x, pos.z - candidate.at.z) < 1.4
+      (candidate) => Math.hypot(pos.x - candidate.at.x, pos.z - candidate.at.z) < MAP_CONNECTION_RADIUS
     );
     if (!connection) return false;
     this.transitionMap(connection.toMap, connection.arrival, connection.facing);
