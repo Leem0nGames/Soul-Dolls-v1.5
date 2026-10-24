@@ -316,6 +316,21 @@ export class LuminatiRenderer {
       roof.position.set(0, 2.85, 0);
       group.add(roof);
 
+      // Colored awning over the doorway and a welcome mat on the ground.
+      const awning = new THREE.Mesh(
+        new THREE.BoxGeometry(2.6, 0.25, 0.9),
+        new THREE.MeshStandardMaterial({ color: def.color, roughness: 0.9 })
+      );
+      awning.position.set(0, 2.2, 0.75);
+      group.add(awning);
+
+      const doormat = new THREE.Mesh(
+        new THREE.BoxGeometry(1.7, 0.06, 0.9),
+        new THREE.MeshStandardMaterial({ color: 0x8a5524, roughness: 1 })
+      );
+      doormat.position.set(0, 0.03, 1.6);
+      group.add(doormat);
+
       this.facilityDoorsGroup.add(group);
     });
   }

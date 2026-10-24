@@ -60,6 +60,8 @@ interface MapLayoutDef {
   plaza: { x: number; z: number; radius: number } | null;
   /** Half width of the crossroads. */
   pathHalfWidth: number;
+  /** Fraction of plain grass tiles that get a baked flower patch. */
+  flowerDensity: number;
 }
 
 const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
@@ -68,6 +70,7 @@ const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
     wildZones: [],
     plaza: { x: 0, z: 0, radius: 5.5 },
     pathHalfWidth: 1.75,
+    flowerDensity: 0.09,
   },
   route_1: {
     // Route 1: north-south corridor flanked by spirit grass bands.
@@ -77,12 +80,14 @@ const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
     ],
     plaza: null,
     pathHalfWidth: 1.6,
+    flowerDensity: 0.03,
   },
   viridian_city: {
     // Green leaf city: bigger plaza, no wild grass inside.
     wildZones: [],
     plaza: { x: 0, z: 0, radius: 6 },
     pathHalfWidth: 1.75,
+    flowerDensity: 0.07,
   },
 };
 
@@ -491,6 +496,22 @@ export async function buildOverworldMap(map: MapId = 'pallet_town'): Promise<Ove
 
         const masked = maskedTile(img, px, mask);
         ctx.drawImage(masked, col * px, row * px);
+      }
+    }
+  }
+
+  // 3. Flower patches over plain grass (baked in): deterministic per area, so
+  // no extra props and no adjacency seams — grass keeps being grass.
+  const FLOWER_FILES = ['Flower-johto-00.png', 'Flower-johto-01.png'];
+  const flowerDensity = MAP_LAYOUTS[map].flowerDensity;
+  if (flowerDensity > 0) {
+    const flowerImgs = await Promise.all(FLOWER_FILES.map((file) => loadImage(`${TILE_BASE}/${file}`)));
+    for (let row = BORDER_TILES; row < MAP_TILES - BORDER_TILES; row++) {
+      for (let col = BORDER_TILES; col < MAP_TILES - BORDER_TILES; col++) {
+        if (grid[row][col] !== 'grass') continue;
+        const roll = hashString(`${map}:${col}:${row}`) % 1000;
+        if (roll >= flowerDensity * 1000) continue;
+        ctx.drawImage(flowerImgs[roll % 2], 0, 0, TILE_PX, TILE_PX, col * px, row * px, px, px);
       }
     }
   }

@@ -36,6 +36,7 @@ const BASE_LIFT = 0.03;
 export class OverworldProps {
   readonly group = new THREE.Group();
   private sprites: THREE.Sprite[] = [];
+  private materials: THREE.SpriteMaterial[] = [];
 
   constructor(private baseUrl: string) {}
 
@@ -68,15 +69,20 @@ export class OverworldProps {
     texture: THREE.Texture,
     placements: PlacedDecoration[]
   ): void {
+    // One shared material per kind: fewer GPU state switches than one
+    // material per sprite (the map can have hundreds of billboards).
+    const material = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      alphaTest: 0.35,
+      depthWrite: true,
+      fog: true,
+    });
+    this.materials.push(material);
+    const spriteProto = new THREE.Sprite(material);
+
     for (const placement of placements) {
-      const material = new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true,
-        alphaTest: 0.35,
-        depthWrite: true,
-        fog: true,
-      });
-      const sprite = new THREE.Sprite(material);
+      const sprite = spriteProto.clone();
       // The anchor is the bottom of the billboard: the prop stands on the ground.
       sprite.center.set(0.5, 0);
       sprite.scale.set(def.width, def.height, 1);
@@ -89,12 +95,12 @@ export class OverworldProps {
 
   /** Removes every billboard (used when the scene is rebuilt). */
   public dispose(): void {
-    for (const sprite of this.sprites) {
-      const material = sprite.material as THREE.SpriteMaterial;
-      material.map?.dispose();
-      material.dispose();
-    }
     this.group.clear();
     this.sprites.length = 0;
+    for (const material of this.materials) {
+      material.dispose();
+      material.map?.dispose();
+    }
+    this.materials.length = 0;
   }
 }
