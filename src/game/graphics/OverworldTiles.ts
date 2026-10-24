@@ -263,11 +263,12 @@ function buildLayout(map: MapId): MapLayout {
       const z = tileCenter(row);
       if (grid[row][col] === 'water') blocked.add(`${col},${row}`);
       if (
-        VILLA_BUILDINGS.some(
-          (building) =>
-            Math.abs(x - building.x) <= building.halfWidth &&
-            Math.abs(z - building.z) <= building.halfDepth
-        )
+        VILLA_BUILDINGS.some((building) => {
+          return (
+            Math.abs(x - building.x) <= building.halfWidth + TILE_UNITS / 2 &&
+            Math.abs(z - building.z) <= building.halfDepth + TILE_UNITS / 2
+          );
+        })
       ) {
         blocked.add(`${col},${row}`);
       }

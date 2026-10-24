@@ -1,12 +1,15 @@
 Modern overworld props
 ======================
-tree-tall.png, tree-short.png, flower-a.png, flower-b.png, rock.png,
-grass-tuft.png and sign.png are extracted from Kenney - Roguelike pack
-(www.kenney.nl), from tools/modern-source/RoguelikeSheet_misa.png by
+tree-tall.png, tree-short.png, bush.png, rock.png, flower-a.png,
+flower-b.png, grass-tuft.png and sign.png are extracted from
+Kenney - Roguelike pack (www.kenney.nl), from
+tools/modern-source/RoguelikeSheet_misa.png by
 tools/bake-modern-props.py.
 
-bush-round.png is from Kenney - Tiny Town (2D/Tiny Town/Tiles/tile_0005.png).
-Source mirror: https://github.com/shorepine/kenney/tree/3694c6879e487c108f55677be7dd2ca75b07cc3b/2d/Tiny%20Town/Tiles
+bush-round.png is from Kenney - Tiny Town
+(2D/Tiny Town/Tiles/tile_0005.png).
+Source mirror:
+https://github.com/shorepine/kenney/tree/3694c6879e487c108f55677be7dd2ca75b07cc3b/2d/Tiny%20Town/Tiles
 
 Both packs are licensed under Creative Commons Zero (CC0):
 https://creativecommons.org/publicdomain/zero/1.0/

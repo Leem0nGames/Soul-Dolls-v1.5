@@ -129,6 +129,12 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 - **Transitions**: grass is dithered over path/sand with a 50% checkerboard;
   water and the gravel island carry their own rounded shore pieces.
 - The props are **billboards** (sprites) so the player walks behind them.
+- Residential facades face the village interior; the south home faces north
+  toward the plaza. Model footprints and entry points follow those rotations.
+- Every facility interior has a visible door in an actual opening in the front
+  wall, aligned with the interaction and exit point.
+- The tall-tree billboard uses one complete source tile, avoiding a seam from
+  stacking two separate tree sprites.
 - The trees block the player (slide collision), the rest of the props do not.
 - The important places stay clear: shrine, tamers and the spawn.
 - The player begins inside the garden home; the first SoulDoll is chosen by

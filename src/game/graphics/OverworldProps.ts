@@ -20,8 +20,8 @@ interface PropDefinition {
 }
 
 const PROP_DEFS: Record<DecorationKind, PropDefinition> = {
-  'tree-tall': { file: 'tree-tall.png', width: 3, height: 6 },
-  'tree-short': { file: 'tree-short.png', width: 3, height: 3 },
+  'tree-tall': { file: 'tree-tall.png', width: 3, height: 3 },
+  'tree-short': { file: 'tree-short.png', width: 2.25, height: 2.25 },
   bush: { file: 'bush-round.png', width: 2.25, height: 2.25 },
   'flower-a': { file: 'flower-a.png', width: 1.5, height: 1.5 },
   'flower-b': { file: 'flower-b.png', width: 1.5, height: 1.5 },

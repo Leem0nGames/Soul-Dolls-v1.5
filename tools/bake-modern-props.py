@@ -114,7 +114,7 @@ def crop(sheet_w, sheet_px, col, row, tiles_w=1, tiles_h=1):
 
 # Billboards spawned by OverworldProps. Values are (col, row, tilesW, tilesH).
 PROPS = {
-    'tree-tall.png': (15, 10, 1, 2),   # tall round tree, canopy + trunk
+    'tree-tall.png': (15, 10, 1, 1),   # complete pointed tree sprite
     'tree-short.png': (15, 9, 1, 1),   # small round tree
     'bush.png': (25, 9, 1, 1),         # plain green bush
     'rock.png': (50, 22, 1, 1),        # mossy boulder
@@ -143,11 +143,20 @@ def main():
         license_file.write(
             'Modern overworld props\n'
             '======================\n'
-            'Extracted from Kenney - Roguelike pack (www.kenney.nl).\n'
-            'License: Creative Commons Zero (CC0) - http://creativecommons.org/publicdomain/zero/1.0/\n'
-            'Credit "Kenney" is appreciated but not required.\n'
-            'Source: tools/modern-source/RoguelikeSheet_misa.png\n'
-            'Extraction: tools/bake-modern-props.py\n'
+            'tree-tall.png, tree-short.png, bush.png, rock.png, flower-a.png,\n'
+            'flower-b.png, grass-tuft.png and sign.png are extracted from\n'
+            'Kenney - Roguelike pack (www.kenney.nl), from\n'
+            'tools/modern-source/RoguelikeSheet_misa.png by\n'
+            'tools/bake-modern-props.py.\n'
+            '\n'
+            'bush-round.png is from Kenney - Tiny Town\n'
+            '(2D/Tiny Town/Tiles/tile_0005.png).\n'
+            'Source mirror:\n'
+            'https://github.com/shorepine/kenney/tree/3694c6879e487c108f55677be7dd2ca75b07cc3b/2d/Tiny%20Town/Tiles\n'
+            '\n'
+            'Both packs are licensed under Creative Commons Zero (CC0):\n'
+            'https://creativecommons.org/publicdomain/zero/1.0/\n'
+            'Credit \"Kenney\" is appreciated but not required.\n'
         )
     return 0
 

@@ -104,7 +104,24 @@ function addShell(
   ceilingColor: number
 ) {
   addBox(group, w, 0.2, d, floorColor, 0, -0.1, 0);
-  addBox(group, w, h, 0.2, wallColor, 0, h / 2, -d / 2 + 0.1);
+  const doorX = INTERIOR_DOOR_LOCAL.x;
+  const doorWidth = 2;
+  const doorHeight = 3.2;
+  const wallZ = -d / 2 + 0.1;
+  const leftWallWidth = doorX - doorWidth / 2 + w / 2;
+  const rightWallWidth = w / 2 - doorX - doorWidth / 2;
+  addBox(group, leftWallWidth, h, 0.2, wallColor, -w / 2 + leftWallWidth / 2, h / 2, wallZ);
+  addBox(group, rightWallWidth, h, 0.2, wallColor, doorX + doorWidth / 2 + rightWallWidth / 2, h / 2, wallZ);
+  addBox(group, doorWidth, h - doorHeight, 0.2, wallColor, doorX, doorHeight + (h - doorHeight) / 2, wallZ);
+  addBox(group, 0.2, doorHeight + 0.2, 0.3, 0x4a2f1a, doorX - doorWidth / 2, (doorHeight + 0.2) / 2, wallZ + 0.1);
+  addBox(group, 0.2, doorHeight + 0.2, 0.3, 0x4a2f1a, doorX + doorWidth / 2, (doorHeight + 0.2) / 2, wallZ + 0.1);
+  addBox(group, doorWidth + 0.2, 0.2, 0.3, 0x4a2f1a, doorX, doorHeight + 0.1, wallZ + 0.1);
+  addBox(group, doorWidth - 0.3, doorHeight - 0.2, 0.12, 0x704626, doorX, (doorHeight - 0.2) / 2, wallZ + 0.24);
+  addBox(group, doorWidth - 0.55, 0.08, 0.04, 0x9a7042, doorX, 2.2, wallZ + 0.17);
+  addBox(group, doorWidth - 0.55, 0.08, 0.04, 0x9a7042, doorX, 0.85, wallZ + 0.17);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), toonMaterial(0xf3c969, 0xf3c969, 0.25));
+  knob.position.set(doorX + 0.62, 1.55, wallZ + 0.34);
+  group.add(knob);
   addBox(group, 0.2, h, d, wallColor, -w / 2 + 0.1, h / 2, 0);
   addBox(group, 0.2, h, d, wallColor, w / 2 - 0.1, h / 2, 0);
   // Keep a colored wall cap, but leave the roof open for the top-down camera.
@@ -183,9 +200,6 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       // Reception counter with lighter top
       addBox(group, 6, 1.2, 2, 0x5d3d22, -2, 0.6, -d / 2 + 2);
       addBox(group, 6.2, 0.2, 2.2, 0xffedd0, -2, 1.3, -d / 2 + 2);
-      // Door with frame (front, -Z side)
-      addBox(group, 2.6, 3.6, 0.3, 0x4a2f1a, 4, 1.5, -d / 2 + 0.1);
-      addBox(group, 2, 3, 0.25, 0x6b4423, 4, 1.5, -d / 2);
       // Window with frame (front, -Z side)
       addBox(group, 2.4, 2.4, 0.25, 0x4a2f1a, 1.5, 2.5, -d / 2 + 0.1);
       addBox(group, 2, 2, 0.15, 0xbfdbfe, 1.5, 2.5, -d / 2);
@@ -210,9 +224,6 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       // Wide retail counter with lighter top
       addBox(group, 8, 1.2, 3, 0x5d3d22, -2.5, 0.6, -d / 2 + 2);
       addBox(group, 8.2, 0.2, 3.2, 0xffedd0, -2.5, 1.3, -d / 2 + 2);
-      // Door with frame + window
-      addBox(group, 2.6, 3.6, 0.3, 0x4a2f1a, 4, 1.5, -d / 2 + 0.1);
-      addBox(group, 2, 3, 0.25, 0x6b4423, 4, 1.5, -d / 2);
       addBox(group, 2.4, 2.4, 0.25, 0x4a2f1a, 1.5, 2.5, -d / 2 + 0.1);
       addBox(group, 2, 2, 0.15, 0xbfdbfe, 1.5, 2.5, -d / 2);
       // Sale poster on the back wall
@@ -233,9 +244,6 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       addEmissiveBox(group, 3, 3.5, 2, 0x38bdf8, -3, 2.2, -d / 2 + 2);
       addEmissiveBox(group, 3, 4, 2, 0x1e293b, 3, 2, -d / 2 + 2);
       addEmissiveBox(group, 3, 3.5, 2, 0x38bdf8, 3, 2.2, -d / 2 + 2);
-      // Door with glowing glass (front, -Z side)
-      addBox(group, 2, 3, 0.2, 0x94a3b8, 4, 1.5, -d / 2);
-      addEmissiveBox(group, 2, 2.8, 0.05, 0x38bdf8, 4, 1.5, -d / 2 - 0.02);
       // Ceiling light panel
       addCeilingLight(group, 0, h - 0.1, -d / 2 + 2, 0xf8fafc, 25);
       const ambientLight = new THREE.PointLight('#dbeafe', 8, 20, 2);
@@ -275,9 +283,6 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       addBox(group, 3.2, 0.2, 2.6, 0xffedd0, -2, 1.2, -d / 2 + 2);
       // Flaming gym emblem on the back wall
       addEmissiveBox(group, 2.4, 2.4, 0.35, 0xf97316, -2, 4.4, -d / 2 + 0.15, 0.85);
-      // Door with frame (front, -Z side)
-      addBox(group, 2.6, 3.6, 0.3, 0x4a2f1a, 4, 1.5, -d / 2 + 0.1);
-      addBox(group, 2, 3, 0.25, 0x6b4423, 4, 1.5, -d / 2);
       addInteriorLight(group, h - 0.5, -1, '#ffe19b', 26);
       const ambientLight = new THREE.PointLight('#fde8c8', 8, 20, 2);
       ambientLight.position.set(0, 4, 2);

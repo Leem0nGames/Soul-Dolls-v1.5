@@ -9,6 +9,7 @@ export interface VillaBuilding {
   z: number;
   rotation: number;
   scale: number;
+  /** World-space half extents of the blocked footprint. */
   halfWidth: number;
   halfDepth: number;
   facility?: FacilityKind;
@@ -69,45 +70,45 @@ export const VILLA_BUILDINGS: readonly VillaBuilding[] = [
     file: 'building-type-e.glb',
     x: -17,
     z: 0,
-    rotation: Math.PI / 2,
+    rotation: 0,
     scale: 3.5,
     halfWidth: 2.5,
     halfDepth: 2.4,
     facility: 'house',
-    entrance: { x: -13, z: 0 },
+    entrance: { x: -17, z: 3.3 },
   },
   {
     id: 'north-home',
     file: 'building-type-f.glb',
     x: -17,
     z: -22,
-    rotation: Math.PI / 2,
+    rotation: 0,
     scale: 3.5,
     halfWidth: 2.5,
     halfDepth: 2.7,
-    entrance: { x: -13, z: -22 },
+    entrance: { x: -17, z: -17.9 },
   },
   {
     id: 'east-home',
     file: 'building-type-g.glb',
     x: 17,
     z: 0,
-    rotation: -Math.PI / 2,
+    rotation: 0,
     scale: 3.5,
     halfWidth: 2.6,
     halfDepth: 2.5,
-    entrance: { x: 13, z: 0 },
+    entrance: { x: 17, z: 3.6 },
   },
   {
     id: 'south-home',
     file: 'building-type-h.glb',
     x: 17,
     z: 22,
-    rotation: -Math.PI / 2,
+    rotation: Math.PI,
     scale: 3.5,
     halfWidth: 2.5,
     halfDepth: 2.4,
-    entrance: { x: 13, z: 22 },
+    entrance: { x: 17, z: 18.8 },
   },
 ];
 
