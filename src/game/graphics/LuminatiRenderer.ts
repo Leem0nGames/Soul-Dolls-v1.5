@@ -8,6 +8,7 @@ import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
 import { buildOverworldMap, isBlocked } from './OverworldTiles';
 import { OverworldProps } from './OverworldProps';
+import { buildFacilityInterior, FacilityKind } from './FacilityInterior';
 
 export let activeRenderer: LuminatiRenderer | null = null;
 
@@ -26,6 +27,7 @@ export class LuminatiRenderer {
   private entitiesGroup = new THREE.Group();
   private battleGroup = new THREE.Group();
   private vfxGroup = new THREE.Group();
+  private facilityGroup = new THREE.Group();
 
   // Battle VFX
   private vfxDirector!: BattleVfxDirector;
@@ -169,8 +171,10 @@ export class LuminatiRenderer {
     this.scene.add(this.worldGroup);
     this.scene.add(this.entitiesGroup);
     this.scene.add(this.battleGroup);
+    this.scene.add(this.facilityGroup);
     // NOTE: the VFX group is parented to the battle arena (see buildBattleArena)
     // so every effect is authored in arena local space (Y = -50 offset included).
+    // NOTE: the facility group hosts the 3D interiors (see mountFacilityInterior).
 
     // Build World Geometry & Entities
     this.buildTerrain();
@@ -178,6 +182,7 @@ export class LuminatiRenderer {
     this.buildBattleArena();
     this.initEcsEntities();
     this.buildOverworldProps();
+    this.mountFacilityInterior('pokemon_center', { x: -18, y: 0.8, z: -18 });
     this.loadOverworldMap();
 
     // Battle visual effects (driven by this renderer's own tick)
@@ -220,6 +225,19 @@ export class LuminatiRenderer {
     this.overworldProps = new OverworldProps(`${import.meta.env?.BASE_URL ?? '/'}assets/props`);
     this.overworldProps.load();
     this.worldGroup.add(this.overworldProps.group);
+  }
+
+  /**
+   * Mounts a 3D facility interior into the overworld scene. Phase 2 of the
+   * Pokémon Red style map engine: 3D interiors (Pokémon Center for now) with
+   * toon shading + pixel-art palette. Visual layer only; gameplay logic is
+   * untouched.
+   */
+  public mountFacilityInterior(kind: FacilityKind, position: { x: number; y: number; z: number }) {
+    this.facilityGroup.clear();
+    const interior = buildFacilityInterior(kind);
+    interior.position.set(position.x, position.y, position.z);
+    this.facilityGroup.add(interior);
   }
 
   /**
