@@ -48,7 +48,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   };
 
   return (
-    <div className="absolute bottom-2.5 inset-x-2.5 pointer-events-none flex justify-between items-end z-20 select-none touch-none">
+    <div className="touch-only-controls absolute bottom-3 inset-x-3 pointer-events-none flex justify-between items-end z-20 select-none touch-none">
       {/* Compact Floating D-Pad (Bottom-Left) */}
       <div className="pointer-events-auto bg-slate-950/85 p-1 rounded-xl pixel-box flex flex-col items-center shadow-xl backdrop-blur-sm border border-slate-700/80">
         {/* Up Button */}

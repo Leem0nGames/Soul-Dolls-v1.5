@@ -146,7 +146,7 @@ export default function App() {
 
       {/* Minimal Bottom Controls Guide (Overworld only) */}
       {state.view === 'OVERWORLD' && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none hidden md:flex items-center gap-4 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-700/60 text-[10px] font-pixel text-slate-400 z-10">
+        <div className="desktop-control-guide absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none hidden md:flex items-center gap-4 bg-slate-900/90 px-4 py-2 rounded-xl border border-slate-700/70 text-[10px] font-pixel text-slate-300 z-10 shadow-lg backdrop-blur-sm">
           <span>WASD / Flechas: Mover</span>
           <span>•</span>
           <span>Shift: Correr</span>

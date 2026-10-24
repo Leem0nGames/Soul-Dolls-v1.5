@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@media (hover: hover) and (pointer: fine) {
+  .touch-only-controls {
+    display: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .desktop-control-guide {
+    display: none;
+  }
+}
+
 @layer base {
   .font-pixel {
     font-family: 'Press Start 2P', monospace;
@@ -611,4 +623,3 @@
     transition: none !important;
   }
 }
-
