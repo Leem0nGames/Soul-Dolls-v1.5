@@ -14,6 +14,7 @@ export interface MapConnection {
   at: { x: number; z: number };
   toMap: MapId;
   arrival: { x: number; z: number };
+  facing: 'down' | 'up' | 'left' | 'right';
 }
 
 export interface MapLayoutDefinition {
@@ -43,4 +44,17 @@ export interface WorldMapDefinition {
   layout: MapLayoutDefinition;
   clearPoints: { x: number; z: number; r: number }[];
   signSpots: [number, number][];
+  tamers: MapTamerDefinition[];
+}
+
+export interface MapTamerDefinition {
+  name: string;
+  title: string;
+  tamerType: 'apprentice' | 'master' | 'sage';
+  portrait: 'tyler' | 'vesper';
+  position: { x: number; z: number };
+  triggerDistance: number;
+  party: { speciesId: string; level: number }[];
+  dialogueIntro: string;
+  dialogueDefeated: string;
 }

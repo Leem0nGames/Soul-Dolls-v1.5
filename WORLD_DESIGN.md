@@ -21,21 +21,28 @@ main path.
 
 ## Source of truth
 
-- `src/game/graphics/OverworldTiles.ts` owns map IDs, names, connections,
-  terrain layout, encounter-zone definitions, decoration budgets, walkability,
-  and the world consistency checks.
-- `src/game/graphics/LuminatiRenderer.ts` owns map transitions, map-specific
-  scene visibility, NPC/tamer placement, and encounter execution.
+- `src/game/data/world.ts` defines the typed map contract.
+- `src/game/data/maps/<map>.ts` is the sole source of truth for that area's
+  name, palette, connections, terrain, encounters, decoration budget, clear
+  points, signs, and trainers.
+- `src/game/data/maps/index.ts` registers each definition and derives the
+  shared map IDs, names, and palettes. It contains no map-specific content.
+- `src/game/graphics/OverworldTiles.ts` owns shared terrain generation,
+  collision, walkability, world consistency checks, and texture baking.
+- `src/game/graphics/LuminatiRenderer.ts` owns map transitions, shared scene
+  loading, and encounter execution. It spawns trainers generically from map
+  definitions; fixed story/service NPCs remain tied to their game systems.
 - `src/game/graphics/OverworldProps.ts` owns billboard sizes and prop loading.
 - `src/game/graphics/OverworldBuildings.ts` owns Villa Marionette buildings;
   do not apply village footprints to other maps.
 - `tools/world-harness.ts` is the repeatable validator for links and
   reachability. Run it before lint/build.
 
-Do not create a second registry for encounters or travel. Add each area to
-`MapId`, `MAP_NAMES`, `MAP_LAYOUTS`, `MAP_CLEAR_POINTS`, and `MAP_CONNECTIONS`.
-Put encounter zones and their species pools in that area's `MAP_LAYOUTS`
-entry, then make NPCs map-specific with their `mapId`.
+Do not create a second registry for encounters or travel. To add an area,
+create one definition module, add its ID to `MapId`, and register it in
+`maps/index.ts`. Keep all terrain, encounter, connection, decoration, and
+trainer data in that module. Do not add per-map branching to the shared
+renderer or tile generator.
 
 ## Area authoring checklist
 
@@ -45,25 +52,29 @@ entry, then make NPCs map-specific with their `mapId`.
 2. **Choose a readable footprint.** Current maps use a 40x40 tile canvas,
    1.5 world units per tile, and movement bounds near +/-26.8 units. Keep
    entrances on the walkable interior, not in the void border.
-3. **Lay out the main path first.** `roadXs` and `roadZs` describe the path;
-   grass, encounter patches, trees, and props are secondary. Add entrances,
-   landmarks, NPCs, and encounter patches to `MAP_CLEAR_POINTS` so generated
-   scenery cannot cover them.
-4. **Author encounters in map data.** Each zone needs a unique name, an
+3. **Lay out the main path first.** `roadXs` and `roadZs` describe straight
+   roads; `roadPath` supports winding paths. Grass, encounter patches, trees,
+   and props are secondary. Add entrances, landmarks, NPCs, trainers, and
+   encounter patches to the map's `clearPoints` so generated scenery cannot
+   cover them.
+4. **Author encounters and trainers in map data.** Each encounter zone needs a unique name, an
    in-bounds rectangle, a measured encounter rate, and weighted species with
-   sensible level ranges. Keep at least one safe route around trainer/NPC
-   placement.
-5. **Add reciprocal travel links.** A connection is a trigger point and a
-   safe arrival point. Add a return connection in the destination map. Ensure
-   both sides are walkable and the arrival is far enough inside to avoid
-   immediately triggering the same link again.
+   sensible level ranges. Trainer data includes map-local position, portrait,
+   party, dialogue, and trigger distance. Keep at least one safe route around
+   trainer/NPC placement.
+5. **Add reciprocal travel links.** A connection is a trigger point, a safe
+   arrival point, and the direction the player faces on arrival. Add a return
+   connection in the destination map. Ensure both sides are walkable and the
+   arrival is far enough inside to avoid immediately triggering the same link
+   again.
 6. **Scope scene objects.** Map-specific NPCs and tamers must declare `mapId`.
    Village facilities and buildings must stay hidden and non-interactive
    outside Villa Marionette.
 7. **Validate the map.** Run `npm run world:harness`; it checks connection
    targets, bounds, blocked trigger/arrival points, return links, and
-   walkability from each entrance to every encounter zone. It also verifies
-   encounter rates, weighted species references, and level ranges.
+   walkability from each entrance to every encounter zone and trainer. It also
+   verifies encounter rates, weighted species references, trainer parties,
+   and level ranges.
 8. **Validate the project.** Run `npm run lint && npm run build`. Inspect the
    area in the game for sightlines, prop overlap, pacing, and player access.
 9. **Update this guide** when the world progression or map-authoring contract

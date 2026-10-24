@@ -1,10 +1,29 @@
 import { WorldMapDefinition } from '../world';
 
+const RUTA_1_TAMERS: WorldMapDefinition['tamers'] = [
+  {
+    name: 'Nina',
+    title: 'Exploradora',
+    tamerType: 'apprentice',
+    portrait: 'vesper',
+    position: { x: 3.5, z: -15 },
+    triggerDistance: 2.8,
+    party: [
+      { speciesId: 'cryopup', level: 11 },
+      { speciesId: 'sparkit', level: 12 },
+    ],
+    dialogueIntro: '¡Qué buen día para explorar! ¿Te animas a probar el vínculo con tus SoulDolls?',
+    dialogueDefeated: '¡Buen combate! El sendero siempre guarda nuevas sorpresas.',
+  },
+];
+
 export const ruta1: WorldMapDefinition = {
   id: 'ruta_1',
   name: 'Ruta 1 · Sendero de los Susurros',
   palette: { background: '#d5e6ce', fog: '#d5e6ce' },
-  connections: [{ at: { x: 0, z: 26 }, toMap: 'villa_marionette', arrival: { x: 0, z: -25.5 } }],
+  connections: [
+    { at: { x: 0, z: 26 }, toMap: 'villa_marionette', arrival: { x: 0, z: -25.5 }, facing: 'down' },
+  ],
   layout: {
     wildZones: [
       {
@@ -51,6 +70,7 @@ export const ruta1: WorldMapDefinition = {
     flowerDensity: 0.025,
     decorations: { tallTrees: 20, shortTrees: 28, bushes: 26, rocks: 18, flowers: 10, tufts: 16 },
   },
+  tamers: RUTA_1_TAMERS,
   clearPoints: [
     { x: 0, z: 25, r: 4 },
     { x: 0, z: -25, r: 4 },
@@ -58,7 +78,7 @@ export const ruta1: WorldMapDefinition = {
     { x: 0, z: 0, r: 3.5 },
     { x: 0, z: 26, r: 4 },
     { x: 0, z: -26, r: 4 },
-    { x: 3, z: -15, r: 3 },
+    ...RUTA_1_TAMERS.map(({ position }) => ({ ...position, r: 3 })),
   ],
   signSpots: [[17, 36], [23, 4]],
 };

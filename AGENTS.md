@@ -16,6 +16,7 @@ npm run bake:sprites   # cookies las hojas de personajes -> WebP con alfa
 npm run bake:props     # cookies los props del mapa -> PNG con alfa
 npm run bake:npc-sprites # genera el atlas billboard de NPCs desde las poses CC0
 npm run soul:harness   # analiza + hornea + informa del estado de las hojas
+npm run souldoll:validate # valida catálogo JSON, evoluciones, movimientos y arte
 npm run world:harness  # valida conexiones, accesos y encuentros del mundo
 ```
 
@@ -50,15 +51,25 @@ public/assets/souldolls/
      still have no artwork (with a ready to paste template) and any warning.
 3. **Interpret** the new sheet: decide which species/tier it belongs to, its
    name, its types and its evolution. Look at the preview PNG.
-4. **Assign** it:
+4. **Add the species data** as an entry in `src/game/data/souldolls.json`.
+   Include its ID, name, stage, types, six base stats, description, catch rate,
+   base experience, learnset, and color theme. Use existing move IDs from
+   `src/game/data/moves.ts`; evolution targets must already exist and advance
+   exactly one stage. The art harness prints a JSON template for unassigned
+   sheets. Add an evolution only when its target species is also defined.
+5. **Assign** it:
    ```bash
    npm run soul:harness -- --assign 105515179_1792644033044389 ignisaur
    ```
    This updates `manifest.json`, re-bakes and regenerates the mapping. The
    first sheet of the manifest for a species is the one that wins.
-5. **Add the species data** in `src/game/data/souldolls.ts` (name, types, stats,
-   learnset, evolution, colorTheme). The harness prints a template.
-6. **Verify**: `npm run lint && npm run build`, then check the game.
+6. Run `npm run souldoll:validate`. It rejects malformed stats/types, unknown
+   moves, invalid evolution targets, missing starters, and invalid art
+   assignments. New species without artwork use a stable generic sheet (or
+   generated procedural art) automatically.
+7. To add a starter, set `"starter": true` and a unique `"starterOrder"` in
+   the JSON entry. No UI code change is needed.
+8. **Verify**: `npm run lint && npm run build`, then check the game.
 
 ### The backdrop colours
 
@@ -76,6 +87,11 @@ A sheet that already ships with an alpha channel is detected and used as is
 black collar, the boot soles and the straps of the characters.
 
 ### Species and sheet mapping
+
+Species gameplay data is sourced from `src/game/data/souldolls.json`. The
+typed loader and runtime checks live in `src/game/data/souldolls.ts`; do not
+duplicate species records in TypeScript. `npm run souldoll:validate` checks
+the JSON catalog without baking or modifying any artwork.
 
 `src/game/data/souldollSheets.ts` is **generated** by the harness, do not edit
 it by hand. It maps every sheet to the species that owns it; the species

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { SoulDollSprite } from './ui/SoulDollSprite';
 import { sound } from '../game/audio/SoundEffects';
-import { SOULDOLL_SPECIES } from '../game/data/souldolls';
+import { SOULDOLL_SPECIES, STARTER_SPECIES } from '../game/data/souldolls';
 import type { IntroStep } from '../types/game';
 
 /**
@@ -13,7 +13,6 @@ import type { IntroStep } from '../types/game';
  * The overworld renderer only accepts input once the store reaches the
  * 'gameplay' intro step (see the key handlers in App.tsx).
  */
-const STARTER_SPECIES = ['ignisaur', 'aquafox', 'florabun', 'sparkit', 'geotort', 'runika'];
 
 export const IntroSequence: React.FC = () => {
   const state = useGameStore();

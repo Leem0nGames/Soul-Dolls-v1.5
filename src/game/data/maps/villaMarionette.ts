@@ -1,11 +1,44 @@
 import { WorldMapDefinition } from '../world';
 import { VILLA_BUILDINGS } from '../../graphics/OverworldBuildings';
 
+const VILLA_TAMERS: WorldMapDefinition['tamers'] = [
+  {
+    name: 'Tyler',
+    title: 'Aprendiz de Almas',
+    tamerType: 'apprentice',
+    portrait: 'tyler',
+    position: { x: -8, z: -7 },
+    triggerDistance: 3.2,
+    party: [
+      { speciesId: 'sparkit', level: 9 },
+      { speciesId: 'florabun', level: 10 },
+    ],
+    dialogueIntro: '¡Alto ahí, forastero! ¡Demuéstrame el vínculo que tienes con tus SoulDolls!',
+    dialogueDefeated: '¡Increíble sintonía! Tus almas combaten con una armonía admirable.',
+  },
+  {
+    name: 'Vesper',
+    title: 'Maestro del Éter',
+    tamerType: 'master',
+    portrait: 'vesper',
+    position: { x: 8, z: 7 },
+    triggerDistance: 3.2,
+    party: [
+      { speciesId: 'umbraling', level: 13 },
+      { speciesId: 'cryopup', level: 14 },
+    ],
+    dialogueIntro: 'Las sombras y la escarcha responden a mi voluntad. ¿Podrá tu llama resistir?',
+    dialogueDefeated: 'Fascinante... Tus SoulDolls poseen un brillo que desafía la penumbra.',
+  },
+];
+
 export const villaMarionette: WorldMapDefinition = {
   id: 'villa_marionette',
   name: 'Villa Marionette',
   palette: { background: '#c9dfcf', fog: '#c9dfcf' },
-  connections: [{ at: { x: 0, z: -26 }, toMap: 'ruta_1', arrival: { x: 0, z: 25.5 } }],
+  connections: [
+    { at: { x: 0, z: -26 }, toMap: 'ruta_1', arrival: { x: 0, z: 25.5 }, facing: 'up' },
+  ],
   layout: {
     wildZones: [
       {
@@ -50,12 +83,12 @@ export const villaMarionette: WorldMapDefinition = {
       halfDepth,
     })),
   },
+  tamers: VILLA_TAMERS,
   clearPoints: [
     { x: 0, z: 22, r: 4.5 },
     { x: 0, z: 0, r: 8 },
-    { x: -8, z: -7, r: 3.5 },
-    { x: 8, z: 7, r: 3.5 },
     { x: 17, z: -7, r: 3.5 },
+    ...VILLA_TAMERS.map(({ position }) => ({ ...position, r: 3.5 })),
     ...VILLA_BUILDINGS.flatMap((building) => [
       { x: building.x, z: building.z, r: 4.5 },
       { x: building.entrance.x, z: building.entrance.z, r: 3.5 },

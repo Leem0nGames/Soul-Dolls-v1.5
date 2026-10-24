@@ -15,7 +15,3 @@ export const MAP_NAMES = Object.fromEntries(
 export const MAP_PALETTES = Object.fromEntries(
   MAP_IDS.map((id) => [id, WORLD_MAPS[id].palette])
 ) as Record<MapId, WorldMapDefinition['palette']>;
-
-export const MAP_CONNECTIONS = Object.fromEntries(
-  MAP_IDS.map((id) => [id, WORLD_MAPS[id].connections])
-) as Record<MapId, WorldMapDefinition['connections']>;

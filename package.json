@@ -13,6 +13,7 @@
     "bake:props": "python3 tools/bake-modern-props.py",
     "bake:npc-sprites": "tsx tools/bake-npc-sprites.ts",
     "soul:harness": "tsx tools/soul-harness.ts",
+    "souldoll:validate": "tsx tools/souldoll-harness.ts",
     "world:harness": "tsx tools/world-harness.ts"
   },
   "dependencies": {

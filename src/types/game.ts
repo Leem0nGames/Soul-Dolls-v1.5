@@ -71,6 +71,8 @@ export interface SoulDollSpecies {
   id: string;
   name: string;
   stage: number; // 1: Basic, 2: Ascended/Evolved
+  starter?: boolean;
+  starterOrder?: number;
   types: [ElementalType, ElementalType?];
   classRole?: string; // e.g. 'Assassin'
   allowedWeapons?: string[];

@@ -545,7 +545,11 @@ export class LuminatiRenderer {
     this.scene.fog = new THREE.FogExp2(tint.fog, 0.035);
   }
 
-  private transitionMap(map: MapId, arrival: { x: number; z: number }) {
+  private transitionMap(
+    map: MapId,
+    arrival: { x: number; z: number },
+    facing: 'down' | 'up' | 'left' | 'right'
+  ) {
     const playerEntity = ecs.getPlayerEntity();
     if (!playerEntity) throw new Error('No se puede cambiar de mapa sin jugador');
     const pos = ecs.positions.get(playerEntity)!;
@@ -555,7 +559,7 @@ export class LuminatiRenderer {
     pos.x = arrival.x;
     pos.y = 0.8;
     pos.z = arrival.z;
-    controls.facing = map === 'ruta_1' ? 'up' : 'down';
+    controls.facing = facing;
     controls.isMoving = false;
     controls.stepDistanceAccumulator = 0;
 
@@ -580,7 +584,7 @@ export class LuminatiRenderer {
       (candidate) => Math.hypot(pos.x - candidate.at.x, pos.z - candidate.at.z) < 1.4
     );
     if (!connection) return false;
-    this.transitionMap(connection.toMap, connection.arrival);
+    this.transitionMap(connection.toMap, connection.arrival, connection.facing);
     return true;
   }
 
@@ -999,67 +1003,36 @@ export class LuminatiRenderer {
       flashTimer: 0,
     });
 
-    // 2. NPC Tamer 1: Apprentice Tyler (beside the central square)
-    const tylerPosition = { x: -8, y: 0.8, z: -7 };
-    const tamer1 = ecs.createEntity();
-    ecs.positions.set(tamer1, { ...tylerPosition });
-    ecs.tamers.set(tamer1, {
-      mapId: 'villa_marionette',
-      name: 'Tyler',
-      title: 'Aprendiz de Almas',
-      tamerType: 'apprentice',
-      defeated: false,
-      party: [createSoulDoll('sparkit', 9), createSoulDoll('florabun', 10)],
-      dialogueIntro: '¡Alto ahí, forastero! ¡Demuéstrame el vínculo que tienes con tus SoulDolls!',
-      dialogueDefeated: '¡Increíble sintonía! Tus almas combaten con una armonía admirable.',
-      triggerDistance: 3.2,
-    });
+    // 2. Map-authored tamers and encounter areas.
+    for (const mapId of MAP_IDS) {
+      for (const def of WORLD_MAPS[mapId].tamers) {
+        const position = { x: def.position.x, y: 0.8, z: def.position.z };
+        const entity = ecs.createEntity();
+        ecs.positions.set(entity, position);
+        ecs.tamers.set(entity, {
+          mapId,
+          name: def.name,
+          title: def.title,
+          tamerType: def.tamerType,
+          defeated: false,
+          party: def.party.map(({ speciesId, level }) => createSoulDoll(speciesId, level)),
+          dialogueIntro: def.dialogueIntro,
+          dialogueDefeated: def.dialogueDefeated,
+          triggerDistance: def.triggerDistance,
+        });
+        this.addNpcBillboard(
+          NPC_ATLAS_FRAME[def.portrait],
+          position.x,
+          0.02,
+          position.z,
+          3,
+          4,
+          mapId
+        );
+      }
+    }
 
-    this.addNpcBillboard(NPC_ATLAS_FRAME.tyler, tylerPosition.x, 0.02, tylerPosition.z, 3, 4);
-
-    // 3. NPC Tamer 2: Master Vesper (beside the central square)
-    const vesperPosition = { x: 8, y: 0.8, z: 7 };
-    const tamer2 = ecs.createEntity();
-    ecs.positions.set(tamer2, { ...vesperPosition });
-    ecs.tamers.set(tamer2, {
-      mapId: 'villa_marionette',
-      name: 'Vesper',
-      title: 'Maestro del Éter',
-      tamerType: 'master',
-      defeated: false,
-      party: [createSoulDoll('umbraling', 13), createSoulDoll('cryopup', 14)],
-      dialogueIntro: 'Las sombras y la escarcha responden a mi voluntad. ¿Podrá tu llama resistir?',
-      dialogueDefeated: 'Fascinante... Tus SoulDolls poseen un brillo que desafía la penumbra.',
-      triggerDistance: 3.2,
-    });
-
-    this.addNpcBillboard(NPC_ATLAS_FRAME.vesper, vesperPosition.x, 0.02, vesperPosition.z, 3, 4);
-
-    // 4. Wild encounters are authored alongside each tilemap in OverworldTiles.
-    const routeTamerPosition = { x: 3.5, y: 0.8, z: -15 };
-    const routeTamer = ecs.createEntity();
-    ecs.positions.set(routeTamer, { ...routeTamerPosition });
-    ecs.tamers.set(routeTamer, {
-      mapId: 'ruta_1',
-      name: 'Nina',
-      title: 'Exploradora',
-      tamerType: 'apprentice',
-      defeated: false,
-      party: [createSoulDoll('cryopup', 11), createSoulDoll('sparkit', 12)],
-      dialogueIntro: '¡Qué buen día para explorar! ¿Te animas a probar el vínculo con tus SoulDolls?',
-      dialogueDefeated: '¡Buen combate! El sendero siempre guarda nuevas sorpresas.',
-      triggerDistance: 2.8,
-    });
-    this.addNpcBillboard(
-      NPC_ATLAS_FRAME.vesper,
-      routeTamerPosition.x,
-      0.02,
-      routeTamerPosition.z,
-      3,
-      4,
-      'ruta_1'
-    );
-
+    // Wild encounters are authored alongside each tilemap definition.
     for (const mapId of MAP_IDS) {
       for (const zone of getMapWildZones(mapId)) {
         const wildZone = ecs.createEntity();
@@ -1067,7 +1040,7 @@ export class LuminatiRenderer {
       }
     }
 
-    // 5. Shrine Interactor
+    // 3. Shrine Interactor
     const shrineEntity = ecs.createEntity();
     ecs.positions.set(shrineEntity, { x: 0, y: 0.8, z: 0 });
     ecs.shrines.set(shrineEntity, {
@@ -1076,7 +1049,7 @@ export class LuminatiRenderer {
       prompt: 'Toca el cristal para restaurar la salud y energía de tus SoulDolls.'
     });
 
-    // 6. Shop NPC
+    // 4. Shop NPC
     const shopEntity = ecs.createEntity();
     ecs.positions.set(shopEntity, { x: 18, y: 0.8, z: -7 });
     ecs.shops.set(shopEntity, {

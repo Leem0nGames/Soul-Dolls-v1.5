@@ -379,9 +379,10 @@ export const MOVES_DATABASE: Record<string, Omit<Move, 'currentPp'>> = {
 };
 
 export function createMoveInstance(moveId: string): Move {
-  const base = (MOVES_DATABASE[moveId] || MOVES_DATABASE.ember) as Move;
+  const base = MOVES_DATABASE[moveId];
+  if (!base) throw new Error(`No existe el movimiento "${moveId}".`);
   return {
     ...base,
     currentPp: base.maxPp,
-  } as Move;
+  };
 }

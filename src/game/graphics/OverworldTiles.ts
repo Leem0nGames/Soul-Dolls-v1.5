@@ -10,8 +10,8 @@
  * so one tile covers 1.5 world units (the same pixel density as the rest of
  * the art, which is ~10.7 px per world unit).
  *
- * Villa Marionette is the first authored area of the new overworld. Its road
- * plan, gardens, building footprints, and tile texture are generated locally.
+ * Map-specific content is registered in src/game/data/maps; this module owns
+ * the shared grid generation, collision, validation, and texture baking.
  */
 import * as THREE from 'three';
 import { MAP_IDS, MAP_NAMES, WORLD_MAPS } from '../data/maps';
@@ -68,7 +68,6 @@ const VOID_COLOR = '#393939';
 // Villa Marionette
 // ---------------------------------------------------------------------------
 
-export { MAP_NAMES, MAP_IDS };
 export type { MapId };
 
 export type DecorationKind =
@@ -331,6 +330,9 @@ export function validateWorldMaps(): string[] {
   };
 
   for (const map of mapIds) {
+    const definition = WORLD_MAPS[map];
+    if (definition.id !== map) errors.push(`${map} has mismatched definition id "${definition.id}"`);
+    if (definition.name.trim().length === 0) errors.push(`${map} has no display name`);
     const connections = WORLD_MAPS[map].connections;
     if (connections.length === 0) errors.push(`${map} has no connection to another area`);
     for (const connection of connections) {
@@ -358,10 +360,40 @@ export function validateWorldMaps(): string[] {
     }
 
     for (const zone of WORLD_MAPS[map].layout.wildZones) {
+      if (zone.minX > zone.maxX || zone.minZ > zone.maxZ) {
+        errors.push(`${zone.name} has invalid bounds`);
+        continue;
+      }
       const center = { x: (zone.minX + zone.maxX) / 2, z: (zone.minZ + zone.maxZ) / 2 };
       if (!inBounds(center)) errors.push(`${zone.name} is outside ${map}`);
       if (!connections.some((connection) => isReachable(map, connection.at, center))) {
         errors.push(`${zone.name} is unreachable from every map entrance`);
+      }
+    }
+
+    for (const tamer of definition.tamers) {
+      const { x, z } = tamer.position;
+      if (!inBounds(tamer.position)) {
+        errors.push(`${tamer.name} is outside ${map}`);
+        continue;
+      }
+      if (isBlocked(x, z, map)) errors.push(`${tamer.name} is placed on a blocked tile in ${map}`);
+      if (!definition.clearPoints.some((point) => Math.hypot(x - point.x, z - point.z) <= point.r)) {
+        errors.push(`${tamer.name} has no clear-point reservation in ${map}`);
+      }
+      if (!connections.some((connection) => isReachable(map, connection.at, tamer.position))) {
+        errors.push(`${tamer.name} is unreachable from every map entrance`);
+      }
+    }
+
+    for (const [col, row] of definition.signSpots) {
+      if (
+        col < BORDER_TILES ||
+        row < BORDER_TILES ||
+        col >= MAP_TILES - BORDER_TILES ||
+        row >= MAP_TILES - BORDER_TILES
+      ) {
+        errors.push(`${map} has an out-of-bounds sign at ${col},${row}`);
       }
     }
   }

@@ -427,6 +427,9 @@ class PixelArtGenerator {
    * Generates or retrieves the sprite texture for a SoulDoll species
    */
   public getSoulDollTexture(speciesId: string, isBackView = false): THREE.CanvasTexture {
+    const species = SOULDOLL_SPECIES[speciesId];
+    if (!species) throw new Error(`No existe la especie SoulDoll "${speciesId}".`);
+
     // If user's multiple spritesheets are loaded, distribute across species
     if (this.loadedSheets.length > 0) {
       const idx = this.getSheetIndex(speciesId);
@@ -441,8 +444,7 @@ class PixelArtGenerator {
       return this.cache.get(cacheKey)!;
     }
 
-    const species = SOULDOLL_SPECIES[speciesId] || SOULDOLL_SPECIES.ignisaur;
-    const size = species.stage === 2 ? 48 : 36;
+    const size = 36 + (species.stage - 1) * 12;
     const { canvas, ctx } = this.createPixelCanvas(size, size);
 
     const primary = species.colorTheme.primary;

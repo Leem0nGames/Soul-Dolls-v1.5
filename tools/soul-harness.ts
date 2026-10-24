@@ -14,7 +14,7 @@
  *     Registers a sheet for a species (and redoes the steps above).
  *
  * The manifest (public/assets/souldolls/manifest.json) is the source of truth
- * of the artwork mapping; the species data lives in src/game/data/souldolls.ts.
+ * of the artwork mapping; species data lives in src/game/data/souldolls.json.
  */
 import sharp from 'sharp';
 import { readdir, readFile, writeFile, mkdir, stat } from 'fs/promises';
@@ -28,6 +28,7 @@ import {
   removeBackground,
   rgbToHex,
 } from '../src/game/graphics/BackgroundKey';
+import { SOULDOLL_SPECIES } from '../src/game/data/souldolls';
 
 const DIR = 'public/assets/souldolls';
 const MANIFEST = `${DIR}/manifest.json`;
@@ -185,26 +186,23 @@ export const GENERIC_SHEETS: SoulDollSheet[] = SOULDOLL_SHEETS.filter((s) => !s.
 // ---------------------------------------------------------------------------
 
 function templateFor(speciesId: string): string {
-  return `  ${speciesId}: {
-    id: '${speciesId}',
-    name: 'Nombre',
-    stage: 1,
-    types: ['Fire'],
-    baseStats: { hp: 55, atk: 62, def: 50, spAtk: 65, spDef: 55, spd: 58 },
-    description: 'Descripcion en espanol.',
-    catchRate: 190,
-    baseExpReward: 64,
-    evolution: { level: 16, evolvesInto: 'siguiente_tier' },
-    learnset: [
-      { level: 1, moveId: 'ember' }
-    ],
-    colorTheme: { primary: '#f97316', secondary: '#ef4444', glow: '#fbbf24' }
-  },`;
+  return JSON.stringify({
+    [speciesId]: {
+      id: speciesId,
+      name: 'Nombre',
+      stage: 1,
+      types: ['Fire'],
+      baseStats: { hp: 55, atk: 62, def: 50, spAtk: 65, spDef: 55, spd: 58 },
+      description: 'Descripción en español.',
+      catchRate: 190,
+      baseExpReward: 64,
+      learnset: [{ level: 1, moveId: 'ember' }],
+      colorTheme: { primary: '#f97316', secondary: '#ef4444', glow: '#fbbf24' },
+    },
+  }, null, 2).slice(2, -2);
 }
 
 async function report(manifest: Manifest, infos: SheetInfo[]): Promise<void> {
-  const speciesSource = await readFile('src/game/data/souldolls.ts', 'utf8');
-
   console.log('\n=== Hojas de personajes ===');
   for (const info of infos) {
     const entry = manifest.sheets.find(s => s.file === info.file);
@@ -257,15 +255,15 @@ async function report(manifest: Manifest, infos: SheetInfo[]): Promise<void> {
   }
 
   const assigned = manifest.sheets.filter(s => s.species).map(s => s.species!);
-  const withoutData = assigned.filter(id => !speciesSource.includes(`${id}: {`));
+  const withoutData = assigned.filter(id => !Object.hasOwn(SOULDOLL_SPECIES, id));
   if (withoutData.length > 0) {
-    console.log('\n=== Especies con hoja pero sin datos en souldolls.ts ===');
+    console.log('\n=== Especies con hoja pero sin datos en souldolls.json ===');
     for (const id of withoutData) {
-      console.log(`  ${id}\n${templateFor(id)}`);
+      console.log(`  Añade esta entrada al objeto raíz de souldolls.json:\n${templateFor(id)}`);
     }
   }
 
-  const withData = assigned.filter(id => speciesSource.includes(`${id}: {`));
+  const withData = assigned.filter(id => Object.hasOwn(SOULDOLL_SPECIES, id));
   console.log('\n=== Estado ===');
   console.log(`  especies con hoja: ${assigned.length} (${withData.join(', ') || 'ninguna'})`);
   console.log(`  hojas genericas: ${generic.length} (${generic.map(g => g.file).join(', ') || 'ninguna'})`);
@@ -284,6 +282,10 @@ async function report(manifest: Manifest, infos: SheetInfo[]): Promise<void> {
     const species = args[assignIndex + 2];
     if (!file || !species) {
       console.error('Uso: npm run soul:harness -- --assign <fileBase> <speciesId>');
+      process.exit(1);
+    }
+    if (!Object.hasOwn(SOULDOLL_SPECIES, species)) {
+      console.error(`No existe "${species}" en src/game/data/souldolls.json. Añade y valida sus datos antes de asignar arte.`);
       process.exit(1);
     }
     const manifest = await readManifest();
