@@ -1,4 +1,26 @@
-export type MapId = 'villa_marionette' | 'ruta_1';
+export type MapId = 'villa_marionette' | 'ruta_1' | 'bosque_del_eco';
+
+export type DecorationKind =
+  | 'tree-short'
+  | 'tree-tall'
+  | 'bush'
+  | 'flower-a'
+  | 'flower-b'
+  | 'rock'
+  | 'grass-tuft'
+  | 'sign'
+  | 'craftpix-fern'
+  | 'craftpix-flowering-bush'
+  | 'craftpix-autumn-bush';
+
+export type MapDecorationBudget = {
+  tallTrees: number;
+  shortTrees: number;
+  bushes: number;
+  rocks: number;
+  flowers: number;
+  tufts: number;
+} & Partial<Record<DecorationKind, number>>;
 
 export interface MapWildZone {
   name: string;
@@ -25,14 +47,7 @@ export interface MapLayoutDefinition {
   roadPath?: { x: number; z: number }[];
   roadHalfWidth: number;
   flowerDensity: number;
-  decorations: {
-    tallTrees: number;
-    shortTrees: number;
-    bushes: number;
-    rocks: number;
-    flowers: number;
-    tufts: number;
-  };
+  decorations: MapDecorationBudget;
   buildingFootprints?: { x: number; z: number; halfWidth: number; halfDepth: number }[];
 }
 

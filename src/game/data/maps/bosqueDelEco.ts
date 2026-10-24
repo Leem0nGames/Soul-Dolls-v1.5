@@ -1,0 +1,101 @@
+import { WorldMapDefinition } from '../world';
+
+const BOSQUE_TAMERS: WorldMapDefinition['tamers'] = [
+  {
+    name: 'Ariel',
+    title: 'Guardiana del Sendero',
+    tamerType: 'sage',
+    portrait: 'vesper',
+    position: { x: 10, z: 1 },
+    triggerDistance: 2.8,
+    party: [
+      { speciesId: 'chlorosage', level: 16 },
+      { speciesId: 'umbraling', level: 17 },
+    ],
+    dialogueIntro: 'El bosque reconoce a quienes avanzan con respeto. Muéstrame el vínculo que has cultivado.',
+    dialogueDefeated: 'Las raíces ya no te temen. El sendero del norte está abierto para ti.',
+  },
+];
+
+export const bosqueDelEco: WorldMapDefinition = {
+  id: 'bosque_del_eco',
+  name: 'Bosque de los Ecos',
+  palette: { background: '#b9c9aa', fog: '#b9c9aa' },
+  connections: [
+    { at: { x: 0, z: 26 }, toMap: 'ruta_1', arrival: { x: 0, z: -25.5 }, facing: 'down' },
+  ],
+  layout: {
+    wildZones: [
+      {
+        name: 'Bosque de los Ecos · Claro de helechos',
+        minX: -15,
+        maxX: -9,
+        minZ: 8,
+        maxZ: 16,
+        encounterRate: 0.12,
+        speciesPool: [
+          { speciesId: 'florabun', minLevel: 12, maxLevel: 15, weight: 25 },
+          { speciesId: 'chlorosage', minLevel: 13, maxLevel: 16, weight: 25 },
+          { speciesId: 'lumiwisp', minLevel: 13, maxLevel: 16, weight: 25 },
+          { speciesId: 'venomantis', minLevel: 13, maxLevel: 16, weight: 25 },
+        ],
+      },
+      {
+        name: 'Bosque de los Ecos · Arboleda rojiza',
+        minX: 9,
+        maxX: 15,
+        minZ: -12,
+        maxZ: -4,
+        encounterRate: 0.12,
+        speciesPool: [
+          { speciesId: 'umbraling', minLevel: 12, maxLevel: 16, weight: 30 },
+          { speciesId: 'venomantis', minLevel: 13, maxLevel: 16, weight: 30 },
+          { speciesId: 'lumiwisp', minLevel: 14, maxLevel: 17, weight: 25 },
+          { speciesId: 'chlorosage', minLevel: 14, maxLevel: 17, weight: 15 },
+        ],
+      },
+    ],
+    plaza: null,
+    roadXs: [],
+    roadZs: [],
+    roadPath: [
+      { x: 0, z: 27 },
+      { x: 0, z: 15 },
+      { x: 3, z: 10 },
+      { x: 3, z: 4 },
+      { x: -2, z: -2 },
+      { x: -2, z: -11 },
+      { x: 3, z: -17 },
+      { x: 3, z: -27 },
+    ],
+    roadHalfWidth: 1.8,
+    flowerDensity: 0.015,
+    decorations: {
+      tallTrees: 30,
+      shortTrees: 34,
+      bushes: 14,
+      rocks: 10,
+      flowers: 8,
+      tufts: 20,
+      'craftpix-fern': 20,
+      'craftpix-flowering-bush': 14,
+      'craftpix-autumn-bush': 8,
+    },
+  },
+  tamers: BOSQUE_TAMERS,
+  clearPoints: [
+    { x: 0, z: 25, r: 4.5 },
+    { x: 0, z: 27, r: 4 },
+    { x: 0, z: -25, r: 4.5 },
+    { x: 0, z: -27, r: 4 },
+    { x: 0, z: 15, r: 3.5 },
+    { x: 3, z: 4, r: 3.5 },
+    { x: -2, z: -11, r: 3.5 },
+    { x: 0, z: 0, r: 3 },
+    { x: 12, z: 1, r: 4 },
+    { x: -12, z: 12, r: 3.5 },
+    { x: 12, z: -8, r: 3.5 },
+    ...BOSQUE_TAMERS.map(({ position }) => ({ ...position, r: 3.5 })),
+  ],
+  signSpots: [[18, 36], [22, 4]],
+};

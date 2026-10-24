@@ -28,6 +28,17 @@ const PROP_DEFS: Record<DecorationKind, PropDefinition> = {
   rock: { file: 'rock.png', width: 2.25, height: 2.25 },
   'grass-tuft': { file: 'grass-tuft.png', width: 1.5, height: 1.5 },
   sign: { file: 'sign.png', width: 1.5, height: 1.5 },
+  'craftpix-fern': { file: 'craftpix-bushes/Fern1_1.png', width: 2.25, height: 2.25 },
+  'craftpix-flowering-bush': {
+    file: 'craftpix-bushes/Bush_red_flowers1.png',
+    width: 2.25,
+    height: 2.25,
+  },
+  'craftpix-autumn-bush': {
+    file: 'craftpix-bushes/Autumn_bush1.png',
+    width: 2.25,
+    height: 2.25,
+  },
 };
 
 /** Slight lift so the base of the prop does not fight with the ground plane. */

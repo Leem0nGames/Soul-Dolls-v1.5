@@ -11,8 +11,8 @@ starting the browser.
    selection in the laboratory.
 2. **Ruta 1 · Sendero de los Susurros** — the first trail: spirit-grass
    encounters, an optional tamer, and the northbound route for future growth.
-3. **Next area** — not authored yet. Decide the destination, story beat, and
-   map connection before extending the trail.
+3. **Bosque de los Ecos** — the forest beyond Ruta 1, with stronger wild
+   SoulDolls, a guardian tamer, and CraftPix ferns and flowering shrubs.
 
 The first route introduces exploration and encounters after the player has
 chosen a SoulDoll. Keep its wild levels close to the starter's level; use
@@ -98,6 +98,11 @@ connection, clear point, or obstacle layout rather than bypassing the check.
 ## Asset and gameplay rules
 
 - Use licensed project assets and keep their license/source records with them.
+  Optional CraftPix billboard props are under
+  `public/assets/props/craftpix-bushes/`; their usage counts are authored in
+  each map's decoration budget. Do not use the dungeon atlas as a billboard:
+  crop objects into separate sprites first and author any interactions or
+  collision in the shared map data.
 - Keep tiles nearest-neighbor and the ground as one baked canvas per map.
 - Trees are solid; decorative bushes, flowers, grass tufts, and rocks are not.
 - NPC billboards, encounter zones, interactions, and props must not leak into

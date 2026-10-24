@@ -23,6 +23,7 @@ export const ruta1: WorldMapDefinition = {
   palette: { background: '#d5e6ce', fog: '#d5e6ce' },
   connections: [
     { at: { x: 0, z: 26 }, toMap: 'villa_marionette', arrival: { x: 0, z: -25.5 }, facing: 'down' },
+    { at: { x: 0, z: -26 }, toMap: 'bosque_del_eco', arrival: { x: 0, z: 25.5 }, facing: 'up' },
   ],
   layout: {
     wildZones: [
@@ -76,8 +77,8 @@ export const ruta1: WorldMapDefinition = {
     { x: 0, z: -25, r: 4 },
     { x: 0, z: -18, r: 4 },
     { x: 0, z: 0, r: 3.5 },
-    { x: 0, z: 26, r: 4 },
     { x: 0, z: -26, r: 4 },
+    { x: 0, z: 26, r: 4 },
     ...RUTA_1_TAMERS.map(({ position }) => ({ ...position, r: 3 })),
   ],
   signSpots: [[17, 36], [23, 4]],

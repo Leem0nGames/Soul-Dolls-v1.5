@@ -15,7 +15,7 @@
  */
 import * as THREE from 'three';
 import { MAP_IDS, MAP_NAMES, WORLD_MAPS } from '../data/maps';
-import { MapId, MapLayoutDefinition, MapWildZone } from '../data/world';
+import { DecorationKind, MapId, MapLayoutDefinition, MapWildZone } from '../data/world';
 
 /** Source size of a tile (Kenney Roguelike tiles are 16x16). */
 const TILE_PX = 16;
@@ -68,17 +68,7 @@ const VOID_COLOR = '#393939';
 // Villa Marionette
 // ---------------------------------------------------------------------------
 
-export type { MapId };
-
-export type DecorationKind =
-  | 'tree-short'
-  | 'tree-tall'
-  | 'bush'
-  | 'flower-a'
-  | 'flower-b'
-  | 'rock'
-  | 'grass-tuft'
-  | 'sign';
+export type { DecorationKind, MapId };
 
 interface Decoration {
   kind: DecorationKind;
@@ -499,6 +489,13 @@ function buildDecorations(
   for (let i = 0; i < profile.rocks; i++) place('rock', 1, 1);
   for (let i = 0; i < profile.flowers; i++) place(random() < 0.5 ? 'flower-a' : 'flower-b', 1, 1);
   for (let i = 0; i < profile.tufts; i++) place('grass-tuft', 1, 1, 'tallgrass');
+  for (let i = 0; i < (profile['craftpix-fern'] ?? 0); i++) place('craftpix-fern', 1, 1);
+  for (let i = 0; i < (profile['craftpix-flowering-bush'] ?? 0); i++) {
+    place('craftpix-flowering-bush', 1, 1);
+  }
+  for (let i = 0; i < (profile['craftpix-autumn-bush'] ?? 0); i++) {
+    place('craftpix-autumn-bush', 1, 1);
+  }
 
   // Signposts mark the incoming and outgoing trail at each area's edge.
   for (const [col, row] of signSpots) {

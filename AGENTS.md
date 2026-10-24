@@ -151,8 +151,8 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 
 - 1 tile = 1.5 world units; each current area is 40x40 tiles (60x60 units).
 - Villa Marionette connects north to Ruta 1; the route returns south to the
-  village. Continue the progression by adding the next area and reciprocal
-  links instead of extending an unrelated map.
+  village. Ruta 1 continues north to Bosque de los Ecos; add future areas with
+  reciprocal links rather than extending an unrelated map.
 - Exteriors use eight CC0 GLB models from Kenney's City Kit (Suburban); the
   source and license are recorded in `public/assets/buildings/LICENSE.txt`.
 - The whole ground is **one canvas** baked at runtime and used as the texture
