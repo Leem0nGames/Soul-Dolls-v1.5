@@ -1,0 +1,7 @@
+Modern overworld props
+======================
+Extracted from Kenney - Roguelike pack (www.kenney.nl).
+License: Creative Commons Zero (CC0) - http://creativecommons.org/publicdomain/zero/1.0/
+Credit "Kenney" is appreciated but not required.
+Source: tools/modern-source/RoguelikeSheet_misa.png
+Extraction: tools/bake-modern-props.py

@@ -26,21 +26,18 @@ export const INTERIOR_SERVICE_LOCAL: Record<FacilityKind, { x: number; z: number
   gym: { x: -2, z: -INTERIOR_D / 2 + 2 },
 };
 
-const TOON_MATERIALS = new Map<string, THREE.MeshStandardMaterial>();
+const TOON_MATERIALS = new Map<string, THREE.MeshToonMaterial>();
 
 function toonMaterial(
   hex: number,
-  roughness = 1,
   emissive?: number,
   emissiveIntensity = 0
-): THREE.MeshStandardMaterial {
-  const key = `${hex}-${roughness}-${emissive ?? hex}-${emissiveIntensity}`;
+): THREE.MeshToonMaterial {
+  const key = `${hex}-${emissive ?? hex}-${emissiveIntensity}`;
   let mat = TOON_MATERIALS.get(key);
   if (!mat) {
-    mat = new THREE.MeshStandardMaterial({
+    mat = new THREE.MeshToonMaterial({
       color: new THREE.Color(hex),
-      roughness,
-      metalness: 0,
       emissive: new THREE.Color(emissive ?? hex),
       emissiveIntensity: emissive === undefined ? 0 : emissiveIntensity,
     });
@@ -76,7 +73,7 @@ function addEmissiveBox(
   z: number,
   intensity = 0.9
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), toonMaterial(color, 0.6, color, intensity));
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), toonMaterial(color, color, intensity));
   mesh.position.set(x, y, z);
   group.add(mesh);
   return mesh;
@@ -91,7 +88,7 @@ function addEmissiveCylinder(
   y: number,
   z: number
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 12), toonMaterial(color, 0.5, color, 1));
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 12), toonMaterial(color, color, 1));
   mesh.position.set(x, y, z);
   group.add(mesh);
   return mesh;
@@ -108,9 +105,12 @@ function addShell(
 ) {
   addBox(group, w, 0.2, d, floorColor, 0, -0.1, 0);
   addBox(group, w, h, 0.2, wallColor, 0, h / 2, -d / 2 + 0.1);
-  addBox(group, w, 0.2, d, ceilingColor, 0, h - 0.1, 0);
   addBox(group, 0.2, h, d, wallColor, -w / 2 + 0.1, h / 2, 0);
   addBox(group, 0.2, h, d, wallColor, w / 2 - 0.1, h / 2, 0);
+  // Keep a colored wall cap, but leave the roof open for the top-down camera.
+  addBox(group, w, 0.18, 0.12, ceilingColor, 0, h - 0.09, -d / 2 + 0.16);
+  addBox(group, 0.12, 0.18, d, ceilingColor, -w / 2 + 0.16, h - 0.09, 0);
+  addBox(group, 0.12, 0.18, d, ceilingColor, w / 2 - 0.16, h - 0.09, 0);
 }
 
 function addRug(group: THREE.Group, w: number, h: number, d: number, color: number, x: number, y: number, z: number) {
@@ -151,7 +151,7 @@ function addInteriorLight(group: THREE.Group, y: number, z: number, color: strin
   const lampLight = new THREE.PointLight(color, intensity, 18, 1.6);
   lampLight.position.set(0, y, z);
   group.add(lampLight);
-  const lampGlow = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), toonMaterial(0xffe9b8, 0.4, 0xffe9b8, 0.9));
+  const lampGlow = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), toonMaterial(0xffe9b8, 0xffe9b8, 0.9));
   lampGlow.position.set(0, y, z);
   group.add(lampGlow);
 }
@@ -182,8 +182,7 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       addBox(group, w, 0.5, 0.6, 0x6b4423, 0, h - 0.25, -d / 2 + 0.1);
       // Reception counter with lighter top
       addBox(group, 6, 1.2, 2, 0x5d3d22, -2, 0.6, -d / 2 + 2);
-      addBox(group, 6, 0.2, 2.2, 0x4a2f1a, -2, 1.3, -d / 2 + 2);
-      addBox(group, 6, 1.2, 2, 0xffedd0, -2, 0.6, -d / 2 + 2);
+      addBox(group, 6.2, 0.2, 2.2, 0xffedd0, -2, 1.3, -d / 2 + 2);
       // Door with frame (front, -Z side)
       addBox(group, 2.6, 3.6, 0.3, 0x4a2f1a, 4, 1.5, -d / 2 + 0.1);
       addBox(group, 2, 3, 0.25, 0x6b4423, 4, 1.5, -d / 2);
@@ -210,8 +209,7 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       addShelf(group, -2, 4.3, -d / 2 + 2, [0xe63946, 0x2a9d8f, 0xf4a261, 0x8ecae6, 0x90be6d, 0x00a896]);
       // Wide retail counter with lighter top
       addBox(group, 8, 1.2, 3, 0x5d3d22, -2.5, 0.6, -d / 2 + 2);
-      addBox(group, 8, 0.2, 3.2, 0x4a2f1a, -2.5, 1.3, -d / 2 + 2);
-      addBox(group, 8, 1.2, 3, 0xffedd0, -2.5, 0.6, -d / 2 + 2);
+      addBox(group, 8.2, 0.2, 3.2, 0xffedd0, -2.5, 1.3, -d / 2 + 2);
       // Door with frame + window
       addBox(group, 2.6, 3.6, 0.3, 0x4a2f1a, 4, 1.5, -d / 2 + 0.1);
       addBox(group, 2, 3, 0.25, 0x6b4423, 4, 1.5, -d / 2);
@@ -274,8 +272,7 @@ export function buildFacilityInterior(kind: FacilityKind): THREE.Group {
       addEmissiveBox(group, 2.2, 0.4, 2.2, 0xf97316, w / 2 - 2.4, 6.1, -d / 2 + 2, 0.75);
       // Leader's pedestal with lighter top
       addBox(group, 3, 1.1, 2.4, 0x7c3f16, -2, 0.55, -d / 2 + 2);
-      addBox(group, 3, 0.2, 2.6, 0x4a2b12, -2, 1.2, -d / 2 + 2);
-      addBox(group, 3, 1.1, 2.4, 0xffedd0, -2, 0.55, -d / 2 + 2);
+      addBox(group, 3.2, 0.2, 2.6, 0xffedd0, -2, 1.2, -d / 2 + 2);
       // Flaming gym emblem on the back wall
       addEmissiveBox(group, 2.4, 2.4, 0.35, 0xf97316, -2, 4.4, -d / 2 + 0.15, 0.85);
       // Door with frame (front, -Z side)

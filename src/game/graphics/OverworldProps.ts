@@ -5,7 +5,7 @@
  * (sprites) instead of being painted into the ground texture, so the player
  * walks behind them and they get the depth of the diorama.
  *
- * The sprites are baked from the Gen 2 inspired tileset
+ * The sprites are baked from the modern Kenney Roguelike tileset
  * (public/assets/props) and are placed where the map says so.
  */
 import * as THREE from 'three';

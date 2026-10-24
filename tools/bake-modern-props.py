@@ -99,10 +99,7 @@ def save_png(path, w, h, pixels):
 # Extract the sprites (coordinates are columns/rows of the vendored sheet)
 # ---------------------------------------------------------------------------
 
-_SHEET_W, _SHEET_H, _SHEET_PX = load_png(SHEET)
-
-
-def crop(col, row, tiles_w=1, tiles_h=1):
+def crop(sheet_w, sheet_px, col, row, tiles_w=1, tiles_h=1):
     w = tiles_w * TS
     h = tiles_h * TS
     out = bytearray(w * h * 4)
@@ -110,12 +107,12 @@ def crop(col, row, tiles_w=1, tiles_h=1):
         for x in range(w):
             sx = col * PITCH + x
             sy = row * PITCH + y
-            i = sy * _SHEET_W + sx
-            out[(y * w + x) * 4:(y * w + x) * 4 + 4] = _SHEET_PX[i * 4:i * 4 + 4]
+            i = sy * sheet_w + sx
+            out[(y * w + x) * 4:(y * w + x) * 4 + 4] = sheet_px[i * 4:i * 4 + 4]
     return out
 
 
-# Billboards spawned by OverworldProps. Pairs are (col, row, tilesW, tilesH).
+# Billboards spawned by OverworldProps. Values are (col, row, tilesW, tilesH).
 PROPS = {
     'tree-tall.png': (15, 10, 1, 2),   # tall round tree, canopy + trunk
     'tree-short.png': (15, 9, 1, 1),   # small round tree
@@ -132,10 +129,26 @@ def main():
     if not os.path.exists(SHEET):
         print('source sheet missing:', SHEET)
         return 1
+    sheet_w, _, sheet_px = load_png(SHEET)
     os.makedirs(OUT, exist_ok=True)
     for name, (c, r, tw, th) in PROPS.items():
-        save_png(os.path.join(OUT, name), tw * TS, th * TS, crop(c, r, tw, th))
+        save_png(
+            os.path.join(OUT, name),
+            tw * TS,
+            th * TS,
+            crop(sheet_w, sheet_px, c, r, tw, th),
+        )
         print('baked', name, f'({tw * TS}x{th * TS})')
+    with open(os.path.join(OUT, 'LICENSE.txt'), 'w') as license_file:
+        license_file.write(
+            'Modern overworld props\n'
+            '======================\n'
+            'Extracted from Kenney - Roguelike pack (www.kenney.nl).\n'
+            'License: Creative Commons Zero (CC0) - http://creativecommons.org/publicdomain/zero/1.0/\n'
+            'Credit "Kenney" is appreciated but not required.\n'
+            'Source: tools/modern-source/RoguelikeSheet_misa.png\n'
+            'Extraction: tools/bake-modern-props.py\n'
+        )
     return 0
 
 

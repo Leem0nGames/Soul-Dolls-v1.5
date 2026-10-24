@@ -109,7 +109,8 @@ tools/bake-modern-tiles.py            <- regenerates the cut tiles (pure stdlib)
 tools/modern-source/                  <- vendored Kenney sheet (source of truth)
 src/game/graphics/OverworldTiles.ts   <- the grid, the transitions, the layout
 src/game/graphics/OverworldProps.ts   <- the billboards (trees, rocks, flowers)
-public/assets/props/                  <- the baked props with alpha (Gen 2 trees)
+public/assets/props/                  <- the baked modern props with alpha (CC0)
+tools/bake-modern-props.py            <- extracts props from the vendored Kenney sheet
 ```
 
 - 1 tile = 1.5 world units, the map is 40x40 tiles (60x60 units).
@@ -125,9 +126,10 @@ public/assets/props/                  <- the baked props with alpha (Gen 2 trees
 - The trees block the player (slide collision), the rest of the props do not.
 - The important places stay clear: shrine, tamers and the spawn.
 
-Adding a new prop: drop the tile in the tileset, bake it in
-`tools/bake-props.ts` (key the grass with a flood fill, never with a flat
-colour key) and add its size to `PROP_DEFS` in `OverworldProps.ts`.
+Rebake the modern props with `npm run bake:props`. Their sprites are extracted
+from the transparent Kenney sheet; the legacy Gen 2 prop baker remains in
+`tools/bake-props.ts` but is not used by the modern overworld. Add each new
+prop's size to `PROP_DEFS` in `OverworldProps.ts`.
 
 ---
 
