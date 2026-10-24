@@ -72,8 +72,8 @@ export const villaMarionette: WorldMapDefinition = {
     ],
     plaza: { x: 0, z: 0, radius: 5.5 },
     roadXs: [-12, 0, 12],
-    roadZs: [-21, -12, 0, 12, 21],
-    roadHalfWidth: 1.5,
+    roadZs: [-17, -8, 4, 17, 24],
+    roadHalfWidth: 1.8,
     flowerDensity: 0.08,
     decorations: { tallTrees: 12, shortTrees: 18, bushes: 22, rocks: 8, flowers: 32, tufts: 12 },
     buildingFootprints: VILLA_BUILDINGS.map(({ x, z, halfWidth, halfDepth }) => ({
@@ -87,7 +87,7 @@ export const villaMarionette: WorldMapDefinition = {
   clearPoints: [
     { x: 0, z: 22, r: 4.5 },
     { x: 0, z: 0, r: 8 },
-    { x: 17, z: -7, r: 3.5 },
+    { x: 17, z: -8, r: 3.5 },
     ...VILLA_TAMERS.map(({ position }) => ({ ...position, r: 3.5 })),
     ...VILLA_BUILDINGS.flatMap((building) => [
       { x: building.x, z: building.z, r: 4.5 },

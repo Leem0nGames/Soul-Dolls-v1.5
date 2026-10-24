@@ -160,8 +160,9 @@ tools/bake-modern-props.py            <- extracts props from the vendored Kenney
 - **Transitions**: grass is dithered over path/sand with a 50% checkerboard;
   water and the gravel island carry their own rounded shore pieces.
 - The props are **billboards** (sprites) so the player walks behind them.
-- Residential facades face the village interior; the south home faces north
-  toward the plaza. Model footprints and entry points follow those rotations.
+- All Villa Marionette building facades face north toward the plaza/camera.
+  Keep each entrance on the building's +Z side, enlarge its collision
+  footprint with its model scale, and route a walkable path to the door.
 - Every facility interior has a visible door in an actual opening in the front
   wall, aligned with the interaction and exit point.
 - The tall-tree billboard uses one complete source tile, avoiding a seam from

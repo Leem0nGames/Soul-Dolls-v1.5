@@ -56,7 +56,9 @@ renderer or tile generator.
    roads; `roadPath` supports winding paths. Grass, encounter patches, trees,
    and props are secondary. Add entrances, landmarks, NPCs, trainers, and
    encounter patches to the map's `clearPoints` so generated scenery cannot
-   cover them.
+   cover them. In Villa Marionette, every building faces north toward the
+   plaza/camera, so front doors and the path grid belong on each building's
+   `+Z` side.
 4. **Author encounters and trainers in map data.** Each encounter zone needs a unique name, an
    in-bounds rectangle, a measured encounter rate, and weighted species with
    sensible level ranges. Trainer data includes map-local position, portrait,
@@ -103,3 +105,5 @@ connection, clear point, or obstacle layout rather than bypassing the check.
 - Do not put required story content behind random encounters or optional
   trainer battles.
 - Keep player access to entrances, path junctions, and key NPCs clear.
+- Villa Marionette buildings share one north-facing frontage; keep their
+  scale, collision footprints, door positions, and approach paths in sync.
