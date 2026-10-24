@@ -148,6 +148,7 @@ export interface BattleState {
   isActive: boolean;
   isTrainerBattle: boolean;
   trainerName?: string;
+  trainerId?: string;
   trainerEntityId?: number;
   opponentParty: SoulDollInstance[];
   opponentPartyIndex: number;

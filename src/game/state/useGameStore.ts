@@ -15,6 +15,7 @@ export interface GameState {
   soulBox: SoulDollInstance[];
   inventory: Record<string, Item>;
   soulShards: number;
+  defeatedTrainerIds: Set<string>;
   seenSoulDolls: Set<string>;
   caughtSoulDolls: Set<string>;
   battleState: BattleState | null;
@@ -53,6 +54,7 @@ let globalState: GameState = {
   soulBox: [],
   inventory: initialInventory,
   soulShards: 1250,
+  defeatedTrainerIds: new Set(),
   seenSoulDolls: new Set(),
   caughtSoulDolls: new Set(),
   battleState: null,
@@ -151,9 +153,13 @@ export const gameStore = {
     opponent: SoulDollInstance,
     isTrainer = false,
     trainerName?: string,
-    trainer?: { party: SoulDollInstance[]; entityId: number }
+    trainer?: { party: SoulDollInstance[]; entityId?: number; id: string }
   ) {
     if (globalState.battleState?.isActive) return;
+    if (trainer?.id && globalState.defeatedTrainerIds.has(trainer.id)) {
+      this.showToast(`${trainerName ?? 'Este domador'} ya fue derrotado.`);
+      return;
+    }
     if (globalState.playerParty.length === 0) {
       this.showToast('Primero elige a tu SoulDoll inicial en el laboratorio.');
       return;
@@ -181,6 +187,7 @@ export const gameStore = {
       isActive: true,
       isTrainerBattle: isTrainer,
       trainerName,
+      trainerId: trainer?.id,
       trainerEntityId: trainer?.entityId,
       opponentParty: trainer?.party ?? [opponent],
       opponentPartyIndex: 0,
@@ -205,9 +212,19 @@ export const gameStore = {
         ? undefined
         : ecs.tamers.get(battle.trainerEntityId);
       if (trainer) trainer.defeated = true;
-      const reward = battle.opponentParty.reduce((total, doll) => total + doll.level * 10, 0);
+      const alreadyRewarded = battle.trainerId
+        ? globalState.defeatedTrainerIds.has(battle.trainerId)
+        : false;
+      if (battle.trainerId) {
+        globalState.defeatedTrainerIds = new Set(globalState.defeatedTrainerIds).add(battle.trainerId);
+      }
+      const reward = alreadyRewarded
+        ? 0
+        : battle.opponentParty.reduce((total, doll) => total + doll.level * 10, 0);
       globalState.soulShards += reward;
-      this.showToast(`¡Venciste a ${battle.trainerName}! Recibiste ${reward} fragmentos de alma.`);
+      this.showToast(reward > 0
+        ? `¡Venciste a ${battle.trainerName}! Recibiste ${reward} fragmentos de alma.`
+        : `¡Venciste a ${battle.trainerName}!`);
     } else if (won) {
       this.showToast('¡Has triunfado en el combate de almas!');
     }
@@ -216,16 +233,22 @@ export const gameStore = {
 
   // Catch wild doll into party or box
   addCaughtSoulDoll(doll: SoulDollInstance) {
+    const firstCapture = !globalState.caughtSoulDolls.has(doll.speciesId);
     globalState.caughtSoulDolls = new Set(globalState.caughtSoulDolls).add(doll.speciesId);
     globalState.seenSoulDolls = new Set(globalState.seenSoulDolls).add(doll.speciesId);
 
     if (globalState.playerParty.length < 6) {
       globalState.playerParty.push(doll);
-      this.showToast(`¡${doll.nickname} se unió a tu equipo!`);
+      this.showToast(firstCapture
+        ? `¡${doll.nickname} se unió a tu equipo! Investigación: +75 fragmentos.`
+        : `¡${doll.nickname} se unió a tu equipo!`);
     } else {
       globalState.soulBox.push(doll);
-      this.showToast(`¡Equipo lleno! ${doll.nickname} fue enviado al Santuario.`);
+      this.showToast(firstCapture
+        ? `¡Equipo lleno! ${doll.nickname} fue enviado al Santuario. Investigación: +75 fragmentos.`
+        : `¡Equipo lleno! ${doll.nickname} fue enviado al Santuario.`);
     }
+    if (firstCapture) globalState.soulShards += 75;
     notify();
   },
 

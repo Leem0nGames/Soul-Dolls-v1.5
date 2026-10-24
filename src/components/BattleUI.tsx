@@ -387,6 +387,7 @@ export const BattleUI: React.FC = () => {
       setTimeout(() => {
         gameStore.healParty();
         gameStore.endBattle(false);
+        activeRenderer?.retreatToSanctuary();
       }, 2500);
     }
   };

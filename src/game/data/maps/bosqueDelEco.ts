@@ -35,7 +35,7 @@ export const bosqueDelEco: WorldMapDefinition = {
         maxZ: 16,
         encounterRate: 0.12,
         speciesPool: [
-          { speciesId: 'florabun', minLevel: 12, maxLevel: 15, weight: 25 },
+          { speciesId: 'florabun', minLevel: 13, maxLevel: 15, weight: 25 },
           { speciesId: 'chlorosage', minLevel: 13, maxLevel: 16, weight: 25 },
           { speciesId: 'lumiwisp', minLevel: 13, maxLevel: 16, weight: 25 },
           { speciesId: 'venomantis', minLevel: 13, maxLevel: 16, weight: 25 },
@@ -49,7 +49,7 @@ export const bosqueDelEco: WorldMapDefinition = {
         maxZ: -4,
         encounterRate: 0.12,
         speciesPool: [
-          { speciesId: 'umbraling', minLevel: 12, maxLevel: 16, weight: 30 },
+          { speciesId: 'umbraling', minLevel: 13, maxLevel: 16, weight: 30 },
           { speciesId: 'venomantis', minLevel: 13, maxLevel: 16, weight: 30 },
           { speciesId: 'lumiwisp', minLevel: 14, maxLevel: 17, weight: 25 },
           { speciesId: 'chlorosage', minLevel: 14, maxLevel: 17, weight: 15 },

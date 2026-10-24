@@ -4,6 +4,9 @@ import { createMoveInstance } from '../data/moves';
 import { getTypeEffectiveness } from '../data/typesChart';
 import { sound } from '../audio/SoundEffects';
 
+const EXP_REWARD_DIVISOR = 5;
+const TRAINER_EXP_MULTIPLIER = 1.25;
+
 export interface TurnExecutionResult {
   playerDamageTaken: number;
   opponentDamageTaken: number;
@@ -202,8 +205,10 @@ export class CombatEngine {
     isTrainer = false
   ): { expGained: number; leveledUp: boolean; evolutionReady: boolean; messages: string[] } {
     const defeatedSpecies = SOULDOLL_SPECIES[defeated.speciesId] || SOULDOLL_SPECIES.ignisaur;
-    const trainerBonus = isTrainer ? 1.5 : 1.0;
-    const expGained = Math.floor((defeatedSpecies.baseExpReward * defeated.level * trainerBonus) / 7);
+    const trainerBonus = isTrainer ? TRAINER_EXP_MULTIPLIER : 1.0;
+    const expGained = Math.floor(
+      (defeatedSpecies.baseExpReward * defeated.level * trainerBonus) / EXP_REWARD_DIVISOR
+    );
 
     const result = this.applyExperience(winner, expGained);
     return {

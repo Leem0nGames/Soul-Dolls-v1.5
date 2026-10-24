@@ -421,13 +421,21 @@ export class LuminatiRenderer {
         }
         break;
       case 'gym':
-        gameStore.setDialogue(
-          'Líder Fénix',
-          '¡Soy Fénix, guardián de la llama viva! Escucha tu alma, Domador... ¡Demuestra el vínculo con tus SoulDolls!',
-          () => {
-            gameStore.startBattle(createSoulDoll('drakonika', 18), true, 'Fénix');
-          }
-        );
+        if (gameStore.getState().defeatedTrainerIds.has('villa_marionette:gym_fenix')) {
+          gameStore.setDialogue('Líder Fénix', 'Tu equipo ya ha demostrado su fuerza. ¡Sigue explorando, Domador!');
+        } else {
+          const opponent = createSoulDoll('drakonika', 18);
+          gameStore.setDialogue(
+            'Líder Fénix',
+            '¡Soy Fénix, guardián de la llama viva! Escucha tu alma, Domador... ¡Demuestra el vínculo con tus SoulDolls!',
+            () => {
+              gameStore.startBattle(opponent, true, 'Fénix', {
+                party: [opponent],
+                id: 'villa_marionette:gym_fenix',
+              });
+            }
+          );
+        }
         break;
       case 'house':
         if (gameStore.getState().playerParty.length > 0) {
@@ -616,6 +624,12 @@ export class LuminatiRenderer {
     this.applyMapTint(map);
     void this.loadOverworldMap(map);
     gameStore.wipeScreen(MAP_NAMES[map].toLocaleUpperCase('es'));
+  }
+
+  public retreatToSanctuary(): void {
+    const center = FACILITY_DOORS.find((building) => building.facility === 'pokemon_center');
+    if (!center) throw new Error('Villa Marionette no tiene un Centro Soul para el retorno');
+    this.transitionMap('villa_marionette', center.entrance, 'down');
   }
 
   private tryMapTransition(pos: { x: number; z: number }): boolean {
@@ -1064,7 +1078,7 @@ export class LuminatiRenderer {
           name: def.name,
           title: def.title,
           tamerType: def.tamerType,
-          defeated: false,
+          defeated: gameStore.getState().defeatedTrainerIds.has(`${mapId}:${def.name}`),
           party: def.party.map(({ speciesId, level }) => createSoulDoll(speciesId, level)),
           dialogueIntro: def.dialogueIntro,
           dialogueDefeated: def.dialogueDefeated,
@@ -1375,6 +1389,7 @@ export class LuminatiRenderer {
             gameStore.startBattle(firstOpponent, true, tamer.name, {
               party: tamer.party,
               entityId: tid,
+              id: `${tamer.mapId ?? this.activeMapId}:${tamer.name}`,
             });
           }
         );
@@ -1512,6 +1527,7 @@ export class LuminatiRenderer {
             gameStore.startBattle(tamer.party[0], true, tamer.name, {
               party: tamer.party,
               entityId: tid,
+              id: `${tamer.mapId ?? this.activeMapId}:${tamer.name}`,
             });
           }
         });

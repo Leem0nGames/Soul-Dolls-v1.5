@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { sound } from '../game/audio/SoundEffects';
-import { BookOpen, Users, Briefcase, Heart, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
+import { BookOpen, Users, Briefcase, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
 import { SoulDollSprite } from './ui/SoulDollSprite';
 import { BrandButton } from './ui/BrandKit';
 import { MAP_NAMES } from '../game/data/maps';
@@ -49,17 +49,6 @@ export const TopHUD: React.FC = () => {
       </div>
 
       <nav aria-label="Menú de exploración" className="pointer-events-auto self-end sm:self-auto flex items-center gap-1 sd-panel p-1 rounded-xl backdrop-blur-sm border-2 border-sd-bronze">
-        <BrandButton
-          onClick={() => gameStore.healParty()}
-          variant="ki"
-          title="Sanar equipo en el Santuario"
-          aria-label="Sanar equipo"
-          className="min-w-[42px] min-h-[42px] text-[10px] flex items-center justify-center gap-1 px-2"
-        >
-          <Heart className="w-4 h-4 text-rose-300 fill-rose-300" />
-          <span className="hidden lg:inline">SANAR</span>
-        </BrandButton>
-
         <BrandButton
           onClick={() => gameStore.setView('PARTY')}
           variant="soul"

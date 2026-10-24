@@ -22,6 +22,23 @@ chosen a SoulDoll. Keep its wild levels close to the starter's level; use
 optional grass and trainers to make the area rewarding without blocking the
 main path.
 
+## Gameplay loop
+
+1. Explore the route and choose whether to risk encounter grass.
+2. Win wild battles to earn experience, or capture a new species for a
+   one-time 75-shard research reward.
+3. Challenge each trainer once; their full party must be defeated for the
+   victory reward. Trainer victories are recorded for the current game session.
+4. Spend shards on vials and growth items, then heal at the Soul Center, home,
+   or the village shrine before the next stretch.
+5. Losing a battle is a soft reset: the party is restored and returned to the
+   Soul Center rather than leaving the player stranded in a dangerous area.
+
+Keep each area's wild level range close to the expected party level and let
+trainer teams serve as optional difficulty checks. New discoveries and trainer
+victories fund supplies without making repeat battles an unlimited currency
+source.
+
 ## Source of truth
 
 - `src/game/data/world.ts` defines the typed map contract.
