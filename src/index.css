@@ -29,6 +29,13 @@
   image-rendering: crisp-edges;
 }
 
+.overworld-atmosphere {
+  background:
+    radial-gradient(ellipse at center, transparent 35%, rgba(7, 8, 18, 0.38) 100%),
+    linear-gradient(180deg, rgba(22, 17, 35, 0.13), rgba(8, 10, 21, 0.34));
+  mix-blend-mode: multiply;
+}
+
 /* SoulDolls Palette Variables */
 :root {
   --sd-ink: #14101C;

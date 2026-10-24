@@ -64,6 +64,7 @@ export class LuminatiRenderer {
   private battleGroup = new THREE.Group();
   private vfxGroup = new THREE.Group();
   private facilityGroup = new THREE.Group();
+  private villaLanternsGroup = new THREE.Group();
 
   // Battle VFX
   private vfxDirector!: BattleVfxDirector;
@@ -95,6 +96,8 @@ export class LuminatiRenderer {
   private groundMaterial!: THREE.MeshLambertMaterial;
   private overworldPropsByMap = new Map<MapId, OverworldProps>();
   private overworldBuildings!: OverworldBuildings;
+  private villaLanternGeometries: THREE.BufferGeometry[] = [];
+  private villaLanternMaterials: THREE.Material[] = [];
 
   // Active village map, baked ground, and its landmarks.
   private bakedMapTextures = new Map<MapId, THREE.CanvasTexture>();
@@ -233,6 +236,7 @@ export class LuminatiRenderer {
     this.scene.add(this.entitiesGroup);
     this.scene.add(this.battleGroup);
     this.scene.add(this.facilityGroup);
+    this.worldGroup.add(this.villaLanternsGroup);
     // NOTE: the VFX group is parented to the battle arena (see buildBattleArena)
     // so every effect is authored in arena local space (Y = -50 offset included).
     // The facility group hosts the 3D interiors reached through the village buildings.
@@ -245,6 +249,7 @@ export class LuminatiRenderer {
     this.buildBattleArena();
     this.initEcsEntities();
     this.buildOverworldBuildings();
+    this.buildVillaLanterns();
     this.buildOverworldProps();
     this.buildFacilityInteriors();
     this.buildFacilityDoors();
@@ -462,6 +467,34 @@ export class LuminatiRenderer {
     });
   }
 
+  private buildVillaLanterns() {
+    const lanternCore = new THREE.SphereGeometry(0.16, 8, 6);
+    const lanternFrame = new THREE.CylinderGeometry(0.19, 0.24, 0.32, 8);
+    const glowMaterial = new THREE.MeshBasicMaterial({ color: '#ffd18a' });
+    const frameMaterial = new THREE.MeshStandardMaterial({
+      color: '#50351f',
+      metalness: 0.55,
+      roughness: 0.45,
+    });
+    this.villaLanternGeometries.push(lanternCore, lanternFrame);
+    this.villaLanternMaterials.push(glowMaterial, frameMaterial);
+
+    for (const building of VILLA_BUILDINGS) {
+      const side = building.x < 0 ? 1 : -1;
+      const x = building.entrance.x + side * (building.halfWidth - 0.25);
+      const z = building.z + building.halfDepth * 0.65;
+      const fixture = new THREE.Group();
+      fixture.position.set(x, 3.5, z);
+
+      const frame = new THREE.Mesh(lanternFrame, frameMaterial);
+      const core = new THREE.Mesh(lanternCore, glowMaterial);
+      core.position.y = -0.02;
+      fixture.add(frame, core);
+      fixture.add(new THREE.PointLight('#ffbd72', 4.2, 10, 2));
+      this.villaLanternsGroup.add(fixture);
+    }
+  }
+
   private addNpcBillboard(
     frame: number,
     x: number,
@@ -570,6 +603,7 @@ export class LuminatiRenderer {
     this.villaLandmarksGroup.visible = map === 'villa_marionette';
     this.facilityDoorsGroup.visible = map === 'villa_marionette';
     this.overworldBuildings.group.visible = map === 'villa_marionette';
+    this.villaLanternsGroup.visible = map === 'villa_marionette';
     for (const [mapId, props] of this.overworldPropsByMap) {
       props.group.visible = mapId === map;
     }
@@ -1518,6 +1552,10 @@ export class LuminatiRenderer {
     this.overworldBuildings.dispose();
     this.overworldPropsByMap.forEach((props) => props.dispose());
     this.overworldPropsByMap.clear();
+    this.villaLanternGeometries.forEach((geometry) => geometry.dispose());
+    this.villaLanternMaterials.forEach((material) => material.dispose());
+    this.villaLanternGeometries.length = 0;
+    this.villaLanternMaterials.length = 0;
     this.npcMaterials.forEach((material) => material.dispose());
     this.npcTextures.forEach((texture) => texture.dispose());
     this.npcMaterials.length = 0;

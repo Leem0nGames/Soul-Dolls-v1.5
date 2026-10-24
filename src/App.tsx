@@ -95,6 +95,8 @@ export default function App() {
       {/* 3D WebGL Canvas Viewport */}
       <div ref={canvasMountRef} className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" />
 
+      {state.view === 'OVERWORLD' && <div aria-hidden="true" className="overworld-atmosphere absolute inset-0 pointer-events-none z-[5]" />}
+
       {/* Retro scanline & subtle vignette overlay */}
       <div className="scanlines absolute inset-0 pointer-events-none z-10 opacity-30" />
 
