@@ -3,7 +3,7 @@ import { useGameStore, gameStore } from '../game/state/useGameStore';
 import { sound } from '../game/audio/SoundEffects';
 import { BookOpen, Users, Briefcase, Heart, Volume2, VolumeX, Sparkles, MapPin } from 'lucide-react';
 import { SoulDollSprite } from './ui/SoulDollSprite';
-import { MAP_NAMES } from '../game/data/world';
+import { MAP_NAMES } from '../game/data/maps';
 
 export const TopHUD: React.FC = () => {
   const state = useGameStore();

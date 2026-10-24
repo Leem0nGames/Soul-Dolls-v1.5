@@ -3,7 +3,8 @@ import { pixelGenerator } from './PixelArtGenerator';
 import { ecs } from '../ecs/World';
 import { gameStore, GameState } from '../state/useGameStore';
 import { createSoulDoll } from '../data/souldolls';
-import { MAP_IDS, MAP_NAMES, MAP_PALETTES, MapId } from '../data/world';
+import { MAP_IDS, MAP_NAMES, MAP_PALETTES, WORLD_MAPS } from '../data/maps';
+import { MapId } from '../data/world';
 import { sound } from '../audio/SoundEffects';
 import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
@@ -11,7 +12,6 @@ import {
   buildOverworldMap,
   getMapWildZones,
   isBlocked,
-  MAP_CONNECTIONS,
 } from './OverworldTiles';
 import { OverworldProps } from './OverworldProps';
 import { OverworldBuildings, VILLA_BUILDINGS, VillaBuilding } from './OverworldBuildings';
@@ -576,7 +576,7 @@ export class LuminatiRenderer {
   }
 
   private tryMapTransition(pos: { x: number; z: number }): boolean {
-    const connection = MAP_CONNECTIONS[this.activeMapId].find(
+    const connection = WORLD_MAPS[this.activeMapId].connections.find(
       (candidate) => Math.hypot(pos.x - candidate.at.x, pos.z - candidate.at.z) < 1.4
     );
     if (!connection) return false;

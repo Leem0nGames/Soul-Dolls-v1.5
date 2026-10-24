@@ -1,12 +1,12 @@
 import {
   getMapWildZones,
   MAP_CONNECTIONS,
-  MAP_NAMES,
   validateWorldMaps,
 } from '../src/game/graphics/OverworldTiles';
+import { MAP_IDS, MAP_NAMES, WORLD_MAPS } from '../src/game/data/maps';
 import { SOULDOLL_SPECIES } from '../src/game/data/souldolls';
 
-const mapIds = Object.keys(MAP_NAMES) as (keyof typeof MAP_NAMES)[];
+const mapIds = MAP_IDS;
 const errors = validateWorldMaps();
 
 for (const mapId of mapIds) {
@@ -31,7 +31,7 @@ console.log('SoulDolls World Harness');
 console.log('=======================');
 for (const mapId of mapIds) {
   const zones = getMapWildZones(mapId);
-  const connections = MAP_CONNECTIONS[mapId];
+  const connections = WORLD_MAPS[mapId].connections;
   console.log(
     `${MAP_NAMES[mapId]}: ${zones.length} encounter zones, ${connections.length} map connection(s)`
   );

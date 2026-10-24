@@ -14,8 +14,8 @@
  * plan, gardens, building footprints, and tile texture are generated locally.
  */
 import * as THREE from 'three';
-import { MAP_IDS, MAP_NAMES, MapId } from '../data/world';
-import { VILLA_BUILDINGS } from './OverworldBuildings';
+import { MAP_IDS, MAP_NAMES, WORLD_MAPS } from '../data/maps';
+import { MapId, MapLayoutDefinition, MapWildZone } from '../data/world';
 
 /** Source size of a tile (Kenney Roguelike tiles are 16x16). */
 const TILE_PX = 16;
@@ -70,155 +70,6 @@ const VOID_COLOR = '#393939';
 
 export { MAP_NAMES, MAP_IDS };
 export type { MapId };
-
-export interface MapWildZone {
-  name: string;
-  minX: number;
-  maxX: number;
-  minZ: number;
-  maxZ: number;
-  encounterRate: number;
-  speciesPool: { speciesId: string; minLevel: number; maxLevel: number; weight: number }[];
-}
-
-export interface MapConnection {
-  at: { x: number; z: number };
-  toMap: MapId;
-  arrival: { x: number; z: number };
-}
-
-export const MAP_CONNECTIONS: Record<MapId, readonly MapConnection[]> = {
-  villa_marionette: [
-    { at: { x: 0, z: -26 }, toMap: 'ruta_1', arrival: { x: 0, z: 25.5 } },
-  ],
-  ruta_1: [
-    { at: { x: 0, z: 26 }, toMap: 'villa_marionette', arrival: { x: 0, z: -25.5 } },
-  ],
-};
-
-interface MapLayoutDef {
-  /** Patches of spirit grass where wild SoulDolls appear. */
-  wildZones: MapWildZone[];
-  /** The town's central stone plaza. */
-  plaza: { x: number; z: number; radius: number } | null;
-  /** Centers of the main roads, in world units. */
-  roadXs: number[];
-  roadZs: number[];
-  /** Optional hand-drawn trail centerline for routes and winding paths. */
-  roadPath?: { x: number; z: number }[];
-  /** Half width of each road. */
-  roadHalfWidth: number;
-  /** Fraction of plain grass tiles that get a baked flower patch. */
-  flowerDensity: number;
-  decorations: {
-    tallTrees: number;
-    shortTrees: number;
-    bushes: number;
-    rocks: number;
-    flowers: number;
-    tufts: number;
-  };
-}
-
-const MAP_LAYOUTS: Record<MapId, MapLayoutDef> = {
-  villa_marionette: {
-    // A compact hillside village with a central square and branching lanes.
-    wildZones: [
-      {
-        name: 'Villa Marionette · Prado Oeste',
-        minX: -8, maxX: -3, minZ: -25, maxZ: -20,
-        encounterRate: 0.08,
-        speciesPool: [
-          { speciesId: 'florabun', minLevel: 6, maxLevel: 10, weight: 30 },
-          { speciesId: 'runika', minLevel: 7, maxLevel: 11, weight: 25 },
-          { speciesId: 'sparkit', minLevel: 7, maxLevel: 10, weight: 25 },
-          { speciesId: 'geotort', minLevel: 6, maxLevel: 9, weight: 20 },
-        ],
-      },
-      {
-        name: 'Villa Marionette · Prado Este',
-        minX: 3, maxX: 8, minZ: -25, maxZ: -20,
-        encounterRate: 0.08,
-        speciesPool: [
-          { speciesId: 'aquafox', minLevel: 7, maxLevel: 11, weight: 35 },
-          { speciesId: 'cryopup', minLevel: 7, maxLevel: 10, weight: 30 },
-          { speciesId: 'aerochick', minLevel: 6, maxLevel: 10, weight: 25 },
-          { speciesId: 'lumiwisp', minLevel: 8, maxLevel: 12, weight: 10 },
-        ],
-      },
-    ],
-    plaza: { x: 0, z: 0, radius: 5.5 },
-    roadXs: [-12, 0, 12],
-    roadZs: [-21, -12, 0, 12, 21],
-    roadHalfWidth: 1.5,
-    flowerDensity: 0.08,
-    decorations: { tallTrees: 12, shortTrees: 18, bushes: 22, rocks: 8, flowers: 32, tufts: 12 },
-  },
-  ruta_1: {
-    wildZones: [
-      {
-        name: 'Ruta 1 · Prado del arroyo',
-        minX: -12, maxX: -7, minZ: -12, maxZ: -4,
-        encounterRate: 0.1,
-        speciesPool: [
-          { speciesId: 'florabun', minLevel: 8, maxLevel: 11, weight: 30 },
-          { speciesId: 'sparkit', minLevel: 8, maxLevel: 12, weight: 30 },
-          { speciesId: 'aerochick', minLevel: 8, maxLevel: 11, weight: 25 },
-          { speciesId: 'geotort', minLevel: 9, maxLevel: 12, weight: 15 },
-        ],
-      },
-      {
-        name: 'Ruta 1 · Prado del claro',
-        minX: 4, maxX: 10, minZ: 7, maxZ: 17,
-        encounterRate: 0.1,
-        speciesPool: [
-          { speciesId: 'cryopup', minLevel: 8, maxLevel: 12, weight: 35 },
-          { speciesId: 'aquafox', minLevel: 9, maxLevel: 12, weight: 30 },
-          { speciesId: 'runika', minLevel: 9, maxLevel: 13, weight: 25 },
-          { speciesId: 'lumiwisp', minLevel: 10, maxLevel: 13, weight: 10 },
-        ],
-      },
-    ],
-    plaza: null,
-    roadXs: [],
-    roadZs: [],
-    roadPath: [
-      { x: 0, z: 27 },
-      { x: 0, z: 8 },
-      { x: -4.5, z: 3 },
-      { x: -4.5, z: -10 },
-      { x: 0, z: -17 },
-      { x: 0, z: -27 },
-    ],
-    roadHalfWidth: 1.5,
-    flowerDensity: 0.025,
-    decorations: { tallTrees: 20, shortTrees: 28, bushes: 26, rocks: 18, flowers: 10, tufts: 16 },
-  },
-};
-
-/** Places that must stay clear of decorative props and building footprints. */
-const MAP_CLEAR_POINTS: Record<MapId, { x: number; z: number; r: number }[]> = {
-  villa_marionette: [
-    { x: 0, z: 22, r: 4.5 },
-    { x: 0, z: 0, r: 8 },
-    { x: -8, z: -7, r: 3.5 },
-    { x: 8, z: 7, r: 3.5 },
-    { x: 17, z: -7, r: 3.5 },
-    ...VILLA_BUILDINGS.flatMap((building) => [
-      { x: building.x, z: building.z, r: 4.5 },
-      { x: building.entrance.x, z: building.entrance.z, r: 3.5 },
-    ]),
-  ],
-  ruta_1: [
-    { x: 0, z: 25, r: 4 },
-    { x: 0, z: -25, r: 4 },
-    { x: 0, z: -18, r: 4 },
-    { x: 0, z: 0, r: 3.5 },
-    { x: 0, z: 26, r: 4 },
-    { x: 0, z: -26, r: 4 },
-    { x: 3, z: -15, r: 3 },
-  ],
-};
 
 export type DecorationKind =
   | 'tree-short'
@@ -289,7 +140,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 /** Kind of tile at the given tile coordinates for a specific area layout. */
-function kindAt(col: number, row: number, layout: MapLayoutDef): TileKind {
+function kindAt(col: number, row: number, layout: MapLayoutDefinition): TileKind {
   if (
     col < BORDER_TILES ||
     row < BORDER_TILES ||
@@ -373,7 +224,8 @@ interface MapLayout {
 const LAYOUT_CACHE = new Map<MapId, MapLayout>();
 
 function buildLayout(map: MapId): MapLayout {
-  const def = MAP_LAYOUTS[map];
+  const mapDefinition = WORLD_MAPS[map];
+  const def = mapDefinition.layout;
   const grid = buildTileGrid(def);
   const blocked = new Set<string>();
   // Keep building footprints solid and plant props out of their yards.
@@ -382,26 +234,21 @@ function buildLayout(map: MapId): MapLayout {
       const x = tileCenter(col);
       const z = tileCenter(row);
       if (grid[row][col] === 'water') blocked.add(`${col},${row}`);
-      if (
-        map === 'villa_marionette' &&
-        VILLA_BUILDINGS.some((building) => {
-          return (
-            Math.abs(x - building.x) <= building.halfWidth + TILE_UNITS / 2 &&
-            Math.abs(z - building.z) <= building.halfDepth + TILE_UNITS / 2
-          );
-        })
-      ) {
+      if (def.buildingFootprints?.some((building) =>
+        Math.abs(x - building.x) <= building.halfWidth + TILE_UNITS / 2 &&
+        Math.abs(z - building.z) <= building.halfDepth + TILE_UNITS / 2
+      )) {
         blocked.add(`${col},${row}`);
       }
     }
   }
   const decorations = buildDecorations(
     grid,
-    MAP_CLEAR_POINTS[map],
+    mapDefinition.clearPoints,
     blocked,
     hashString(map),
-    MAP_LAYOUTS[map].decorations,
-    map
+    def.decorations,
+    mapDefinition.signSpots
   );
   return { grid, decorations, blocked };
 }
@@ -440,8 +287,8 @@ export function isBlocked(worldX: number, worldZ: number, map: MapId = 'villa_ma
 }
 
 /** Wild encounter areas and their species are authored once per map. */
-export function getMapWildZones(map: MapId): MapWildZone[] {
-  return MAP_LAYOUTS[map].wildZones;
+export function getMapWildZones(map: MapId): readonly MapWildZone[] {
+  return WORLD_MAPS[map].layout.wildZones;
 }
 
 /** Checks map connections and verifies that encounters are reachable on foot. */
@@ -484,7 +331,7 @@ export function validateWorldMaps(): string[] {
   };
 
   for (const map of mapIds) {
-    const connections = MAP_CONNECTIONS[map];
+    const connections = WORLD_MAPS[map].connections;
     if (connections.length === 0) errors.push(`${map} has no connection to another area`);
     for (const connection of connections) {
       if (!MAP_NAMES[connection.toMap]) {
@@ -501,7 +348,7 @@ export function validateWorldMaps(): string[] {
       if (isBlocked(connection.arrival.x, connection.arrival.z, connection.toMap)) {
         errors.push(`${connection.toMap} arrival from ${map} is blocked`);
       }
-      const reciprocal = MAP_CONNECTIONS[connection.toMap].some(
+      const reciprocal = WORLD_MAPS[connection.toMap].connections.some(
         (candidate) =>
           candidate.toMap === map &&
           Math.hypot(candidate.at.x - connection.arrival.x, candidate.at.z - connection.arrival.z) <= 1 &&
@@ -510,7 +357,7 @@ export function validateWorldMaps(): string[] {
       if (!reciprocal) errors.push(`${map} connection to ${connection.toMap} has no matching return`);
     }
 
-    for (const zone of MAP_LAYOUTS[map].wildZones) {
+    for (const zone of WORLD_MAPS[map].layout.wildZones) {
       const center = { x: (zone.minX + zone.maxX) / 2, z: (zone.minZ + zone.maxZ) / 2 };
       if (!inBounds(center)) errors.push(`${zone.name} is outside ${map}`);
       if (!connections.some((connection) => isReachable(map, connection.at, center))) {
@@ -521,7 +368,7 @@ export function validateWorldMaps(): string[] {
   return errors;
 }
 
-function buildTileGrid(layout: MapLayoutDef): TileKind[][] {
+function buildTileGrid(layout: MapLayoutDefinition): TileKind[][] {
   const grid: TileKind[][] = [];
   for (let row = 0; row < MAP_TILES; row++) {
     const line: TileKind[] = [];
@@ -536,8 +383,8 @@ function buildDecorations(
   clearPoints: { x: number; z: number; r: number }[],
   blocked: Set<string>,
   seed: number,
-  profile: MapLayoutDef['decorations'],
-  map: MapId
+  profile: MapLayoutDefinition['decorations'],
+  signSpots: [number, number][]
 ): Decoration[] {
   const random = makeRandom(seed);
   const decorations: Decoration[] = [];
@@ -594,15 +441,6 @@ function buildDecorations(
   for (let i = 0; i < profile.tufts; i++) place('grass-tuft', 1, 1, 'tallgrass');
 
   // Signposts mark the incoming and outgoing trail at each area's edge.
-  const signSpots: [number, number][] = map === 'villa_marionette'
-    ? [
-        [MAP_TILES / 2 - 2, MAP_TILES - BORDER_TILES - 2],
-        [MAP_TILES / 2 + 2, BORDER_TILES + 2],
-      ]
-    : [
-        [MAP_TILES / 2 - 3, MAP_TILES - BORDER_TILES - 2],
-        [MAP_TILES / 2 + 3, BORDER_TILES + 2],
-      ];
   for (const [col, row] of signSpots) {
     if (col < 0 || row < 0 || col >= MAP_TILES || row >= MAP_TILES) continue;
     if (grid[row][col] !== 'grass' || taken.has(key(col, row))) continue;
@@ -761,7 +599,7 @@ export async function buildOverworldMap(map: MapId = 'villa_marionette'): Promis
   // 4. Flower petals over plain grass (baked in): deterministic per area, so
   // no extra props and no adjacency seams — grass keeps being grass.
   const FLOWER_FILES = ['Flower-orange-0.png', 'Flower-orange-1.png', 'Flower-white-0.png', 'Flower-white-1.png'];
-  const flowerDensity = MAP_LAYOUTS[map].flowerDensity;
+  const flowerDensity = WORLD_MAPS[map].layout.flowerDensity;
   if (flowerDensity > 0) {
     for (let row = BORDER_TILES; row < MAP_TILES - BORDER_TILES; row++) {
       for (let col = BORDER_TILES; col < MAP_TILES - BORDER_TILES; col++) {
