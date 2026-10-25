@@ -92,6 +92,11 @@ export class LuminatiRenderer {
   private battlePlayerDollSprite!: THREE.Sprite;
   private battleOpponentDollSprite!: THREE.Sprite;
   private battleArenaPlatform!: THREE.Group;
+  private battleBackdropTexture: THREE.Texture | null = null;
+  private battleBackdropPath: string | null = null;
+  private battleBackdropRequestPath: string | null = null;
+  private battleBackdropRequestId = 0;
+  private battleBackdropActive = false;
   private evolutionFromSprite!: THREE.Sprite;
   private evolutionToSprite!: THREE.Sprite;
   private evolutionRingOuter!: THREE.Mesh;
@@ -606,6 +611,58 @@ export class LuminatiRenderer {
     const tint = MAP_PALETTES[map];
     this.scene.background = new THREE.Color(tint.background);
     this.scene.fog = new THREE.FogExp2(tint.fog, tint.fogDensity ?? 0.035);
+  }
+
+  private setBattleBackdrop(path: string): void {
+    this.battleBackdropActive = true;
+    this.scene.fog = null;
+
+    if (this.battleBackdropPath === path && this.battleBackdropTexture) {
+      this.scene.background = this.battleBackdropTexture;
+      return;
+    }
+    if (this.battleBackdropRequestPath === path) return;
+
+    this.battleBackdropRequestPath = path;
+    const requestId = ++this.battleBackdropRequestId;
+    new THREE.TextureLoader().load(
+      path,
+      (texture) => {
+        if (
+          this.isDestroyed ||
+          requestId !== this.battleBackdropRequestId ||
+          gameStore.getState().view !== 'BATTLE'
+        ) {
+          texture.dispose();
+          return;
+        }
+
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = true;
+        texture.needsUpdate = true;
+
+        this.battleBackdropTexture?.dispose();
+        this.battleBackdropTexture = texture;
+        this.battleBackdropPath = path;
+        this.battleBackdropRequestPath = null;
+        this.scene.background = texture;
+      },
+      undefined,
+      (error) => {
+        if (requestId !== this.battleBackdropRequestId) return;
+        this.battleBackdropRequestPath = null;
+        console.error(`[Luminati] No se pudo cargar el fondo de batalla "${path}".`, error);
+      }
+    );
+  }
+
+  private restoreMapBackdrop(): void {
+    this.battleBackdropActive = false;
+    this.battleBackdropRequestId++;
+    this.battleBackdropRequestPath = null;
+    this.applyMapTint(this.activeMapId);
   }
 
   private transitionMap(
@@ -1407,6 +1464,7 @@ export class LuminatiRenderer {
       if (state.view === 'BATTLE') {
         this.updateBattleScene(delta, state);
       } else {
+        if (this.battleBackdropActive) this.restoreMapBackdrop();
         // Leaving the battle: drop every running effect.
         this.vfxDirector.clear();
         this.updateOverworld(delta, state);
@@ -1704,6 +1762,15 @@ export class LuminatiRenderer {
     const battle = state.battleState;
     if (!battle) return;
 
+    const playerDefeated =
+      state.playerParty.length > 0 && state.playerParty.every((doll) => doll.currentHp <= 0);
+    const backdropPath = playerDefeated
+      ? '/assets/losebg.png'
+      : battle.isTrainerBattle && this.activeMapId === 'villa_marionette'
+        ? '/assets/homebg.png'
+        : '/assets/battlebg.png';
+    this.setBattleBackdrop(backdropPath);
+
     // Position camera dynamically in battle arena with wide framing for both combatants
     const isPortrait = this.camera.aspect < 1.0;
     if (isPortrait) {
@@ -1901,6 +1968,9 @@ export class LuminatiRenderer {
     battleVfx.unregisterSink(this.vfxDirector);
     this.vfxDirector.dispose();
     this.unsubscribeEvolutionSprites?.();
+    this.battleBackdropRequestId++;
+    this.battleBackdropTexture?.dispose();
+    this.battleBackdropTexture = null;
     this.evolutionSanctum.traverse((object) => {
       if (!(object instanceof THREE.Mesh || object instanceof THREE.Points)) return;
       object.geometry.dispose();
