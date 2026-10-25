@@ -1,5 +1,5 @@
 import { WorldMapDefinition } from '../world';
-import { VILLA_BUILDINGS } from '../../graphics/OverworldBuildings';
+import { VILLA_BUILDINGS } from './villaBuildings';
 
 const VILLA_TAMERS: WorldMapDefinition['tamers'] = [
   {

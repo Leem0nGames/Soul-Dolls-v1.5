@@ -1,33 +1,12 @@
-import {
-  getMapWildZones,
-  validateWorldMaps,
-} from '../src/game/graphics/OverworldTiles';
 import { MAP_IDS, MAP_NAMES, WORLD_MAPS } from '../src/game/data/maps';
 import { SOULDOLL_SPECIES } from '../src/game/data/souldolls';
-import { VILLA_BUILDINGS } from '../src/game/graphics/OverworldBuildings';
-import { isBlocked } from '../src/game/graphics/OverworldTiles';
+import { validateWorldMaps } from '../src/game/data/worldValidation';
 
 const mapIds = MAP_IDS;
 const errors = validateWorldMaps();
-const villaLayout = WORLD_MAPS.villa_marionette.layout;
-
-for (const building of VILLA_BUILDINGS) {
-  if (building.rotation !== 0) {
-    errors.push(`${building.id} must face north toward the plaza/camera`);
-  }
-  if (building.entrance.x !== building.x || building.entrance.z <= building.z) {
-    errors.push(`${building.id} entrance must be centered on its north-facing (+Z) facade`);
-  }
-  if (isBlocked(building.entrance.x, building.entrance.z, 'villa_marionette')) {
-    errors.push(`${building.id} entrance is blocked by its footprint`);
-  }
-  if (!villaLayout.roadZs.some((z) => Math.abs(z - building.entrance.z) <= villaLayout.roadHalfWidth)) {
-    errors.push(`${building.id} entrance has no approach road`);
-  }
-}
 
 for (const mapId of mapIds) {
-  for (const zone of getMapWildZones(mapId)) {
+  for (const zone of WORLD_MAPS[mapId].layout.wildZones) {
     if (zone.encounterRate <= 0 || zone.encounterRate > 1) {
       errors.push(`${zone.name} has an encounter rate outside (0, 1]`);
     }
@@ -57,7 +36,7 @@ for (const mapId of mapIds) {
 console.log('SoulDolls World Harness');
 console.log('=======================');
 for (const mapId of mapIds) {
-  const zones = getMapWildZones(mapId);
+  const zones = WORLD_MAPS[mapId].layout.wildZones;
   const tamers = WORLD_MAPS[mapId].tamers;
   const connections = WORLD_MAPS[mapId].connections;
   console.log(
