@@ -30,10 +30,22 @@ Import primitives from `src/components/ui/BrandKit.tsx`:
   action. Use `select` with `aria-pressed` for selected rows and toggle
   controls; it applies a shared gold/violet selected state.
 - `BrandBadge` — compact status and metadata label.
+- `BrandWidget` — compact metric card with a semantic `gold`, `ki`, `soul`, or
+  `danger` accent.
+- `BrandProgress` — accessible, bounded progress bar with the same semantic
+  accent variants.
+- `BrandSectionTitle` — reusable icon-and-title treatment for panel sections.
 - `GameCabinetModal` — shared responsive modal frame, title bar, and close
   action; add screen-specific actions through `headerRight`.
 - `sd-ornate-frame` — reusable ornamental inset border for modal shells and
   content panels; use it instead of drawing one-off corner treatments.
+
+Use `sd-type-display`, `sd-type-heading`, `sd-type-label`, `sd-type-body`, and
+`sd-type-meta` for the shared type scale. Cinzel is reserved for display and
+section headings, Outfit for readable interface text, and Press Start 2P for
+pixel-art details such as game IDs and compact level markers. Keep status and
+action colors semantic; use element-specific colors only where the UI identifies
+an element or its type.
 
 Battle-specific styles such as `sd-battle-frame`, `sd-dialog-ornate`, and
 `sd-action-btn` remain available for battle overlays and dialogue.

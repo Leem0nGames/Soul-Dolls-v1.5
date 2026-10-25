@@ -5,7 +5,7 @@ import { Briefcase, Check } from 'lucide-react';
 import { ItemCategory } from '../types/game';
 import { GameCabinetModal } from './ui/GameCabinetModal';
 import { SoulDollSprite } from './ui/SoulDollSprite';
-import { BrandButton } from './ui/BrandKit';
+import { BrandBadge, BrandButton, BrandPanel, BrandSectionTitle } from './ui/BrandKit';
 
 export const BagModal: React.FC = () => {
   const state = useGameStore();
@@ -17,7 +17,8 @@ export const BagModal: React.FC = () => {
 
   const items = Object.values(state.inventory);
   const filteredItems = items.filter(it => it.category === activeCategory);
-  const selectedItem = state.inventory[selectedItemId] || filteredItems[0];
+  const selectedItem =
+    items.find(item => item.id === selectedItemId && item.category === activeCategory) || filteredItems[0];
 
   const handleUseItem = () => {
     if (!selectedItem || selectedItem.count <= 0) return;
@@ -42,7 +43,7 @@ export const BagModal: React.FC = () => {
       maxWidth="max-w-3xl"
     >
       {/* Categories Bar */}
-      <div className="flex border-b border-[#8c5a2b] bg-[#17121f] p-2 gap-2 shrink-0">
+      <div className="sd-cabinet-header flex overflow-x-auto p-2 gap-2 shrink-0">
         {(
           [
             { id: 'vial', label: 'VIALES' },
@@ -61,7 +62,7 @@ export const BagModal: React.FC = () => {
             }}
             variant={activeCategory === cat.id ? 'primary' : 'secondary'}
             aria-pressed={activeCategory === cat.id}
-            className={`px-4 py-2 text-[10px] ${
+            className={`whitespace-nowrap px-4 py-2 sd-type-label ${
               activeCategory === cat.id
                 ? 'font-bold'
                 : 'text-amber-200/80'
@@ -73,10 +74,14 @@ export const BagModal: React.FC = () => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#14101c]/90">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[color:var(--sd-ink)]/90">
         {/* Items list */}
-        <div className="w-full md:w-1/2 p-3 sm:p-4 border-b md:border-b-0 md:border-r border-[#8c5a2b] flex flex-col gap-2 max-h-[35vh] md:max-h-none overflow-y-auto touch-pan-y shrink-0 md:shrink scrollbar-thin">
-          {filteredItems.map(item => {
+        <div className="w-full md:w-1/2 p-3 sm:p-4 border-b md:border-b-0 md:border-r border-[color:var(--sd-bronze)] flex flex-col gap-2 max-h-[35vh] md:max-h-none overflow-y-auto touch-pan-y shrink-0 md:shrink scrollbar-thin">
+          <div className="flex items-center justify-between gap-2 pb-1">
+            <BrandSectionTitle>Objetos disponibles</BrandSectionTitle>
+            <BrandBadge>{filteredItems.length} tipos</BrandBadge>
+          </div>
+          {filteredItems.length > 0 ? filteredItems.map(item => {
             const isSelected = selectedItemId === item.id;
             return (
               <BrandButton
@@ -89,44 +94,46 @@ export const BagModal: React.FC = () => {
                 aria-pressed={isSelected}
                 className="w-full p-3 rounded-xl flex items-center justify-between gap-2"
               >
-                <div>
-                  <div className="font-pixel text-[11px] text-amber-200 font-bold">{item.name}</div>
-                  <div className="font-sans text-[10px] text-amber-100/70 mt-0.5 truncate max-w-[200px]">
+                <div className="min-w-0">
+                  <div className="sd-type-body font-bold text-amber-100 truncate">{item.name}</div>
+                  <div className="sd-type-meta text-amber-100/70 mt-0.5 truncate max-w-[200px]">
                     {item.description}
                   </div>
                 </div>
-                <span className="font-pixel text-xs text-amber-300 bg-[#14101c] px-2.5 py-1 rounded border border-[#8c5a2b] font-bold">
+                <BrandBadge className="shrink-0">
                   x{item.count}
-                </span>
+                </BrandBadge>
               </BrandButton>
             );
-          })}
+          }) : (
+            <BrandPanel variant="inset" className="p-4 text-center sd-type-body text-amber-100/60">
+              No tienes objetos en esta categoría.
+            </BrandPanel>
+          )}
         </div>
 
         {/* Item details & Target Doll selector */}
-        <div className="w-full md:w-1/2 p-4 sm:p-5 flex flex-col justify-between overflow-y-auto scrollbar-thin">
+        <div className="w-full md:w-1/2 p-4 sm:p-5 flex flex-col justify-between gap-4 overflow-y-auto scrollbar-thin">
           {selectedItem ? (
             <div className="space-y-4">
-              <div className="sd-brand-panel sd-brand-panel-raised p-4">
-                <h3 className="font-fantasy text-sm text-amber-100 font-bold mb-1">
+              <BrandPanel variant="raised" className="p-4">
+                <h3 className="sd-type-heading text-amber-100 font-bold mb-1">
                   {selectedItem.name}
                 </h3>
-                <p className="font-sans text-xs text-amber-100/70 leading-relaxed">
+                <p className="sd-type-body text-amber-100/70">
                   {selectedItem.description}
                 </p>
-                <div className="mt-2 text-[10px] font-pixel text-amber-300 font-bold">
+                <div className="mt-2 sd-type-meta text-amber-300 font-bold">
                   Disponibles: <span className="text-amber-100">{selectedItem.count} unidades</span>
                 </div>
-              </div>
+              </BrandPanel>
 
               {/* Target SoulDoll Selection for Medicine & Artifacts */}
               {selectedItem.category !== 'vial' && (
-                <div className="bg-[#0d0a13] p-3 rounded-xl border border-[#7a4921]">
-                  <div className="font-pixel text-[10px] text-amber-300 mb-2 font-bold">
-                    APLICAR SOBRE SOULDOLL:
-                  </div>
+                <BrandPanel variant="inset" className="p-3">
+                  <BrandSectionTitle className="mb-2">Aplicar sobre SoulDoll</BrandSectionTitle>
                   <div className="space-y-1.5 max-h-36 overflow-y-auto scrollbar-thin">
-                    {state.playerParty.map(doll => (
+                    {state.playerParty.length > 0 ? state.playerParty.map(doll => (
                       <BrandButton
                         key={doll.uuid}
                         onClick={() => setTargetDollUuid(doll.uuid)}
@@ -134,8 +141,8 @@ export const BagModal: React.FC = () => {
                         aria-pressed={targetDollUuid === doll.uuid}
                         className="w-full p-2 rounded-lg flex justify-between items-center gap-2"
                       >
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-[color:var(--sd-ink)] border border-[color:var(--sd-bronze)] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
                             <SoulDollSprite
                               speciesId={doll.speciesId}
                               crop="bust"
@@ -143,23 +150,25 @@ export const BagModal: React.FC = () => {
                               alt={doll.nickname}
                             />
                           </div>
-                          <span className="font-pixel text-[10px] font-bold">
+                          <span className="sd-type-meta font-bold truncate">
                             {doll.nickname} (Nv.{doll.level})
                           </span>
                         </div>
-                        <span className="font-pixel text-[9px] text-amber-300">
+                        <span className="sd-type-meta text-amber-300 shrink-0">
                           {selectedItem.grantsLevel
                             ? `${doll.currentXp.toLocaleString()} / ${doll.xpToNext.toLocaleString()} EXP`
                             : `${doll.currentHp}/${doll.maxHp} HP`}
                         </span>
                       </BrandButton>
-                    ))}
+                    )) : (
+                      <p className="sd-type-meta text-amber-100/60 py-2">No tienes SoulDolls en tu equipo.</p>
+                    )}
                   </div>
-                </div>
+                </BrandPanel>
               )}
             </div>
           ) : (
-            <div className="text-center font-pixel text-xs text-amber-200/60 py-10">
+            <div className="text-center sd-type-body text-amber-200/60 py-10">
               Selecciona un objeto de la lista
             </div>
           )}
@@ -169,7 +178,7 @@ export const BagModal: React.FC = () => {
               disabled={selectedItem.count <= 0}
               onClick={handleUseItem}
               variant="primary"
-              className="mt-3 w-full py-3 px-6 text-xs flex items-center justify-center gap-2"
+              className="w-full py-3 px-6 sd-type-label flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4" />
               USAR OBJETO

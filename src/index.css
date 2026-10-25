@@ -22,6 +22,34 @@
   .font-modern {
     font-family: 'Outfit', sans-serif;
   }
+  .sd-type-display {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    line-height: 1.2;
+  }
+  .sd-type-heading {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+  .sd-type-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  .sd-type-body {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+  .sd-type-meta {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
 }
 
 .pixelated {
@@ -305,13 +333,91 @@
     box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.55);
   }
 
+  .sd-brand-widget {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    overflow: hidden;
+    border: 1px solid currentColor;
+    border-radius: 0.75rem;
+    padding: 0.6rem 0.4rem;
+    background: linear-gradient(180deg, rgba(53, 38, 59, 0.88), rgba(20, 16, 28, 0.96));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .sd-brand-widget-gold { color: var(--sd-gold); }
+  .sd-brand-widget-ki { color: var(--sd-ki); }
+  .sd-brand-widget-soul { color: var(--sd-soul); }
+  .sd-brand-widget-danger { color: var(--sd-rift); }
+
+  .sd-brand-widget-label {
+    color: rgba(243, 233, 212, 0.76);
+    font-size: 0.625rem;
+  }
+
+  .sd-type-value {
+    color: #fff8e8;
+    font-family: 'Cinzel', serif;
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  }
+
+  .sd-brand-progress {
+    height: 0.625rem;
+    overflow: hidden;
+    border: 1px solid rgba(138, 106, 59, 0.8);
+    border-radius: 999px;
+    padding: 1px;
+    background: var(--sd-ink);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.75);
+  }
+
+  .sd-brand-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.4s ease-out;
+  }
+
+  .sd-brand-progress-gold .sd-brand-progress-fill {
+    background: linear-gradient(90deg, #b77922, var(--sd-gold));
+  }
+  .sd-brand-progress-ki .sd-brand-progress-fill {
+    background: linear-gradient(90deg, #0d9488, var(--sd-ki));
+  }
+  .sd-brand-progress-soul .sd-brand-progress-fill {
+    background: linear-gradient(90deg, #6b3aa5, var(--sd-soul));
+  }
+  .sd-brand-progress-danger .sd-brand-progress-fill {
+    background: linear-gradient(90deg, #881337, var(--sd-rift));
+  }
+
+  .sd-brand-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(243, 233, 212, 0.82);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
   .sd-brand-button {
     min-height: 40px;
     border: 1px solid var(--sd-bronze);
     border-radius: 0.65rem;
     padding: 0.55rem 0.8rem;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 0.625rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.035em;
     font-weight: 700;
     transition: transform 0.1s ease, filter 0.1s ease, border-color 0.1s ease;
     cursor: pointer;
@@ -393,8 +499,9 @@
     padding: 0.25rem 0.55rem;
     background: rgba(20, 16, 28, 0.9);
     color: var(--sd-gold);
-    font-family: 'Press Start 2P', monospace;
-    font-size: 0.55rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 700;
     line-height: 1.4;
   }
 }

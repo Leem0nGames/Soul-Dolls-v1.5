@@ -8,7 +8,7 @@ import { TYPE_COLORS, getTypeEffectiveness } from '../game/data/typesChart';
 import { ElementalType, SoulDollSpecies, SoulDollInstance } from '../types/game';
 import { SoulDollSprite } from './ui/SoulDollSprite';
 import { GameCabinetModal } from './ui/GameCabinetModal';
-import { BrandBadge, BrandButton, BrandPanel } from './ui/BrandKit';
+import { BrandBadge, BrandButton, BrandPanel, BrandProgress, BrandSectionTitle, BrandWidget } from './ui/BrandKit';
 import {
   X,
   ChevronLeft,
@@ -221,8 +221,8 @@ export const SoulDexModal: React.FC = () => {
         <div className="flex items-center gap-2">
           <BrandPanel variant="inset" className="hidden sm:flex items-center gap-3 px-3 py-2 text-[10px] font-pixel">
             <span className="text-amber-300" title="Fragmentos de Alma">✦ {state.soulShards}</span>
-            <span className="text-sky-300" title="Viales de Ánima">◈ {state.inventory.animus_vial?.count || 0}</span>
-            <span className="text-purple-300" title="Prismas de Evolución">◇ {state.inventory.evolution_prism?.count || 0}</span>
+            <span className="text-[color:var(--sd-ki)]" title="Viales de Ánima">◈ {state.inventory.animus_vial?.count || 0}</span>
+            <span className="text-[color:var(--sd-soul)]" title="Prismas de Evolución">◇ {state.inventory.evolution_prism?.count || 0}</span>
           </BrandPanel>
           <BrandButton
             onClick={() => {
@@ -241,15 +241,15 @@ export const SoulDexModal: React.FC = () => {
     >
 
         {/* 2. MAIN 2-COLUMN VIEWPORT */}
-        <div className="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+        <div className="relative z-10 flex-1 min-h-0 grid grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] overflow-hidden">
           {/* ==================== LEFT COLUMN: REAL STATS & CARDS ==================== */}
-          <div className="w-full p-3 sm:p-4 overflow-y-auto space-y-2.5 touch-pan-y scrollbar-thin">
+          <div className="min-h-0 min-w-0 w-full p-2 sm:p-4 overflow-y-auto space-y-2 touch-pan-y scrollbar-thin">
             {/* CARD 1: CHARACTER HEADER (Name, Stars, Element Badge, Ownership & Level) */}
             <BrandPanel variant="raised" className="relative p-3 sm:p-3.5 overflow-hidden">
               {/* Top Row: Name + 3D Element Orb */}
               <div className="flex justify-between items-start gap-2">
                 <div>
-                  <h1 className="font-fantasy text-xl sm:text-2xl font-bold tracking-tight text-amber-100 drop-shadow-sm">
+                  <h1 className="sd-type-display font-bold tracking-tight text-amber-100 drop-shadow-sm">
                     {isSeen ? selectedSpecies.name : '??? Desconocido'}
                   </h1>
 
@@ -263,7 +263,7 @@ export const SoulDexModal: React.FC = () => {
                         ★
                       </span>
                     ))}
-                    <span className="text-[10px] font-sans font-bold text-amber-200/70 ml-1">
+                    <span className="sd-type-meta font-bold text-amber-200/70 ml-1">
                       Fase {selectedSpecies.stage}
                     </span>
                   </div>
@@ -305,44 +305,38 @@ export const SoulDexModal: React.FC = () => {
               </div>
 
               {/* Engraved Bronze Divider */}
-              <div className="my-2 h-[2px] bg-gradient-to-r from-transparent via-[#967853] to-transparent opacity-60" />
+              <div className="my-2 h-[2px] bg-gradient-to-r from-transparent via-[color:var(--sd-bronze)] to-transparent opacity-60" />
 
               {/* Real Player Instance Info OR Wild Data */}
               {ownedInstance ? (
                 <div className="space-y-1 text-slate-100">
-                  <div className="flex justify-between items-baseline font-sans text-xs">
+                  <div className="flex justify-between items-baseline sd-type-body">
                     <span className="font-bold text-amber-100 flex items-center gap-1.5">
-                      <span className="text-emerald-700">●</span>
-                      Nv. <strong className="text-base font-fantasy font-bold">{ownedInstance.level}</strong>
-                      <span className="text-[10px] font-semibold text-amber-200/70">
+                      <span className="text-[color:var(--sd-ki)]">●</span>
+                      Nv. <strong className="sd-type-heading font-bold">{ownedInstance.level}</strong>
+                      <span className="sd-type-meta font-semibold text-amber-200/70">
                         ({isPartyMember ? 'En Equipo' : 'En Santuario'})
                       </span>
                     </span>
-                    <span className="text-[11px] font-semibold text-amber-200/70">
+                    <span className="sd-type-meta font-semibold text-amber-200/70">
                       {ownedInstance.currentXp} / {ownedInstance.xpToNext} EXP
                     </span>
                   </div>
 
                   {/* Real EXP Progress Bar */}
-                  <div className="w-full bg-black/50 h-2.5 rounded-full overflow-hidden p-[1px] shadow-inner border border-amber-700/50">
-                    <div
-                      className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow transition-all duration-500"
-                      style={{
-                        width: `${Math.min(
-                          100,
-                          Math.max(5, (ownedInstance.currentXp / Math.max(1, ownedInstance.xpToNext)) * 100)
-                        )}%`,
-                      }}
-                    />
-                  </div>
+                  <BrandProgress
+                    label={`Experiencia de ${selectedSpecies.name}`}
+                    value={ownedInstance.currentXp}
+                    max={ownedInstance.xpToNext}
+                  />
 
-                  <div className="flex justify-between items-center text-[10px] font-sans text-amber-100/70 pt-0.5">
+                  <div className="flex justify-between items-center sd-type-meta text-amber-100/70 pt-0.5">
                     <span>Salud: {ownedInstance.currentHp}/{ownedInstance.maxHp} HP</span>
                     <span>Ratio Captura: {selectedSpecies.catchRate}</span>
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-between items-center text-xs font-sans text-amber-100/70">
+                <div className="flex justify-between items-center sd-type-body text-amber-100/70">
                   <div>
                     <span className="font-bold text-amber-100">
                       {isSeen ? 'Estado: Avistado en el Ecosistema' : 'Estado: Sin descubrir'}
@@ -358,119 +352,39 @@ export const SoulDexModal: React.FC = () => {
             {/* CARD 2: REAL COMBAT STATS (6 Real Core Stats with values and gauges) */}
             <BrandPanel variant="surface" className="p-3">
               <div className="flex justify-between items-center mb-2">
-                <span className="font-sans text-[11px] font-extrabold uppercase tracking-wider text-amber-100/80">
+                <BrandSectionTitle>
                   {ownedInstance ? 'ESTADÍSTICAS DEL SOULDOLL' : 'ATRIBUTOS BASE DE LA ESPECIE'}
-                </span>
-                <span className="text-[9px] font-pixel text-amber-300">
+                </BrandSectionTitle>
+                <span className="sd-type-meta text-amber-300">
                   {ownedInstance ? `Nv.${ownedInstance.level}` : 'Base'}
                 </span>
               </div>
 
               {/* 6 Real Stat Cards Grid */}
-              <div className="grid grid-cols-3 gap-2">
-                {/* HP */}
-                <div
-                  className="p-2 rounded-xl border border-[#14532d] flex flex-col items-center justify-center shadow-sm relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #16a34a 0%, #15803d 100%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <span className="font-pixel text-[8px] text-emerald-100 font-bold">HP</span>
-                  <span className="font-fantasy text-base sm:text-lg text-white font-extrabold drop-shadow">
-                    {isSeen ? stats.hp : '???'}
-                  </span>
-                </div>
-
-                {/* ATK */}
-                <div
-                  className="p-2 rounded-xl border border-[#7f1d1d] flex flex-col items-center justify-center shadow-sm relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #dc2626 0%, #b91c1c 100%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <span className="font-pixel text-[8px] text-rose-100 font-bold">ATK</span>
-                  <span className="font-fantasy text-base sm:text-lg text-white font-extrabold drop-shadow">
-                    {isSeen ? stats.atk : '???'}
-                  </span>
-                </div>
-
-                {/* DEF */}
-                <div
-                  className="p-2 rounded-xl border border-[#1e3a8a] flex flex-col items-center justify-center shadow-sm relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <span className="font-pixel text-[8px] text-sky-100 font-bold">DEF</span>
-                  <span className="font-fantasy text-base sm:text-lg text-white font-extrabold drop-shadow">
-                    {isSeen ? stats.def : '???'}
-                  </span>
-                </div>
-
-                {/* SP. ATK */}
-                <div
-                  className="p-2 rounded-xl border border-[#581c87] flex flex-col items-center justify-center shadow-sm relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #9333ea 0%, #7e22ce 100%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <span className="font-pixel text-[8px] text-purple-100 font-bold">SP.ATK</span>
-                  <span className="font-fantasy text-base sm:text-lg text-white font-extrabold drop-shadow">
-                    {isSeen ? stats.spAtk : '???'}
-                  </span>
-                </div>
-
-                {/* SP. DEF */}
-                <div
-                  className="p-2 rounded-xl border border-[#164e63] flex flex-col items-center justify-center shadow-sm relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #0891b2 0%, #0e7490 100%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <span className="font-pixel text-[8px] text-cyan-100 font-bold">SP.DEF</span>
-                  <span className="font-fantasy text-base sm:text-lg text-white font-extrabold drop-shadow">
-                    {isSeen ? stats.spDef : '???'}
-                  </span>
-                </div>
-
-                {/* SPD */}
-                <div
-                  className="p-2 rounded-xl border border-[#78350f] flex flex-col items-center justify-center shadow-sm relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #d97706 0%, #b45309 100%)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <span className="font-pixel text-[8px] text-amber-100 font-bold">VEL</span>
-                  <span className="font-fantasy text-base sm:text-lg text-white font-extrabold drop-shadow">
-                    {isSeen ? stats.spd : '???'}
-                  </span>
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-2">
+                <BrandWidget label="HP" value={isSeen ? stats.hp : '???'} variant="ki" />
+                <BrandWidget label="ATQ" value={isSeen ? stats.atk : '???'} variant="danger" />
+                <BrandWidget label="DEF" value={isSeen ? stats.def : '???'} variant="gold" />
+                <BrandWidget label="ATQ ESP." value={isSeen ? stats.spAtk : '???'} variant="soul" />
+                <BrandWidget label="DEF ESP." value={isSeen ? stats.spDef : '???'} variant="ki" />
+                <BrandWidget label="VEL" value={isSeen ? stats.spd : '???'} variant="gold" />
               </div>
             </BrandPanel>
 
             {/* CARD 3: REAL LORE & ELEMENTAL AFFINITIES */}
-            <div
-              className="sd-brand-panel sd-brand-panel-surface p-3"
-            >
-              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans font-extrabold uppercase tracking-wider text-amber-100/80 mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>CRÓNICA DEL ALMA</span>
-              </div>
-              <p className="font-sans text-xs text-amber-100/70 leading-relaxed mb-2.5">
+            <BrandPanel variant="surface" className="p-3">
+              <BrandSectionTitle icon={<Sparkles className="w-3.5 h-3.5 text-amber-300" />} className="mb-1">
+                CRÓNICA DEL ALMA
+              </BrandSectionTitle>
+              <p className="sd-type-body text-amber-100/70 mb-2.5">
                 {isSeen ? selectedSpecies.description : 'Información oculta. Avista o captura este SoulDoll para registrar su historia.'}
               </p>
 
               {/* Elemental Affinities */}
               {isSeen && (
-                <div className="pt-2 border-t border-amber-700/40 flex flex-col gap-1.5 text-[10px] font-sans">
+                <div className="pt-2 border-t border-amber-700/40 flex flex-col gap-1.5 sd-type-meta">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-emerald-300 shrink-0">Eficaz contra (x2.0):</span>
+                    <span className="font-bold text-[color:var(--sd-ki)] shrink-0">Eficaz contra (x2.0):</span>
                     {affinities.strongAgainst.length > 0 ? (
                       affinities.strongAgainst.map((t) => (
                         <span
@@ -486,7 +400,7 @@ export const SoulDexModal: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-rose-300 shrink-0">Vulnerable a (x2.0):</span>
+                    <span className="font-bold text-[color:var(--sd-rift)] shrink-0">Vulnerable a (x2.0):</span>
                     {affinities.weakAgainst.length > 0 ? (
                       affinities.weakAgainst.map((t) => (
                         <span
@@ -503,16 +417,14 @@ export const SoulDexModal: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </BrandPanel>
 
             {/* CARD 5: REAL EVOLUTION TREE */}
             {selectedSpecies.evolution && (
-              <div
-                className="sd-brand-panel sd-brand-panel-surface p-3 flex items-center justify-between"
-              >
+              <BrandPanel variant="surface" className="p-3 flex items-center justify-between">
                 <div>
-                  <div className="text-[9px] font-pixel text-amber-300">LÍNEA EVOLUTIVA</div>
-                  <div className="font-fantasy text-sm font-bold text-amber-100 flex items-center gap-1.5 mt-0.5">
+                  <div className="sd-type-label text-amber-300">LÍNEA EVOLUTIVA</div>
+                  <div className="sd-type-heading font-bold text-amber-100 flex items-center gap-1.5 mt-0.5">
                     <span>{selectedSpecies.name}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
                     <BrandButton
@@ -529,22 +441,19 @@ export const SoulDexModal: React.FC = () => {
                     </BrandButton>
                   </div>
                 </div>
-                <span className="font-pixel text-[9px] bg-[#211a2d] text-amber-200 px-2 py-1 rounded-lg border border-[#8a6a3b] shadow-sm">
+                <BrandBadge>
                   Nivel {selectedSpecies.evolution.level}
-                </span>
-              </div>
+                </BrandBadge>
+              </BrandPanel>
             )}
 
             {/* CARD 4: REAL LEARNSET & MOVES DATABASE (MOVED FROM RIGHT COLUMN) */}
-            <div
-              className="sd-brand-panel sd-brand-panel-surface w-full p-3 mt-2"
-            >
+            <BrandPanel variant="surface" className="w-full p-3 mt-2">
               <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans font-extrabold uppercase tracking-wider text-amber-100/80">
-                  <Sword className="w-3.5 h-3.5 text-amber-300" />
-                  <span>REPERTORIO DE HABILIDADES</span>
-                </div>
-                <span className="text-[9px] font-pixel text-amber-300">
+                <BrandSectionTitle icon={<Sword className="w-3.5 h-3.5 text-amber-300" />}>
+                  REPERTORIO DE HABILIDADES
+                </BrandSectionTitle>
+                <span className="sd-type-meta text-amber-300">
                   {selectedSpecies.learnset.length} Movimientos
                 </span>
               </div>
@@ -561,19 +470,19 @@ export const SoulDexModal: React.FC = () => {
                         key={move.id + idx}
                         className={`p-2 rounded-xl border flex justify-between items-center gap-2 transition-all ${
                           isEquipped
-                            ? 'bg-violet-900/50 border-amber-400 shadow-inner'
-                              : 'bg-[#14101c]/70 border-[#8a6a3b]/60'
+                            ? 'bg-[color:var(--sd-soul)]/20 border-amber-400 shadow-inner'
+                              : 'bg-[color:var(--sd-ink)]/70 border-[color:var(--sd-bronze)]/60'
                         }`}
                       >
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <span className="font-pixel text-[8px] text-amber-200 bg-[#14101c] px-1.5 py-0.5 rounded border border-[#8a6a3b] shrink-0 font-bold">
+                          <span className="sd-type-meta text-amber-200 bg-[color:var(--sd-ink)] px-1.5 py-0.5 rounded border border-[color:var(--sd-bronze)] shrink-0 font-bold">
                             Nv.{item.level}
                           </span>
                           <div className="truncate">
                             <div className="font-sans text-xs font-bold text-amber-100 flex items-center gap-1">
                               <span>{move.name}</span>
                               {isEquipped && (
-                                <span className="text-[8px] font-pixel text-emerald-200 bg-emerald-900/80 px-1 rounded">
+                                <span className="sd-type-meta text-[color:var(--sd-ki)] bg-black/30 px-1 rounded">
                                   ACTIVO
                                 </span>
                               )}
@@ -607,15 +516,15 @@ export const SoulDexModal: React.FC = () => {
                   Habilidades desconocidas hasta el avistamiento.
                 </div>
               )}
-            </div>
+            </BrandPanel>
           </div>
 
           {/* ==================== RIGHT COLUMN: SPRITE DISPLAY ==================== */}
-          <div className="w-full p-3 sm:p-5 flex flex-col items-center justify-center relative border-t-2 md:border-t-0 md:border-l-2 border-[#8c5a2b]/30 bg-[#14101c]/60 overflow-y-auto space-y-3 scrollbar-thin">
+          <div className="min-h-0 min-w-0 w-full p-1.5 sm:p-5 flex flex-col items-center justify-center relative border-l-2 border-[color:var(--sd-bronze)]/30 bg-[color:var(--sd-ink)]/60 overflow-hidden space-y-1 sm:space-y-3">
             {/* Top Bar: Navigation & Real Index Number */}
             <div className="w-full flex justify-between items-center z-10 gap-2 mb-2">
               {/* Previous / Next buttons */}
-              <div className="flex items-center gap-1 bg-[#0d0a13]/70 p-1 rounded-lg border border-[#7a4921]/50">
+              <div className="flex items-center gap-1 bg-[color:var(--sd-ink)]/70 p-1 rounded-lg border border-[color:var(--sd-bronze)]/50">
                 <BrandButton
                   onClick={handlePrev}
                   variant="quiet"
@@ -648,12 +557,12 @@ export const SoulDexModal: React.FC = () => {
                   </>
                 ) : isCaught ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--sd-ki)]" />
                     <span>CAPTURADO</span>
                   </>
                 ) : isSeen ? (
                   <>
-                    <Eye className="w-3.5 h-3.5 text-sky-400" />
+                    <Eye className="w-3.5 h-3.5 text-amber-300" />
                     <span>AVISTADO</span>
                   </>
                 ) : (
@@ -666,7 +575,7 @@ export const SoulDexModal: React.FC = () => {
             </div>
 
             {/* Central Sprite Display */}
-            <div className="relative flex-1 w-full flex flex-col items-center justify-center">
+            <div className="relative flex-1 min-h-0 w-full flex flex-col items-center justify-center">
               {/* Front / Back View Toggle */}
               {isSeen && (
                 <BrandButton
@@ -676,7 +585,7 @@ export const SoulDexModal: React.FC = () => {
                   }}
                   variant="quiet"
                   aria-pressed={isBackView}
-                  className="absolute top-2 right-2 z-20 min-h-[40px] px-2 py-0.5 text-amber-200 font-pixel text-[8px] flex items-center gap-1 shadow-sm"
+                  className="absolute top-2 right-2 z-20 min-h-[40px] px-2 py-0.5 text-amber-200 sd-type-label flex items-center gap-1 shadow-sm"
                   title="Girar vista del SoulDoll"
                 >
                   <RotateCw className="w-3 h-3 text-amber-400" />
@@ -686,22 +595,33 @@ export const SoulDexModal: React.FC = () => {
 
               {/* Character Sprite */}
               {isSeen ? (
-                <div className="relative z-10 flex flex-col items-center justify-center">
+                <div className="relative z-10 flex h-full w-full flex-col items-center justify-end">
                   <div
                     onClick={() => {
                       sound.playSelect();
                       setIsBackView(!isBackView);
                     }}
-                    className="cursor-pointer"
+                    className="flex min-h-0 flex-1 cursor-pointer items-end justify-center"
                   >
                     <SoulDollSprite
                       key={selectedSpecies.id}
                       speciesId={selectedSpecies.id}
                       isBackView={isBackView}
                       crop="full"
-                      className="max-h-[350px] w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] filter active:scale-105 transition-transform animate-soul-phase"
+                      className="h-full max-h-[55dvh] w-auto max-w-full drop-shadow-[0_12px_22px_rgba(0,0,0,0.6)] filter active:scale-105 transition-transform animate-soul-phase md:max-h-[60vh]"
                     />
                   </div>
+                  <div
+                    aria-hidden="true"
+                    className="relative z-10 -mt-2 h-[76px] w-[76px] shrink-0 drop-shadow-[0_10px_14px_rgba(0,0,0,0.7)]"
+                    style={{
+                      backgroundImage: "url('/assets/props/craftpix-dungeon/pedestals.png')",
+                      backgroundSize: '1120px 256px',
+                      backgroundPosition: '-456px 0',
+                      backgroundRepeat: 'no-repeat',
+                      imageRendering: 'pixelated',
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="relative z-10 flex flex-col items-center justify-center p-8 text-center text-amber-700/40">
@@ -714,31 +634,31 @@ export const SoulDexModal: React.FC = () => {
             </div>
 
             {/* Bottom Status Card */}
-            <div className="w-full bg-[#1b0e07]/40 p-2 rounded-lg border border-[#7a4921]/20 text-center z-10">
+            <BrandPanel variant="inset" className="w-full p-2 text-center z-10">
               {ownedInstance ? (
                 <div className="text-[11px] font-sans text-amber-200/80">
-                  <span className="text-emerald-400 font-bold">✓ Sintonizado</span>
+                  <span className="text-[color:var(--sd-ki)] font-bold">✓ Sintonizado</span>
                 </div>
               ) : isSeen ? (
-                <div className="text-[11px] font-sans text-sky-200/80">
+                <div className="sd-type-meta text-amber-200/80">
                   Habita en las zonas salvajes
                 </div>
               ) : (
-                <div className="text-[11px] font-sans text-slate-400/60">
+                <div className="sd-type-meta text-amber-100/50">
                   Explora para registrar
                 </div>
               )}
-            </div>
+            </BrandPanel>
           </div>
         </div>
 
         {/* 3. SLIDE-OUT SOULDOLL COLLECTION DRAWER */}
         {showDrawer && (
-          <div className="absolute inset-x-0 bottom-0 top-[52px] z-30 bg-[#14101c]/95 backdrop-blur-md border-t-2 border-[#8c5a3b] p-4 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-200">
+          <div className="absolute inset-x-0 bottom-0 top-[52px] z-30 bg-[color:var(--sd-ink)]/95 backdrop-blur-md border-t-2 border-[color:var(--sd-bronze)] p-4 flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-200">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-amber-400" />
-                <h3 className="font-fantasy text-sm text-amber-200 font-bold tracking-wide">
+                <h3 className="sd-type-heading text-amber-200 font-bold tracking-wide">
                   ÍNDICE COMPLETO DE ALMAS PRIMORDIALES
                 </h3>
               </div>
@@ -776,7 +696,6 @@ export const SoulDexModal: React.FC = () => {
                   'Poison',
                 ] as ElementalType[]
               ).map((t) => {
-                const elementOrb = getElementOrb(t);
                 const count = speciesList.filter((s) => s.types.includes(t)).length;
                 return (
                   <BrandButton
@@ -787,9 +706,13 @@ export const SoulDexModal: React.FC = () => {
                     className={`px-2.5 py-1 whitespace-nowrap text-[9px] flex items-center gap-1 ${
                       typeFilter !== t ? 'opacity-80 hover:opacity-100' : ''
                     }`}
-                    style={{ backgroundColor: elementOrb.borderColor }}
                   >
-                    <span>{t}</span>
+                    <span
+                      className="rounded px-1.5 py-0.5 text-white"
+                      style={{ backgroundColor: TYPE_COLORS[t].bg, color: TYPE_COLORS[t].text }}
+                    >
+                      {t}
+                    </span>
                     <span className="text-[8px] opacity-80">({count})</span>
                   </BrandButton>
                 );
@@ -817,7 +740,7 @@ export const SoulDexModal: React.FC = () => {
                     className="p-2.5 rounded-xl flex items-center gap-2.5"
                   >
                     {/* Species Authentic Sprite or Mysterious Silhouette */}
-                    <div className="w-10 h-10 rounded-lg bg-[#14101c] border border-[#8a6a3b] p-0.5 flex items-center justify-center shadow shrink-0 relative overflow-hidden">
+                    <div className="w-10 h-10 rounded-lg bg-[color:var(--sd-ink)] border border-[color:var(--sd-bronze)] p-0.5 flex items-center justify-center shadow shrink-0 relative overflow-hidden">
                       {seen ? (
                         <SoulDollSprite
                           speciesId={species.id}
@@ -838,13 +761,13 @@ export const SoulDexModal: React.FC = () => {
                       <div className="font-fantasy text-xs font-bold text-amber-200 truncate">
                         {seen ? species.name : '???'}
                       </div>
-                      <div className="text-[9px] font-pixel text-[#a87d50] flex items-center gap-1 mt-0.5">
+                      <div className="sd-type-meta text-amber-300/70 flex items-center gap-1 mt-0.5">
                         <span>#{String(i + 1).padStart(2, '0')}</span>
                         {inParty && (
                           <span className="text-amber-400 text-[8px] font-bold">[EQUIPO]</span>
                         )}
-                        {!inParty && caught && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
-                        {seen && !caught && <Eye className="w-3 h-3 text-sky-400" />}
+                        {!inParty && caught && <CheckCircle2 className="w-3 h-3 text-[color:var(--sd-ki)]" />}
+                        {seen && !caught && <Eye className="w-3 h-3 text-amber-300" />}
                       </div>
                     </div>
                   </BrandButton>

@@ -14,6 +14,9 @@ const buttonSurfaces = [
 ];
 const requiredClasses = [
   '.sd-brand-panel',
+  '.sd-brand-widget',
+  '.sd-brand-progress',
+  '.sd-brand-section-title',
   '.sd-brand-button',
   '.sd-brand-button-ki',
   '.sd-brand-button-soul',
@@ -27,6 +30,11 @@ const requiredClasses = [
   '.sd-modal-backdrop',
   '.sd-dialog-ornate',
   '.sd-action-btn',
+  '.sd-type-display',
+  '.sd-type-heading',
+  '.sd-type-label',
+  '.sd-type-body',
+  '.sd-type-meta',
 ];
 const missing: string[] = [];
 for (const [token, expectedColor] of Object.entries(BRAND_TOKENS)) {
