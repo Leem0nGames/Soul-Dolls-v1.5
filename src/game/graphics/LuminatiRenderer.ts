@@ -92,6 +92,13 @@ export class LuminatiRenderer {
   private battlePlayerDollSprite!: THREE.Sprite;
   private battleOpponentDollSprite!: THREE.Sprite;
   private battleArenaPlatform!: THREE.Group;
+  private battleRuinsStyle = new THREE.Group();
+  private battleEnergyStyle = new THREE.Group();
+  private battleArenaStyle: 'ruins' | 'energy' = 'ruins';
+  private battlePlayerShadow!: THREE.Mesh;
+  private battleOpponentShadow!: THREE.Mesh;
+  private battleEnergyRings: THREE.Mesh[] = [];
+  private battleRunes: THREE.Mesh[] = [];
   private battleBackdropTexture: THREE.Texture | null = null;
   private battleBackdropPath: string | null = null;
   private battleBackdropRequestPath: string | null = null;
@@ -616,6 +623,7 @@ export class LuminatiRenderer {
   private setBattleBackdrop(path: string): void {
     this.battleBackdropActive = true;
     this.scene.fog = null;
+    this.setBattleArenaStyle(path === '/assets/homebg.png' ? 'energy' : 'ruins');
 
     if (this.battleBackdropPath === path && this.battleBackdropTexture) {
       this.scene.background = this.battleBackdropTexture;
@@ -656,6 +664,13 @@ export class LuminatiRenderer {
         console.error(`[Luminati] No se pudo cargar el fondo de batalla "${path}".`, error);
       }
     );
+  }
+
+  private setBattleArenaStyle(style: 'ruins' | 'energy'): void {
+    if (this.battleArenaStyle === style) return;
+    this.battleArenaStyle = style;
+    this.battleRuinsStyle.visible = style === 'ruins';
+    this.battleEnergyStyle.visible = style === 'energy';
   }
 
   private restoreMapBackdrop(): void {
@@ -813,203 +828,158 @@ export class LuminatiRenderer {
     this.battleArenaPlatform = new THREE.Group();
     this.battleArenaPlatform.position.set(0, -50, 0); // Placed safely out of overworld view
 
-    // Raised Circular Stadium with Dark Ink Stone & Antique Bronze Rim
+    // A low-profile stone foundation keeps the arena grounded without hiding its backdrop.
     const stadium = new THREE.Mesh(
-      new THREE.CylinderGeometry(8.5, 9.2, 0.8, 36),
-      new THREE.MeshStandardMaterial({ color: '#14101c', roughness: 0.8, metalness: 0.2 })
+      new THREE.CylinderGeometry(8.35, 8.55, 0.3, 64),
+      new THREE.MeshStandardMaterial({
+        color: '#252a31',
+        roughness: 0.94,
+        metalness: 0.08,
+      })
     );
-    stadium.position.y = -0.4;
+    stadium.position.y = -0.16;
     stadium.receiveShadow = true;
     this.battleArenaPlatform.add(stadium);
 
-    // Antique Bronze & Gold Outer Ring Rim
-    const bronzeRim = new THREE.Mesh(
-      new THREE.RingGeometry(8.0, 8.5, 36),
-      new THREE.MeshStandardMaterial({
-        color: '#8a6a3b',
-        emissive: '#59401f',
-        emissiveIntensity: 0.35,
-        roughness: 0.4,
-        metalness: 0.7,
-        side: THREE.DoubleSide
-      })
-    );
-    bronzeRim.rotation.x = -Math.PI / 2;
-    bronzeRim.position.y = 0.015;
-    this.battleArenaPlatform.add(bronzeRim);
+    const fadeMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: { tint: { value: new THREE.Color('#a9b4bd') }, opacity: { value: 0.2 } },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 tint;
+        uniform float opacity;
+        varying vec2 vUv;
+        void main() {
+          float radius = length(vUv - vec2(0.5)) * 2.0;
+          float edgeFade = 1.0 - smoothstep(0.68, 1.0, radius);
+          float centerFade = smoothstep(0.04, 0.38, radius);
+          float alpha = edgeFade * mix(0.18, 1.0, centerFade) * opacity;
+          gl_FragColor = vec4(tint, alpha);
+        }
+      `,
+    });
+    const arenaWash = new THREE.Mesh(new THREE.CircleGeometry(8.3, 64), fadeMaterial);
+    arenaWash.rotation.x = -Math.PI / 2;
+    arenaWash.position.y = 0.006;
+    this.battleArenaPlatform.add(arenaWash);
 
-    // Outer Soul-Violet Rune Ring
-    const violetRuneRing = new THREE.Mesh(
-      new THREE.RingGeometry(6.6, 7.6, 36),
-      new THREE.MeshStandardMaterial({
-        color: '#9b6bff',
-        emissive: '#7e22ce',
-        emissiveIntensity: 1.1,
-        transparent: true,
-        opacity: 0.85,
-        side: THREE.DoubleSide
-      })
-    );
-    violetRuneRing.rotation.x = -Math.PI / 2;
-    violetRuneRing.position.y = 0.02;
-    this.battleArenaPlatform.add(violetRuneRing);
+    const contactShadowMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: { opacity: { value: 0.62 } },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float opacity;
+        varying vec2 vUv;
+        void main() {
+          float d = length((vUv - vec2(0.5)) * vec2(1.0, 1.65));
+          float alpha = (1.0 - smoothstep(0.08, 0.5, d)) * opacity;
+          gl_FragColor = vec4(0.015, 0.02, 0.03, alpha);
+        }
+      `,
+    });
+    const shadowGeometry = new THREE.CircleGeometry(0.95, 32);
+    this.battlePlayerShadow = new THREE.Mesh(shadowGeometry, contactShadowMaterial);
+    this.battlePlayerShadow.rotation.x = -Math.PI / 2;
+    this.battlePlayerShadow.scale.set(1.25, 0.72, 1);
+    this.battlePlayerShadow.position.set(-2.8, 0.035, 1.4);
+    this.battleArenaPlatform.add(this.battlePlayerShadow);
+    this.battleOpponentShadow = new THREE.Mesh(shadowGeometry, contactShadowMaterial.clone());
+    this.battleOpponentShadow.rotation.x = -Math.PI / 2;
+    this.battleOpponentShadow.scale.set(1.25, 0.72, 1);
+    this.battleOpponentShadow.position.set(2.8, 0.035, -1.4);
+    this.battleArenaPlatform.add(this.battleOpponentShadow);
 
-    // Inner Concentric Turquoise Ki Ring
-    const kiInnerRing = new THREE.Mesh(
-      new THREE.RingGeometry(5.2, 5.6, 36),
-      new THREE.MeshStandardMaterial({
-        color: '#5fe3d2',
-        emissive: '#0d9488',
-        emissiveIntensity: 0.85,
-        transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide
-      })
-    );
-    kiInnerRing.rotation.x = -Math.PI / 2;
-    kiInnerRing.position.y = 0.022;
-    this.battleArenaPlatform.add(kiInnerRing);
+    const addRing = (
+      group: THREE.Group,
+      radius: number,
+      color: string,
+      opacity: number,
+      arc = Math.PI * 2,
+      start = 0
+    ) => {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, 0.018, 4, 96, arc),
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity,
+          depthWrite: false,
+        })
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = 0.035;
+      ring.rotation.z = start;
+      group.add(ring);
+      return ring;
+    };
 
-    // Central Duel Separation Circle (astral boundary between combatants)
-    const duelDividerRing = new THREE.Mesh(
-      new THREE.RingGeometry(2.4, 2.7, 24),
-      new THREE.MeshStandardMaterial({
-        color: '#8a6a3b',
-        emissive: '#e8b84a',
-        emissiveIntensity: 0.4,
-        transparent: true,
-        opacity: 0.5,
-        side: THREE.DoubleSide
-      })
-    );
-    duelDividerRing.rotation.x = -Math.PI / 2;
-    duelDividerRing.position.y = 0.025;
-    this.battleArenaPlatform.add(duelDividerRing);
+    // Option 1: Ancient Ruins — etched stone arcs and subdued bronze runes.
+    this.battleRuinsStyle.visible = true;
+    this.battleArenaPlatform.add(this.battleRuinsStyle);
+    addRing(this.battleRuinsStyle, 7.85, '#a99b7c', 0.26, Math.PI * 1.78, 0.16);
+    addRing(this.battleRuinsStyle, 6.35, '#777f83', 0.22, Math.PI * 1.35, 0.55);
+    addRing(this.battleRuinsStyle, 2.55, '#a99b7c', 0.2, Math.PI * 1.6, 0.2);
+    for (let index = 0; index < 8; index++) {
+      const angle = (index / 8) * Math.PI * 2;
+      const rune = new THREE.Mesh(
+        new THREE.BoxGeometry(0.055, 0.012, 0.34),
+        new THREE.MeshBasicMaterial({
+          color: '#c7b88f',
+          transparent: true,
+          opacity: 0.2,
+          depthWrite: false,
+        })
+      );
+      rune.position.set(Math.cos(angle) * 7.1, 0.038, Math.sin(angle) * 7.1);
+      rune.rotation.y = -angle;
+      this.battleRuinsStyle.add(rune);
+      this.battleRunes.push(rune);
+    }
 
-    // Central Astral 8-Point Compass Star Disc
-    const centerStarDisc = new THREE.Mesh(
-      new THREE.RingGeometry(0.1, 1.8, 8),
-      new THREE.MeshStandardMaterial({
-        color: '#9b6bff',
-        emissive: '#7e22ce',
-        emissiveIntensity: 0.8,
-        transparent: true,
-        opacity: 0.7,
-        side: THREE.DoubleSide
-      })
+    // Option 2: Magic Energy Circle — thin, quiet ki/gold geometry with no solid discs.
+    this.battleEnergyStyle.visible = false;
+    this.battleArenaPlatform.add(this.battleEnergyStyle);
+    this.battleEnergyRings.push(
+      addRing(this.battleEnergyStyle, 7.9, '#c8b98f', 0.22, Math.PI * 1.82, 0.35),
+      addRing(this.battleEnergyStyle, 6.55, '#8eabb4', 0.18, Math.PI * 1.45, 1.1),
+      addRing(this.battleEnergyStyle, 2.55, '#b7a77e', 0.22, Math.PI * 1.7, 0.4),
+      addRing(this.battleEnergyStyle, 1.05, '#83b9bd', 0.16, Math.PI * 1.25, 2.0)
     );
-    centerStarDisc.rotation.x = -Math.PI / 2;
-    centerStarDisc.rotation.z = Math.PI / 8;
-    centerStarDisc.position.y = 0.024;
-    this.battleArenaPlatform.add(centerStarDisc);
 
-    // --- PLAYER GLYPH (Left foreground: Concentric Stepped Cyan / Ki Rings) ---
-    const playerDisc = new THREE.Mesh(
-      new THREE.CircleGeometry(0.55, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#5fe3d2',
-        transparent: true,
-        opacity: 0.8,
-      })
+    const addSelectionGlow = (x: number, z: number, color: string) => {
+      const glow = new THREE.Mesh(
+        new THREE.RingGeometry(0.94, 1.02, 48),
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: 0.28,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        })
+      );
+      glow.rotation.x = -Math.PI / 2;
+      glow.position.set(x, 0.04, z);
+      this.battleEnergyStyle.add(glow);
+      return glow;
+    };
+    this.battleEnergyRings.push(
+      addSelectionGlow(-2.8, 1.4, '#a6c9c3'),
+      addSelectionGlow(2.8, -1.4, '#c4b78f')
     );
-    playerDisc.rotation.x = -Math.PI / 2;
-    playerDisc.position.set(-2.8, 0.028, 1.4);
-    this.battleArenaPlatform.add(playerDisc);
-
-    const playerMidRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.75, 1.1, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#00f0ff',
-        transparent: true,
-        opacity: 0.75,
-        side: THREE.DoubleSide,
-      })
-    );
-    playerMidRing.rotation.x = -Math.PI / 2;
-    playerMidRing.position.set(-2.8, 0.029, 1.4);
-    this.battleArenaPlatform.add(playerMidRing);
-
-    const playerOuterRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.3, 1.7, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#5fe3d2',
-        transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide,
-      })
-    );
-    playerOuterRing.rotation.x = -Math.PI / 2;
-    playerOuterRing.position.set(-2.8, 0.03, 1.4);
-    this.battleArenaPlatform.add(playerOuterRing);
-
-    // Elliptical contact shadow under Player Doll
-    const playerDollShadow = new THREE.Mesh(
-      new THREE.CircleGeometry(0.75, 24),
-      new THREE.MeshBasicMaterial({
-        color: '#000000',
-        transparent: true,
-        opacity: 0.45,
-        depthWrite: false,
-      })
-    );
-    playerDollShadow.rotation.x = -Math.PI / 2;
-    playerDollShadow.scale.set(1.3, 0.7, 1);
-    playerDollShadow.position.set(-2.85, 0.032, 1.4);
-    this.battleArenaPlatform.add(playerDollShadow);
-
-    // --- OPPONENT GLYPH (Right background: Concentric Stepped Crimson / Rift Rings) ---
-    const oppDisc = new THREE.Mesh(
-      new THREE.CircleGeometry(0.55, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#c2234b',
-        transparent: true,
-        opacity: 0.8,
-      })
-    );
-    oppDisc.rotation.x = -Math.PI / 2;
-    oppDisc.position.set(2.8, 0.028, -1.4);
-    this.battleArenaPlatform.add(oppDisc);
-
-    const oppMidRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.75, 1.1, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#e11d48',
-        transparent: true,
-        opacity: 0.75,
-        side: THREE.DoubleSide,
-      })
-    );
-    oppMidRing.rotation.x = -Math.PI / 2;
-    oppMidRing.position.set(2.8, 0.029, -1.4);
-    this.battleArenaPlatform.add(oppMidRing);
-
-    const oppOuterRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.3, 1.7, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#ff2d55',
-        transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide,
-      })
-    );
-    oppOuterRing.rotation.x = -Math.PI / 2;
-    oppOuterRing.position.set(2.8, 0.03, -1.4);
-    this.battleArenaPlatform.add(oppOuterRing);
-
-    // Elliptical contact shadow under Opponent Doll
-    const oppDollShadow = new THREE.Mesh(
-      new THREE.CircleGeometry(0.75, 24),
-      new THREE.MeshBasicMaterial({
-        color: '#000000',
-        transparent: true,
-        opacity: 0.45,
-        depthWrite: false,
-      })
-    );
-    oppDollShadow.rotation.x = -Math.PI / 2;
-    oppDollShadow.scale.set(1.3, 0.7, 1);
-    oppDollShadow.position.set(2.75, 0.032, -1.4);
-    this.battleArenaPlatform.add(oppDollShadow);
 
     // Player Doll Billboard Sprite (Back view)
     const pMat = new THREE.SpriteMaterial({
@@ -1770,6 +1740,20 @@ export class LuminatiRenderer {
         ? '/assets/homebg.png'
         : '/assets/battlebg.png';
     this.setBattleBackdrop(backdropPath);
+    if (this.battleArenaStyle === 'energy') {
+      this.battleEnergyStyle.rotation.y += delta * 0.025;
+      const pulse = (Math.sin(this.clock.getElapsedTime() * 1.4) + 1) * 0.5;
+      this.battleEnergyRings.forEach((ring, index) => {
+        const material = ring.material as THREE.MeshBasicMaterial;
+        material.opacity = (index < 4 ? 0.16 : 0.2) + pulse * 0.06;
+      });
+    } else {
+      const pulse = (Math.sin(this.clock.getElapsedTime() * 1.1) + 1) * 0.5;
+      this.battleRunes.forEach((rune, index) => {
+        (rune.material as THREE.MeshBasicMaterial).opacity =
+          0.13 + pulse * 0.12 * (index % 2 === 0 ? 1 : 0.72);
+      });
+    }
 
     // Position camera dynamically in battle arena with wide framing for both combatants
     const isPortrait = this.camera.aspect < 1.0;
