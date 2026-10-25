@@ -617,7 +617,7 @@ export class LuminatiRenderer {
   private applyMapTint(map: MapId) {
     const tint = MAP_PALETTES[map];
     this.scene.background = new THREE.Color(tint.background);
-    this.scene.fog = new THREE.FogExp2(tint.fog, tint.fogDensity ?? 0.035);
+    this.scene.fog = null;
   }
 
   private setBattleBackdrop(path: string): void {

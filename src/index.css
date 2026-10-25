@@ -64,6 +64,25 @@
   mix-blend-mode: multiply;
 }
 
+.overworld-tilt-shift {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    transparent 25%,
+    transparent 72%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    transparent 25%,
+    transparent 72%,
+    #000 100%
+  );
+}
+
 /* SoulDolls Palette Variables */
 :root {
   --sd-ink: #14101C;
