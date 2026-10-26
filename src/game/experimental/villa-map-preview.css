@@ -7,6 +7,16 @@
   text-rendering: optimizeLegibility;
 }
 
+.map-preview-card > input {
+  width: 100%;
+  border: 1px solid #596467;
+  border-radius: 7px;
+  padding: 9px 10px;
+  background: #111719;
+  color: #f4ead7;
+  font: 0.9rem ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -18,7 +28,8 @@ body {
 }
 
 button,
-textarea {
+textarea,
+input {
   font: inherit;
 }
 
@@ -100,6 +111,195 @@ textarea {
   max-height: calc(100vh - 190px);
   background: #171d21;
   border-radius: 10px;
+}
+
+.map-editor-page {
+  padding: 18px;
+}
+
+.map-editor-header {
+  max-width: 1680px;
+  align-items: center;
+}
+
+.map-editor-header h1 {
+  font-size: clamp(1.45rem, 2.6vw, 2rem);
+}
+
+.map-editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.map-editor-toolbar button {
+  border: 1px solid #b88948;
+  border-radius: 7px;
+  padding: 9px 12px;
+  background: #704d27;
+  color: #fff1d2;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.map-editor-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.map-editor-toolbar .map-preview-secondary {
+  border-color: #536064;
+  background: #293539;
+  color: #d3dada;
+}
+
+.map-editor-pending {
+  color: #f5d797;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.map-editor-layout {
+  max-width: 1680px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+}
+
+.map-editor-canvas-panel {
+  position: sticky;
+  top: 14px;
+}
+
+.map-editor-canvas-panel .map-preview-svg {
+  max-height: calc(100vh - 205px);
+}
+
+.map-preview-svg.is-dragging {
+  touch-action: none;
+}
+
+.map-preview-selectable {
+  outline: none;
+}
+
+.map-preview-selectable.is-draggable {
+  cursor: grab;
+}
+
+.map-preview-svg.is-dragging .map-preview-selectable.is-draggable {
+  cursor: grabbing;
+}
+
+.map-preview-selectable.is-selected .map-preview-building,
+.map-preview-selectable.is-selected .map-preview-wild-zone,
+.map-preview-selectable.is-selected .map-preview-trainer,
+.map-preview-selectable.is-selected .map-preview-sign,
+.map-preview-selectable.is-selected .map-preview-connection {
+  stroke: #fff7a8;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgb(255 236 141 / 90%));
+}
+
+.map-preview-selectable.is-selected .map-preview-clearance {
+  stroke: #fff7a8;
+  stroke-width: 2.5;
+}
+
+.map-preview-road-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-linecap: square;
+  pointer-events: stroke;
+}
+
+.map-preview-road-select {
+  cursor: grab;
+}
+
+.map-preview-road-select.is-selected .map-preview-road {
+  stroke: #e7a94f;
+  filter: drop-shadow(0 0 3px rgb(255 227 151 / 80%));
+}
+
+.map-preview-road-label {
+  fill: #fff4d8;
+  font-size: 7px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #352b1d;
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.map-preview-road-point {
+  fill: #f4c46a;
+  stroke: #3b2d1c;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-preview-road-path-point {
+  cursor: grab;
+}
+
+.map-preview-road-path-point.is-selected .map-preview-road-point {
+  fill: #fff4a3;
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+.map-preview-plaza-select {
+  cursor: grab;
+}
+
+.map-preview-selectable:focus-visible .map-preview-building,
+.map-preview-selectable:focus-visible .map-preview-wild-zone,
+.map-preview-selectable:focus-visible .map-preview-trainer,
+.map-preview-selectable:focus-visible .map-preview-sign,
+.map-preview-selectable:focus-visible .map-preview-connection {
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.map-preview-sign-select.is-invalid .map-preview-sign {
+  fill: #db4242;
+  stroke: #ffd5d5;
+}
+
+.map-preview-position-indicator line {
+  stroke: #fff6b0;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-preview-position-indicator text {
+  fill: #fff6b0;
+  font-size: 8px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #241b15;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.map-preview-position-indicator.is-invalid line,
+.map-preview-position-indicator.is-invalid text {
+  stroke: #ff4f4f;
+  fill: #ffd4d4;
+}
+
+.map-preview-axis-label {
+  fill: #e7dec9;
+  font-size: 8px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #171d21;
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 .map-preview-outside {
@@ -324,6 +524,55 @@ textarea {
   font: 0.78rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
+.map-editor-properties {
+  display: grid;
+  gap: 7px;
+}
+
+.map-editor-object-type {
+  color: #c1aa7d;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.map-editor-object-id {
+  overflow-wrap: anywhere;
+  color: #fff1d2;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9rem;
+}
+
+.map-editor-properties label {
+  display: block;
+  margin: 5px 0 0;
+  color: #d8d2c3;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.map-editor-properties input {
+  width: 100%;
+  border: 1px solid #596467;
+  border-radius: 7px;
+  padding: 9px 10px;
+  background: #111719;
+  color: #f4ead7;
+  font: 0.9rem ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.map-editor-properties input:focus-visible {
+  outline: 2px solid #e7b867;
+  outline-offset: 1px;
+}
+
+.map-editor-readonly {
+  margin: 6px 0 !important;
+  border-left: 2px solid #71818a;
+  padding-left: 9px;
+  color: #adb9bd !important;
+}
+
 .map-preview-actions {
   display: flex;
   flex-wrap: wrap;
@@ -350,6 +599,16 @@ textarea {
   border-color: #536064;
   background: #293539;
   color: #d3dada;
+}
+
+.map-preview-actions .map-preview-danger {
+  border-color: #9e4d4d;
+  background: #55292a;
+  color: #ffd8d8;
+}
+
+.map-preview-actions .map-preview-danger:hover {
+  background: #713335;
 }
 
 .map-preview-error,
@@ -404,6 +663,10 @@ textarea {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .map-editor-canvas-panel {
+    position: static;
+  }
+
   .map-preview-svg {
     max-height: none;
   }
@@ -417,5 +680,9 @@ textarea {
 
   .map-preview-badge {
     align-self: flex-start;
+  }
+
+  .map-editor-toolbar {
+    justify-content: flex-start;
   }
 }

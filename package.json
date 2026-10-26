@@ -18,7 +18,8 @@
     "world:harness": "tsx tools/world-harness.ts",
     "map:serialization": "tsx tools/map-serialization-harness.ts",
     "map:operations": "tsx tools/map-operations-harness.ts",
-    "map:preview": "tsx tools/map-preview-harness.ts"
+    "map:preview": "tsx tools/map-preview-harness.ts",
+    "map:editor": "tsx tools/map-editor-harness.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

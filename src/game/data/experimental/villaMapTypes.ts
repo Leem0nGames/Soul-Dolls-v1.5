@@ -38,6 +38,11 @@ export interface SerializedVilla {
     borderTiles: number;
     source: string;
   };
+  editorMetadata?: {
+    roadsX: string[];
+    roadsZ: string[];
+    roadPath?: string;
+  };
   map: EditorVillaMap;
   buildings: VillaBuilding[];
 }

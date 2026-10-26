@@ -21,6 +21,14 @@ assert.equal(initialScene.buildings.length, 8, 'Every contract building should h
 assert.equal(initialScene.trainers.length, 2, 'Every contract trainer should have a marker');
 assert.equal(initialScene.signs.length, 2, 'Every contract sign should have a marker');
 assert.equal(initialScene.connections.length, 1, 'Every contract connection should have a marker');
+assert.equal(initialScene.roads.length, source.map.layout.roadXs.length + source.map.layout.roadZs.length);
+assert.deepEqual(initialScene.roads.map(({ editorId }) => editorId), [
+  'road-x-m12', 'road-x-0', 'road-x-12',
+  'road-z-m17', 'road-z-m8', 'road-z-4', 'road-z-17', 'road-z-24',
+]);
+assert.equal(initialScene.plaza?.radius, source.map.layout.plaza?.radius);
+assert.equal(initialScene.wildZones.length, source.map.layout.wildZones.length);
+assert.equal(initialScene.clearPointReservations.length, source.map.clearPointReservations.length);
 assert.ok(initialScene.notRepresented.some(({ label }) => label === 'Decoración procedural'));
 assert.ok(initialScene.notRepresented.some(({ label }) => label === 'Modelos 3D de edificios'));
 
@@ -37,6 +45,33 @@ const editResult = applyVillaMapOperations(source, [
 if (!editResult.ok) throw new Error(editResult.error);
 
 const editedScene = createVillaMapPreview(editResult.map);
+const structuralEdit = applyVillaMapOperations(source, [
+  { type: 'set_road_coordinate', editorId: 'road-x-m12', axis: 'x', value: -10 },
+  { type: 'set_plaza', position: { x: 1, z: -1 }, radius: 6 },
+  {
+    type: 'resize_encounter_zone',
+    editorId: 'prado-oeste',
+    bounds: { minX: -9, maxX: -4, minZ: -24, maxZ: -19 },
+  },
+]);
+if (!structuralEdit.ok) throw new Error(structuralEdit.error);
+const structuralScene = createVillaMapPreview(structuralEdit.map);
+assert.equal(
+  structuralScene.roads.find(({ editorId }) => editorId === 'road-x-m12')?.coordinate,
+  -10,
+  'Preview should reflect edited roads by editorial ID'
+);
+assert.deepEqual(structuralScene.plaza, { x: 1, z: -1, radius: 6 });
+const projectedWestZone = structuralScene.wildZones.find(({ editorId }) => editorId === 'prado-oeste')!;
+assert.deepEqual(
+  {
+    minX: projectedWestZone.minX,
+    maxX: projectedWestZone.maxX,
+    minZ: projectedWestZone.minZ,
+    maxZ: projectedWestZone.maxZ,
+  },
+  { minX: -9, maxX: -4, minZ: -24, maxZ: -19 }
+);
 const movedBuilding = editedScene.buildings.find(({ editorId }) => editorId === 'garden-home');
 assert.ok(movedBuilding, 'Building selection should retain its stable editor ID');
 assert.deepEqual(

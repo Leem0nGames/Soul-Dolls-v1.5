@@ -3,6 +3,7 @@ import {
   MAP_HALF_WIDTH_UNITS,
 } from '../worldGeometry';
 import type { SerializedVilla } from './villaMapTypes';
+import { defaultRoadId, normalizeVillaRoadEditorIds } from './villaMapIdentity';
 
 export interface VillaPreviewPoint {
   x: number;
@@ -10,6 +11,9 @@ export interface VillaPreviewPoint {
 }
 
 export interface VillaPreviewRoad {
+  editorId: string;
+  axis: 'x' | 'z';
+  coordinate: number;
   points: VillaPreviewPoint[];
 }
 
@@ -21,6 +25,7 @@ export interface VillaPreviewScene {
   width: number;
   depth: number;
   roads: VillaPreviewRoad[];
+  roadPath: { editorId: string; points: VillaPreviewPoint[] } | null;
   roadHalfWidth: number;
   plaza: { x: number; z: number; radius: number } | null;
   wildZones: {
@@ -96,6 +101,8 @@ export function createVillaMapPreview(map: SerializedVilla): VillaPreviewScene {
   }
 
   const layout = map.map.layout;
+  const roadsMap = normalizeVillaRoadEditorIds(map);
+  const editorMetadata = roadsMap.editorMetadata!;
   if (!layout || typeof layout !== 'object') throw new Error('Preview document is missing layout data');
   if (!Array.isArray(layout.wildZones) || !Array.isArray(map.map.tamers) || !Array.isArray(map.map.signSpots)) {
     throw new Error('Preview document is missing zones, trainers or signs');
@@ -109,18 +116,32 @@ export function createVillaMapPreview(map: SerializedVilla): VillaPreviewScene {
   }
 
   const roads: VillaPreviewRoad[] = [
-    ...layout.roadXs.map((x) => {
+    ...layout.roadXs.map((x, index) => {
       assertFinite(x, 'road x');
-      return { points: [{ x, z: -MAP_HALF_DEPTH_UNITS }, { x, z: MAP_HALF_DEPTH_UNITS }] };
+      return {
+        editorId: editorMetadata.roadsX[index] ?? defaultRoadId('x', x),
+        axis: 'x' as const,
+        coordinate: x,
+        points: [{ x, z: -MAP_HALF_DEPTH_UNITS }, { x, z: MAP_HALF_DEPTH_UNITS }],
+      };
     }),
-    ...layout.roadZs.map((z) => {
+    ...layout.roadZs.map((z, index) => {
       assertFinite(z, 'road z');
-      return { points: [{ x: -MAP_HALF_WIDTH_UNITS, z }, { x: MAP_HALF_WIDTH_UNITS, z }] };
+      return {
+        editorId: editorMetadata.roadsZ[index] ?? defaultRoadId('z', z),
+        axis: 'z' as const,
+        coordinate: z,
+        points: [{ x: -MAP_HALF_WIDTH_UNITS, z }, { x: MAP_HALF_WIDTH_UNITS, z }],
+      };
     }),
   ];
+  let roadPath: VillaPreviewScene['roadPath'] = null;
   if (layout.roadPath && layout.roadPath.length > 1) {
     layout.roadPath.forEach((point, index) => assertPoint(point, `roadPath[${index}]`));
-    roads.push({ points: layout.roadPath.map(({ x, z }) => ({ x, z })) });
+    roadPath = {
+      editorId: editorMetadata.roadPath ?? 'road-path-main',
+      points: layout.roadPath.map(({ x, z }) => ({ x, z })),
+    };
   }
 
   const wildZones = layout.wildZones.map((zone) => {
@@ -211,6 +232,7 @@ export function createVillaMapPreview(map: SerializedVilla): VillaPreviewScene {
     width: map.geometry.tilesWide * map.geometry.tileUnits,
     depth: map.geometry.tilesDeep * map.geometry.tileUnits,
     roads,
+    roadPath,
     roadHalfWidth: layout.roadHalfWidth,
     plaza: layout.plaza ? { ...layout.plaza } : null,
     wildZones,
