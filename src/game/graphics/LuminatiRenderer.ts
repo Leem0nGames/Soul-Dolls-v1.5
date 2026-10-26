@@ -5,6 +5,7 @@ import { gameStore, GameState } from '../state/useGameStore';
 import { createSoulDoll } from '../data/souldolls';
 import { MAP_IDS, MAP_NAMES, MAP_PALETTES, WORLD_MAPS } from '../data/maps';
 import { MapId } from '../data/world';
+import { MAP_DEPTH_UNITS, MAP_WIDTH_UNITS, OVERWORLD_MOVEMENT_LIMIT } from '../data/worldGeometry';
 import { sound } from '../audio/SoundEffects';
 import { BattleVfxDirector } from './BattleVfxDirector';
 import { battleVfx } from './BattleVfx';
@@ -313,7 +314,10 @@ export class LuminatiRenderer {
    */
   private buildTerrain() {
     this.groundMaterial = new THREE.MeshLambertMaterial({ color: '#166534' });
-    const terrain = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), this.groundMaterial);
+    const terrain = new THREE.Mesh(
+      new THREE.PlaneGeometry(MAP_WIDTH_UNITS, MAP_DEPTH_UNITS),
+      this.groundMaterial
+    );
     terrain.rotation.x = -Math.PI / 2;
     terrain.receiveShadow = true;
     this.worldGroup.add(terrain);
@@ -1577,8 +1581,16 @@ export class LuminatiRenderer {
           );
         } else {
           // Apply movement with bounds clamping and solid map props (slide).
-          const nextX = THREE.MathUtils.clamp(pos.x + dx * currentSpeed, -26.8, 26.8);
-          const nextZ = THREE.MathUtils.clamp(pos.z + dz * currentSpeed, -26.8, 26.8);
+          const nextX = THREE.MathUtils.clamp(
+            pos.x + dx * currentSpeed,
+            -OVERWORLD_MOVEMENT_LIMIT,
+            OVERWORLD_MOVEMENT_LIMIT
+          );
+          const nextZ = THREE.MathUtils.clamp(
+            pos.z + dz * currentSpeed,
+            -OVERWORLD_MOVEMENT_LIMIT,
+            OVERWORLD_MOVEMENT_LIMIT
+          );
           if (!isBlocked(nextX, nextZ, this.activeMapId)) {
             pos.x = nextX;
             pos.z = nextZ;

@@ -1,12 +1,19 @@
 import { WORLD_MAPS } from './maps';
 import type { DecorationKind, MapId, MapLayoutDefinition, MapWildZone } from './world';
+import {
+  BORDER_TILES,
+  gridToWorldCenter,
+  MAP_TILES,
+  TILE_UNITS,
+  worldToGrid,
+} from './worldGeometry';
 
-/** World units covered by one tile. */
-export const TILE_UNITS = 1.5;
-/** Map size in tiles (40 * 1.5 = 60 world units, the size of the terrain). */
-export const MAP_TILES = 40;
-/** Tiles of void framing the playable area. */
-export const BORDER_TILES = 2;
+export {
+  BORDER_TILES,
+  MAP_DEPTH_UNITS,
+  MAP_TILES,
+  TILE_UNITS,
+} from './worldGeometry';
 
 export type TileKind =
   | 'void'
@@ -59,8 +66,6 @@ function hashString(text: string): number {
   return hash >>> 0;
 }
 
-const tileCenter = (index: number): number => (index - MAP_TILES / 2 + 0.5) * TILE_UNITS;
-
 function distanceToSegment(
   point: { x: number; z: number },
   start: { x: number; z: number },
@@ -86,8 +91,8 @@ function kindAt(col: number, row: number, layout: MapLayoutDefinition): TileKind
     return 'void';
   }
 
-  const wx = tileCenter(col);
-  const wz = tileCenter(row);
+  const wx = gridToWorldCenter(col);
+  const wz = gridToWorldCenter(row);
 
   if (layout.caveMaze) {
     const { rows, entrance } = layout.caveMaze;
@@ -161,8 +166,8 @@ function buildDecorations(
         if (grid[r][c] !== onKind || blocked.has(key(c, r)) || taken.has(key(c, r))) return false;
       }
     }
-    const cx = tileCenter(col + (width - 1) / 2);
-    const cz = tileCenter(row + (height - 1) / 2);
+    const cx = gridToWorldCenter(col + (width - 1) / 2);
+    const cz = gridToWorldCenter(row + (height - 1) / 2);
     for (const clear of clearPoints) {
       if (Math.hypot(cx - clear.x, cz - clear.z) < clear.r) return false;
     }
@@ -218,8 +223,8 @@ function buildLayout(map: MapId): MapLayout {
   const blocked = new Set<string>();
   for (let row = 0; row < MAP_TILES; row++) {
     for (let col = 0; col < MAP_TILES; col++) {
-      const x = tileCenter(col);
-      const z = tileCenter(row);
+      const x = gridToWorldCenter(col);
+      const z = gridToWorldCenter(row);
       if (grid[row][col] === 'water' || grid[row][col] === 'cave-wall') blocked.add(`${col},${row}`);
       if (def.buildingFootprints?.some((building) =>
         Math.abs(x - building.x) <= building.halfWidth + TILE_UNITS / 2 &&
@@ -274,14 +279,13 @@ export function getLayout(map: MapId): MapLayout {
 export function getDecorations(map: MapId = 'villa_marionette'): PlacedDecoration[] {
   return getLayout(map).decorations.map((decor) => ({
     kind: decor.kind,
-    x: decor.position?.x ?? tileCenter(decor.col),
-    z: decor.position?.z ?? tileCenter(decor.row),
+    x: decor.position?.x ?? gridToWorldCenter(decor.col),
+    z: decor.position?.z ?? gridToWorldCenter(decor.row),
   }));
 }
 
 export function isBlocked(worldX: number, worldZ: number, map: MapId = 'villa_marionette'): boolean {
-  const col = Math.floor(worldX / TILE_UNITS + MAP_TILES / 2);
-  const row = Math.floor(worldZ / TILE_UNITS + MAP_TILES / 2);
+  const { col, row } = worldToGrid({ x: worldX, z: worldZ });
   return getLayout(map).blocked.has(`${col},${row}`);
 }
 
@@ -289,4 +293,4 @@ export function getMapWildZones(map: MapId): readonly MapWildZone[] {
   return WORLD_MAPS[map].layout.wildZones;
 }
 
-export { hashString, tileCenter };
+export { gridToWorldCenter as tileCenter, hashString };

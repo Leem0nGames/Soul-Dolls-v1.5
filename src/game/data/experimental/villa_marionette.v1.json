@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 1,
+  "geometry": {
+    "tileUnits": 1.5,
+    "tilesWide": 40,
+    "tilesDeep": 40,
+    "borderTiles": 2,
+    "source": "src/game/data/worldGeometry.ts"
+  },
+  "map": {
+    "id": "villa_marionette",
+    "name": "Villa Marionette",
+    "palette": {
+      "background": "#c9dfcf",
+      "fog": "#c9dfcf"
+    },
+    "connections": [
+      {
+        "editorId": "villa-to-ruta-1",
+        "at": {
+          "x": 0,
+          "z": -26
+        },
+        "toMap": "ruta_1",
+        "arrival": {
+          "x": 0,
+          "z": 25.5
+        },
+        "facing": "up"
+      }
+    ],
+    "layout": {
+      "wildZones": [
+        {
+          "editorId": "prado-oeste",
+          "name": "Villa Marionette · Prado Oeste",
+          "minX": -8,
+          "maxX": -3,
+          "minZ": -25,
+          "maxZ": -20,
+          "encounterRate": 0.08,
+          "speciesPool": [
+            {
+              "speciesId": "florabun",
+              "minLevel": 6,
+              "maxLevel": 10,
+              "weight": 30
+            },
+            {
+              "speciesId": "runika",
+              "minLevel": 7,
+              "maxLevel": 11,
+              "weight": 25
+            },
+            {
+              "speciesId": "sparkit",
+              "minLevel": 7,
+              "maxLevel": 10,
+              "weight": 25
+            },
+            {
+              "speciesId": "geotort",
+              "minLevel": 6,
+              "maxLevel": 9,
+              "weight": 20
+            }
+          ]
+        },
+        {
+          "editorId": "prado-este",
+          "name": "Villa Marionette · Prado Este",
+          "minX": 3,
+          "maxX": 8,
+          "minZ": -25,
+          "maxZ": -20,
+          "encounterRate": 0.08,
+          "speciesPool": [
+            {
+              "speciesId": "aquafox",
+              "minLevel": 7,
+              "maxLevel": 11,
+              "weight": 35
+            },
+            {
+              "speciesId": "cryopup",
+              "minLevel": 7,
+              "maxLevel": 10,
+              "weight": 30
+            },
+            {
+              "speciesId": "aerochick",
+              "minLevel": 6,
+              "maxLevel": 10,
+              "weight": 25
+            },
+            {
+              "speciesId": "lumiwisp",
+              "minLevel": 8,
+              "maxLevel": 12,
+              "weight": 10
+            }
+          ]
+        }
+      ],
+      "plaza": {
+        "x": 0,
+        "z": 0,
+        "radius": 5.5
+      },
+      "roadXs": [-12, 0, 12],
+      "roadZs": [-17, -8, 4, 17, 24],
+      "roadHalfWidth": 1.8,
+      "flowerDensity": 0.08,
+      "decorations": {
+        "tallTrees": 12,
+        "shortTrees": 18,
+        "bushes": 22,
+        "rocks": 8,
+        "flowers": 32,
+        "tufts": 12
+      }
+    },
+    "clearPointReservations": [
+      {
+        "editorId": "north-arrival-clearance",
+        "x": 0,
+        "z": 22,
+        "r": 4.5
+      },
+      {
+        "editorId": "plaza-clearance",
+        "x": 0,
+        "z": 0,
+        "r": 8
+      },
+      {
+        "editorId": "east-square-clearance",
+        "x": 17,
+        "z": -8,
+        "r": 3.5
+      }
+    ],
+    "signSpots": [
+      {
+        "editorId": "northwest-sign",
+        "col": 18,
+        "row": 36
+      },
+      {
+        "editorId": "northeast-sign",
+        "col": 22,
+        "row": 4
+      }
+    ],
+    "tamers": [
+      {
+        "editorId": "tyler",
+        "name": "Tyler",
+        "title": "Aprendiz de Almas",
+        "tamerType": "apprentice",
+        "portrait": "tyler",
+        "position": {
+          "x": -8,
+          "z": -7
+        },
+        "triggerDistance": 3.2,
+        "party": [
+          {
+            "speciesId": "sparkit",
+            "level": 9
+          },
+          {
+            "speciesId": "florabun",
+            "level": 10
+          }
+        ],
+        "dialogueIntro": "¡Alto ahí, forastero! ¡Demuéstrame el vínculo que tienes con tus SoulDolls!",
+        "dialogueDefeated": "¡Increíble sintonía! Tus almas combaten con una armonía admirable."
+      },
+      {
+        "editorId": "vesper",
+        "name": "Vesper",
+        "title": "Maestro del Éter",
+        "tamerType": "master",
+        "portrait": "vesper",
+        "position": {
+          "x": 8,
+          "z": 7
+        },
+        "triggerDistance": 3.2,
+        "party": [
+          {
+            "speciesId": "umbraling",
+            "level": 13
+          },
+          {
+            "speciesId": "cryopup",
+            "level": 14
+          }
+        ],
+        "dialogueIntro": "Las sombras y la escarcha responden a mi voluntad. ¿Podrá tu llama resistir?",
+        "dialogueDefeated": "Fascinante... Tus SoulDolls poseen un brillo que desafía la penumbra."
+      }
+    ]
+  },
+  "buildings": [
+    {
+      "id": "soul-center",
+      "file": "building-type-a.glb",
+      "x": -17,
+      "z": -12,
+      "rotation": 0,
+      "scale": 4.25,
+      "halfWidth": 2.82,
+      "halfDepth": 2.94,
+      "facility": "pokemon_center",
+      "entrance": {
+        "x": -17,
+        "z": -7.65
+      }
+    },
+    {
+      "id": "marionette-market",
+      "file": "building-type-b.glb",
+      "x": 17,
+      "z": -12,
+      "rotation": 0,
+      "scale": 4.25,
+      "halfWidth": 4.02,
+      "halfDepth": 2.53,
+      "facility": "poke_mart",
+      "entrance": {
+        "x": 17,
+        "z": -7.67
+      }
+    },
+    {
+      "id": "research-house",
+      "file": "building-type-c.glb",
+      "x": -17,
+      "z": 12,
+      "rotation": 0,
+      "scale": 4.25,
+      "halfWidth": 2.82,
+      "halfDepth": 2.94,
+      "facility": "research_lab",
+      "entrance": {
+        "x": -17,
+        "z": 16.35
+      }
+    },
+    {
+      "id": "dojo",
+      "file": "building-type-d.glb",
+      "x": 17,
+      "z": 12,
+      "rotation": 0,
+      "scale": 4.25,
+      "halfWidth": 4.02,
+      "halfDepth": 2.53,
+      "facility": "gym",
+      "entrance": {
+        "x": 17,
+        "z": 16.33
+      }
+    },
+    {
+      "id": "garden-home",
+      "file": "building-type-e.glb",
+      "x": -17,
+      "z": 0,
+      "rotation": 0,
+      "scale": 4.05,
+      "halfWidth": 2.9,
+      "halfDepth": 2.78,
+      "facility": "house",
+      "entrance": {
+        "x": -17,
+        "z": 4.2
+      }
+    },
+    {
+      "id": "north-home",
+      "file": "building-type-f.glb",
+      "x": -17,
+      "z": -22,
+      "rotation": 0,
+      "scale": 4.05,
+      "halfWidth": 2.9,
+      "halfDepth": 3.13,
+      "entrance": {
+        "x": -17,
+        "z": -17.45
+      }
+    },
+    {
+      "id": "east-home",
+      "file": "building-type-g.glb",
+      "x": 17,
+      "z": 0,
+      "rotation": 0,
+      "scale": 4.05,
+      "halfWidth": 3,
+      "halfDepth": 2.9,
+      "entrance": {
+        "x": 17,
+        "z": 4.3
+      }
+    },
+    {
+      "id": "south-home",
+      "file": "building-type-h.glb",
+      "x": 17,
+      "z": 20,
+      "rotation": 0,
+      "scale": 4.05,
+      "halfWidth": 2.9,
+      "halfDepth": 2.78,
+      "entrance": {
+        "x": 17,
+        "z": 24.2
+      }
+    }
+  ]
+}

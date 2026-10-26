@@ -1,20 +1,27 @@
 import { MAP_IDS, MAP_NAMES, WORLD_MAPS } from './maps';
 import { VILLA_BUILDINGS } from './maps/villaBuildings';
-import { BORDER_TILES, getLayout, isBlocked, MAP_TILES, TILE_UNITS } from './worldMapLayout';
+import { getLayout, isBlocked } from './worldMapLayout';
+import {
+  BORDER_TILES,
+  gridToWorldCenter,
+  MAP_HALF_DEPTH_UNITS,
+  MAP_HALF_WIDTH_UNITS,
+  MAP_TILES,
+  TILE_UNITS,
+  worldToGrid,
+} from './worldGeometry';
 import type { MapId } from './world';
 
 /** Validates map data and reachability without importing rendering modules. */
 export function validateWorldMaps(): string[] {
   const errors: string[] = [];
-  const halfMap = (MAP_TILES * TILE_UNITS) / 2;
   const inBounds = (point: { x: number; z: number }) =>
-    Math.abs(point.x) < halfMap - TILE_UNITS && Math.abs(point.z) < halfMap - TILE_UNITS;
+    Math.abs(point.x) < MAP_HALF_WIDTH_UNITS - TILE_UNITS &&
+    Math.abs(point.z) < MAP_HALF_DEPTH_UNITS - TILE_UNITS;
   const isReachable = (map: MapId, from: { x: number; z: number }, to: { x: number; z: number }) => {
     const layout = getLayout(map);
-    const toCol = Math.floor(to.x / TILE_UNITS + MAP_TILES / 2);
-    const toRow = Math.floor(to.z / TILE_UNITS + MAP_TILES / 2);
-    const startCol = Math.floor(from.x / TILE_UNITS + MAP_TILES / 2);
-    const startRow = Math.floor(from.z / TILE_UNITS + MAP_TILES / 2);
+    const { col: toCol, row: toRow } = worldToGrid(to);
+    const { col: startCol, row: startRow } = worldToGrid(from);
     const queue: [number, number][] = [[startCol, startRow]];
     const visited = new Set([`${startCol},${startRow}`]);
     const offsets: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
@@ -48,8 +55,8 @@ export function validateWorldMaps(): string[] {
     const originCol = Math.floor((MAP_TILES - rows[0].length * 2) / 2);
     const originRow = Math.floor((MAP_TILES - rows.length * 2) / 2);
     return {
-      x: (originCol + cell.col * 2 + 1) * TILE_UNITS - MAP_TILES * TILE_UNITS / 2,
-      z: (originRow + cell.row * 2 + 1) * TILE_UNITS - MAP_TILES * TILE_UNITS / 2,
+      x: gridToWorldCenter(originCol + cell.col * 2 + 0.5),
+      z: gridToWorldCenter(originRow + cell.row * 2 + 0.5),
     };
   };
 

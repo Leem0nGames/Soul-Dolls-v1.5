@@ -18,15 +18,17 @@ import { WORLD_MAPS } from '../data/maps';
 import type { DecorationKind, MapId } from '../data/world';
 import {
   BORDER_TILES,
+  MAP_TILES,
+  MAP_WIDTH_UNITS,
+  TILE_UNITS,
+} from '../data/worldGeometry';
+import {
   getDecorations,
   getLayout,
   getMapWildZones,
   hashString,
   isBlocked,
-  MAP_TILES,
   makeRandom,
-  TILE_UNITS,
-  tileCenter,
 } from '../data/worldMapLayout';
 import type { TileKind } from '../data/worldMapLayout';
 
@@ -376,5 +378,5 @@ export async function buildOverworldMap(map: MapId = 'villa_marionette'): Promis
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 1;
 
-  return { texture, worldSize: MAP_TILES * TILE_UNITS };
+  return { texture, worldSize: MAP_WIDTH_UNITS };
 }
