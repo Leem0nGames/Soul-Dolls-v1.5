@@ -16,6 +16,24 @@ export const PartyModal: React.FC = () => {
   if (state.view !== 'PARTY') return null;
 
   const party = state.playerParty;
+  if (party.length === 0) {
+    return (
+      <GameCabinetModal
+        title="EQUIPO DE SOULDOLLS"
+        subtitle="0/6 Aliados Activos"
+        icon={<Users className="w-4 h-4 text-emerald-400" />}
+        onClose={() => gameStore.setView('OVERWORLD')}
+        maxWidth="max-w-4xl"
+      >
+        <div className="flex-1 flex items-center justify-center p-6 text-center bg-[#14101c]/90">
+          <p className="font-pixel text-xs leading-6 text-amber-100/80">
+            Aún no tienes SoulDolls. Elige tu aliado inicial en el laboratorio.
+          </p>
+        </div>
+      </GameCabinetModal>
+    );
+  }
+
   const currentDoll = party[selectedIdx] || party[0];
   const species = SOULDOLL_SPECIES[currentDoll.speciesId] || SOULDOLL_SPECIES.ignisaur;
 
