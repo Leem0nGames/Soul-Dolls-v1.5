@@ -1,46 +1,264 @@
 {
   "sheets": [
     {
-      "file": "105515179_1792644033044389",
+      "file": "01",
       "species": "ignisaur",
-      "note": "Tomo - tier 1"
+      "note": "ignisaur - sheet 01"
     },
     {
-      "file": "408770211_1792644218641596",
+      "file": "02",
       "species": "pyrodrake",
-      "note": "Tomoe - tier 2"
+      "note": "pyrodrake - sheet 02"
     },
     {
-      "file": "642182396_1792644280769170",
+      "file": "03",
       "species": "tomomusashi",
-      "note": "Tomoe Musashi - tier 3"
+      "note": "tomomusashi - sheet 03"
     },
     {
-      "file": "493519213_1792589298660327",
-      "note": "generica"
-    },
-    {
-      "file": "647390299_1792589248743036",
-      "note": "generica"
-    },
-    {
-      "file": "837023740_1792589339474861",
-      "note": "generica"
-    },
-    {
-      "file": "317824974_1792673142986204",
+      "file": "04",
       "species": "runika",
-      "note": "Runika - tier 1"
+      "note": "runika - sheet 04"
     },
     {
-      "file": "205779987_1792673152725653",
+      "file": "05",
       "species": "valkirun",
-      "note": "Valkirun - tier 2"
+      "note": "valkirun - sheet 05"
     },
     {
-      "file": "175605669_1792673162653249",
+      "file": "06",
       "species": "drakonika",
-      "note": "Drakonika - tier 3"
+      "note": "drakonika - sheet 06"
+    },
+    {
+      "file": "07",
+      "species": "aquafox",
+      "note": "aquafox - sheet 07"
+    },
+    {
+      "file": "08",
+      "species": "tidewraith",
+      "note": "tidewraith - sheet 08"
+    },
+    {
+      "file": "09",
+      "species": "florabun",
+      "note": "florabun - sheet 09"
+    },
+    {
+      "file": "10",
+      "species": "chlorosage",
+      "note": "chlorosage - sheet 10"
+    },
+    {
+      "file": "11",
+      "species": "sparkit",
+      "note": "sparkit - sheet 11"
+    },
+    {
+      "file": "12",
+      "species": "voltaglyph",
+      "note": "voltaglyph - sheet 12"
+    },
+    {
+      "file": "13",
+      "species": "geotort",
+      "note": "geotort - sheet 13"
+    },
+    {
+      "file": "14",
+      "species": "titancrust",
+      "note": "titancrust - sheet 14"
+    },
+    {
+      "file": "15",
+      "species": "umbraling",
+      "note": "umbraling - sheet 15"
+    },
+    {
+      "file": "16",
+      "species": "nyxwing",
+      "note": "nyxwing - sheet 16"
+    },
+    {
+      "file": "17",
+      "species": "lumiwisp",
+      "note": "lumiwisp - sheet 17"
+    },
+    {
+      "file": "18",
+      "species": "seraphina",
+      "note": "seraphina - sheet 18"
+    },
+    {
+      "file": "19",
+      "species": "cryopup",
+      "note": "cryopup - sheet 19"
+    },
+    {
+      "file": "20",
+      "species": "blizzardworg",
+      "note": "blizzardworg - sheet 20"
+    },
+    {
+      "file": "21",
+      "species": "venomantis",
+      "note": "venomantis - sheet 21"
+    },
+    {
+      "file": "22",
+      "species": "toxiscythe",
+      "note": "toxiscythe - sheet 22"
+    },
+    {
+      "file": "23",
+      "species": "aerochick",
+      "note": "aerochick - sheet 23"
+    },
+    {
+      "file": "24",
+      "species": "zephyrion",
+      "note": "zephyrion - sheet 24"
+    },
+    {
+      "file": "25",
+      "species": "souldoll_01",
+      "note": "souldoll_01 - sheet 25"
+    },
+    {
+      "file": "26",
+      "species": "souldoll_02",
+      "note": "souldoll_02 - sheet 26"
+    },
+    {
+      "file": "27",
+      "species": "souldoll_03",
+      "note": "souldoll_03 - sheet 27"
+    },
+    {
+      "file": "28",
+      "species": "souldoll_04",
+      "note": "souldoll_04 - sheet 28"
+    },
+    {
+      "file": "29",
+      "species": "souldoll_05",
+      "note": "souldoll_05 - sheet 29"
+    },
+    {
+      "file": "30",
+      "species": "souldoll_06",
+      "note": "souldoll_06 - sheet 30"
+    },
+    {
+      "file": "31",
+      "species": "souldoll_07",
+      "note": "souldoll_07 - sheet 31"
+    },
+    {
+      "file": "32",
+      "species": "souldoll_08",
+      "note": "souldoll_08 - sheet 32"
+    },
+    {
+      "file": "33",
+      "species": "souldoll_09",
+      "note": "souldoll_09 - sheet 33"
+    },
+    {
+      "file": "34",
+      "species": "souldoll_10",
+      "note": "souldoll_10 - sheet 34"
+    },
+    {
+      "file": "35",
+      "species": "souldoll_11",
+      "note": "souldoll_11 - sheet 35"
+    },
+    {
+      "file": "36",
+      "species": "souldoll_12",
+      "note": "souldoll_12 - sheet 36"
+    },
+    {
+      "file": "37",
+      "species": "souldoll_13",
+      "note": "souldoll_13 - sheet 37"
+    },
+    {
+      "file": "38",
+      "species": "souldoll_14",
+      "note": "souldoll_14 - sheet 38"
+    },
+    {
+      "file": "39",
+      "species": "souldoll_15",
+      "note": "souldoll_15 - sheet 39"
+    },
+    {
+      "file": "40",
+      "species": "souldoll_16",
+      "note": "souldoll_16 - sheet 40"
+    },
+    {
+      "file": "41",
+      "species": "souldoll_17",
+      "note": "souldoll_17 - sheet 41"
+    },
+    {
+      "file": "42",
+      "species": "souldoll_18",
+      "note": "souldoll_18 - sheet 42"
+    },
+    {
+      "file": "43",
+      "species": "souldoll_19",
+      "note": "souldoll_19 - sheet 43"
+    },
+    {
+      "file": "44",
+      "species": "souldoll_20",
+      "note": "souldoll_20 - sheet 44"
+    },
+    {
+      "file": "45",
+      "species": "souldoll_21",
+      "note": "souldoll_21 - sheet 45"
+    },
+    {
+      "file": "46",
+      "species": "souldoll_22",
+      "note": "souldoll_22 - sheet 46"
+    },
+    {
+      "file": "47",
+      "species": "souldoll_23",
+      "note": "souldoll_23 - sheet 47"
+    },
+    {
+      "file": "48",
+      "species": "souldoll_24",
+      "note": "souldoll_24 - sheet 48"
+    },
+    {
+      "file": "49",
+      "species": "souldoll_25",
+      "note": "souldoll_25 - sheet 49"
+    },
+    {
+      "file": "50",
+      "species": "souldoll_26",
+      "note": "souldoll_26 - sheet 50"
+    },
+    {
+      "file": "51",
+      "species": "souldoll_27",
+      "note": "souldoll_27 - sheet 51"
+    },
+    {
+      "file": "52",
+      "species": "souldoll_28",
+      "note": "souldoll_28 - sheet 52"
     }
   ]
 }

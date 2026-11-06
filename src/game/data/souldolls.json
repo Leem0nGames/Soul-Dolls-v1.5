@@ -1183,5 +1183,1097 @@
       "secondary": "#ca8a04",
       "glow": "#facc15"
     }
+  },
+  "souldoll_01": {
+    "id": "souldoll_01",
+    "name": "Souldoll 01",
+    "stage": 1,
+    "types": [
+      "Earth",
+      "Shadow"
+    ],
+    "baseStats": {
+      "hp": 56,
+      "atk": 66,
+      "def": 82,
+      "spAtk": 55,
+      "spDef": 52,
+      "spd": 110
+    },
+    "description": "SoulDoll Souldoll 01 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 104,
+    "baseExpReward": 223,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "pebble_barrage"
+      },
+      {
+        "level": 5,
+        "moveId": "icicle_lance"
+      },
+      {
+        "level": 10,
+        "moveId": "acid_spit"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#a78bfa",
+      "secondary": "#312e81",
+      "glow": "#ddd6fe"
+    }
+  },
+  "souldoll_02": {
+    "id": "souldoll_02",
+    "name": "Souldoll 02",
+    "stage": 2,
+    "types": [
+      "Frost",
+      "Fire"
+    ],
+    "baseStats": {
+      "hp": 63,
+      "atk": 77,
+      "def": 91,
+      "spAtk": 68,
+      "spDef": 62,
+      "spd": 64
+    },
+    "description": "SoulDoll Souldoll 02 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 105,
+    "baseExpReward": 230,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "shadow_sneak"
+      },
+      {
+        "level": 5,
+        "moveId": "sky_slash"
+      },
+      {
+        "level": 10,
+        "moveId": "ember"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#f472b6",
+      "secondary": "#831843",
+      "glow": "#fbcfe8"
+    }
+  },
+  "souldoll_03": {
+    "id": "souldoll_03",
+    "name": "Souldoll 03",
+    "stage": 3,
+    "types": [
+      "Wind",
+      "Electric"
+    ],
+    "baseStats": {
+      "hp": 70,
+      "atk": 88,
+      "def": 54,
+      "spAtk": 81,
+      "spDef": 72,
+      "spd": 76
+    },
+    "description": "SoulDoll Souldoll 03 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 106,
+    "baseExpReward": 237,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "icicle_lance"
+      },
+      {
+        "level": 5,
+        "moveId": "astral_beam"
+      },
+      {
+        "level": 10,
+        "moveId": "hydro_jet"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#fca5a5",
+      "secondary": "#7f1d1d",
+      "glow": "#fecaca"
+    }
+  },
+  "souldoll_04": {
+    "id": "souldoll_04",
+    "name": "Souldoll 04",
+    "stage": 1,
+    "types": [
+      "Shadow",
+      "Wind"
+    ],
+    "baseStats": {
+      "hp": 77,
+      "atk": 99,
+      "def": 63,
+      "spAtk": 94,
+      "spDef": 82,
+      "spd": 88
+    },
+    "description": "SoulDoll Souldoll 04 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 107,
+    "baseExpReward": 244,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "sky_slash"
+      },
+      {
+        "level": 5,
+        "moveId": "acid_spit"
+      },
+      {
+        "level": 10,
+        "moveId": "leaf_shuriken"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#93c5fd",
+      "secondary": "#1d4ed8",
+      "glow": "#dbeafe"
+    }
+  },
+  "souldoll_05": {
+    "id": "souldoll_05",
+    "name": "Souldoll 05",
+    "stage": 2,
+    "types": [
+      "Light",
+      "Poison"
+    ],
+    "baseStats": {
+      "hp": 84,
+      "atk": 60,
+      "def": 72,
+      "spAtk": 55,
+      "spDef": 92,
+      "spd": 100
+    },
+    "description": "SoulDoll Souldoll 05 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 108,
+    "baseExpReward": 251,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "astral_beam"
+      },
+      {
+        "level": 5,
+        "moveId": "ember"
+      },
+      {
+        "level": 10,
+        "moveId": "volt_spark"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#c084fc",
+      "secondary": "#581c87",
+      "glow": "#f3e8ff"
+    }
+  },
+  "souldoll_06": {
+    "id": "souldoll_06",
+    "name": "Souldoll 06",
+    "stage": 3,
+    "types": [
+      "Poison",
+      "Nature"
+    ],
+    "baseStats": {
+      "hp": 51,
+      "atk": 71,
+      "def": 81,
+      "spAtk": 68,
+      "spDef": 54,
+      "spd": 54
+    },
+    "description": "SoulDoll Souldoll 06 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 109,
+    "baseExpReward": 258,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "acid_spit"
+      },
+      {
+        "level": 5,
+        "moveId": "hydro_jet"
+      },
+      {
+        "level": 10,
+        "moveId": "pebble_barrage"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#fda4af",
+      "secondary": "#9f1239",
+      "glow": "#ffe4e6"
+    }
+  },
+  "souldoll_07": {
+    "id": "souldoll_07",
+    "name": "Souldoll 07",
+    "stage": 1,
+    "types": [
+      "Fire",
+      "Frost"
+    ],
+    "baseStats": {
+      "hp": 58,
+      "atk": 82,
+      "def": 90,
+      "spAtk": 81,
+      "spDef": 64,
+      "spd": 66
+    },
+    "description": "SoulDoll Souldoll 07 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 110,
+    "baseExpReward": 265,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "ember"
+      },
+      {
+        "level": 5,
+        "moveId": "leaf_shuriken"
+      },
+      {
+        "level": 10,
+        "moveId": "shadow_sneak"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#f97316",
+      "secondary": "#7c2d12",
+      "glow": "#fbbf24"
+    }
+  },
+  "souldoll_08": {
+    "id": "souldoll_08",
+    "name": "Souldoll 08",
+    "stage": 2,
+    "types": [
+      "Water",
+      "Light"
+    ],
+    "baseStats": {
+      "hp": 65,
+      "atk": 93,
+      "def": 53,
+      "spAtk": 94,
+      "spDef": 74,
+      "spd": 78
+    },
+    "description": "SoulDoll Souldoll 08 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 111,
+    "baseExpReward": 272,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "hydro_jet"
+      },
+      {
+        "level": 5,
+        "moveId": "volt_spark"
+      },
+      {
+        "level": 10,
+        "moveId": "icicle_lance"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#38bdf8",
+      "secondary": "#0f172a",
+      "glow": "#a5f3fc"
+    }
+  },
+  "souldoll_09": {
+    "id": "souldoll_09",
+    "name": "Souldoll 09",
+    "stage": 3,
+    "types": [
+      "Nature",
+      "Water"
+    ],
+    "baseStats": {
+      "hp": 72,
+      "atk": 54,
+      "def": 62,
+      "spAtk": 55,
+      "spDef": 84,
+      "spd": 90
+    },
+    "description": "SoulDoll Souldoll 09 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 112,
+    "baseExpReward": 279,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "leaf_shuriken"
+      },
+      {
+        "level": 5,
+        "moveId": "pebble_barrage"
+      },
+      {
+        "level": 10,
+        "moveId": "sky_slash"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#4ade80",
+      "secondary": "#14532d",
+      "glow": "#bbf7d0"
+    }
+  },
+  "souldoll_10": {
+    "id": "souldoll_10",
+    "name": "Souldoll 10",
+    "stage": 1,
+    "types": [
+      "Electric",
+      "Earth"
+    ],
+    "baseStats": {
+      "hp": 79,
+      "atk": 65,
+      "def": 71,
+      "spAtk": 68,
+      "spDef": 94,
+      "spd": 102
+    },
+    "description": "SoulDoll Souldoll 10 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 113,
+    "baseExpReward": 286,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "volt_spark"
+      },
+      {
+        "level": 5,
+        "moveId": "shadow_sneak"
+      },
+      {
+        "level": 10,
+        "moveId": "astral_beam"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#facc15",
+      "secondary": "#4d2d00",
+      "glow": "#fde68a"
+    }
+  },
+  "souldoll_11": {
+    "id": "souldoll_11",
+    "name": "Souldoll 11",
+    "stage": 2,
+    "types": [
+      "Earth",
+      "Shadow"
+    ],
+    "baseStats": {
+      "hp": 86,
+      "atk": 76,
+      "def": 80,
+      "spAtk": 81,
+      "spDef": 56,
+      "spd": 56
+    },
+    "description": "SoulDoll Souldoll 11 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 114,
+    "baseExpReward": 293,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "pebble_barrage"
+      },
+      {
+        "level": 5,
+        "moveId": "icicle_lance"
+      },
+      {
+        "level": 10,
+        "moveId": "acid_spit"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#a78bfa",
+      "secondary": "#312e81",
+      "glow": "#ddd6fe"
+    }
+  },
+  "souldoll_12": {
+    "id": "souldoll_12",
+    "name": "Souldoll 12",
+    "stage": 3,
+    "types": [
+      "Frost",
+      "Fire"
+    ],
+    "baseStats": {
+      "hp": 53,
+      "atk": 87,
+      "def": 89,
+      "spAtk": 94,
+      "spDef": 66,
+      "spd": 68
+    },
+    "description": "SoulDoll Souldoll 12 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 115,
+    "baseExpReward": 300,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "shadow_sneak"
+      },
+      {
+        "level": 5,
+        "moveId": "sky_slash"
+      },
+      {
+        "level": 10,
+        "moveId": "ember"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#f472b6",
+      "secondary": "#831843",
+      "glow": "#fbcfe8"
+    }
+  },
+  "souldoll_13": {
+    "id": "souldoll_13",
+    "name": "Souldoll 13",
+    "stage": 1,
+    "types": [
+      "Wind",
+      "Electric"
+    ],
+    "baseStats": {
+      "hp": 60,
+      "atk": 98,
+      "def": 52,
+      "spAtk": 55,
+      "spDef": 76,
+      "spd": 80
+    },
+    "description": "SoulDoll Souldoll 13 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 116,
+    "baseExpReward": 307,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "icicle_lance"
+      },
+      {
+        "level": 5,
+        "moveId": "astral_beam"
+      },
+      {
+        "level": 10,
+        "moveId": "hydro_jet"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#fca5a5",
+      "secondary": "#7f1d1d",
+      "glow": "#fecaca"
+    }
+  },
+  "souldoll_14": {
+    "id": "souldoll_14",
+    "name": "Souldoll 14",
+    "stage": 2,
+    "types": [
+      "Shadow",
+      "Wind"
+    ],
+    "baseStats": {
+      "hp": 67,
+      "atk": 59,
+      "def": 61,
+      "spAtk": 68,
+      "spDef": 86,
+      "spd": 92
+    },
+    "description": "SoulDoll Souldoll 14 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 117,
+    "baseExpReward": 314,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "sky_slash"
+      },
+      {
+        "level": 5,
+        "moveId": "acid_spit"
+      },
+      {
+        "level": 10,
+        "moveId": "leaf_shuriken"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#93c5fd",
+      "secondary": "#1d4ed8",
+      "glow": "#dbeafe"
+    }
+  },
+  "souldoll_15": {
+    "id": "souldoll_15",
+    "name": "Souldoll 15",
+    "stage": 3,
+    "types": [
+      "Light",
+      "Poison"
+    ],
+    "baseStats": {
+      "hp": 74,
+      "atk": 70,
+      "def": 70,
+      "spAtk": 81,
+      "spDef": 96,
+      "spd": 104
+    },
+    "description": "SoulDoll Souldoll 15 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 118,
+    "baseExpReward": 321,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "astral_beam"
+      },
+      {
+        "level": 5,
+        "moveId": "ember"
+      },
+      {
+        "level": 10,
+        "moveId": "volt_spark"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#c084fc",
+      "secondary": "#581c87",
+      "glow": "#f3e8ff"
+    }
+  },
+  "souldoll_16": {
+    "id": "souldoll_16",
+    "name": "Souldoll 16",
+    "stage": 1,
+    "types": [
+      "Poison",
+      "Nature"
+    ],
+    "baseStats": {
+      "hp": 81,
+      "atk": 81,
+      "def": 79,
+      "spAtk": 94,
+      "spDef": 58,
+      "spd": 58
+    },
+    "description": "SoulDoll Souldoll 16 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 119,
+    "baseExpReward": 328,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "acid_spit"
+      },
+      {
+        "level": 5,
+        "moveId": "hydro_jet"
+      },
+      {
+        "level": 10,
+        "moveId": "pebble_barrage"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#fda4af",
+      "secondary": "#9f1239",
+      "glow": "#ffe4e6"
+    }
+  },
+  "souldoll_17": {
+    "id": "souldoll_17",
+    "name": "Souldoll 17",
+    "stage": 2,
+    "types": [
+      "Fire",
+      "Frost"
+    ],
+    "baseStats": {
+      "hp": 48,
+      "atk": 92,
+      "def": 88,
+      "spAtk": 55,
+      "spDef": 68,
+      "spd": 70
+    },
+    "description": "SoulDoll Souldoll 17 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 120,
+    "baseExpReward": 335,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "ember"
+      },
+      {
+        "level": 5,
+        "moveId": "leaf_shuriken"
+      },
+      {
+        "level": 10,
+        "moveId": "shadow_sneak"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#f97316",
+      "secondary": "#7c2d12",
+      "glow": "#fbbf24"
+    }
+  },
+  "souldoll_18": {
+    "id": "souldoll_18",
+    "name": "Souldoll 18",
+    "stage": 3,
+    "types": [
+      "Water",
+      "Light"
+    ],
+    "baseStats": {
+      "hp": 55,
+      "atk": 53,
+      "def": 51,
+      "spAtk": 68,
+      "spDef": 78,
+      "spd": 82
+    },
+    "description": "SoulDoll Souldoll 18 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 121,
+    "baseExpReward": 342,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "hydro_jet"
+      },
+      {
+        "level": 5,
+        "moveId": "volt_spark"
+      },
+      {
+        "level": 10,
+        "moveId": "icicle_lance"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#38bdf8",
+      "secondary": "#0f172a",
+      "glow": "#a5f3fc"
+    }
+  },
+  "souldoll_19": {
+    "id": "souldoll_19",
+    "name": "Souldoll 19",
+    "stage": 1,
+    "types": [
+      "Nature",
+      "Water"
+    ],
+    "baseStats": {
+      "hp": 62,
+      "atk": 64,
+      "def": 60,
+      "spAtk": 81,
+      "spDef": 88,
+      "spd": 94
+    },
+    "description": "SoulDoll Souldoll 19 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 122,
+    "baseExpReward": 349,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "leaf_shuriken"
+      },
+      {
+        "level": 5,
+        "moveId": "pebble_barrage"
+      },
+      {
+        "level": 10,
+        "moveId": "sky_slash"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#4ade80",
+      "secondary": "#14532d",
+      "glow": "#bbf7d0"
+    }
+  },
+  "souldoll_20": {
+    "id": "souldoll_20",
+    "name": "Souldoll 20",
+    "stage": 2,
+    "types": [
+      "Electric",
+      "Earth"
+    ],
+    "baseStats": {
+      "hp": 69,
+      "atk": 75,
+      "def": 69,
+      "spAtk": 94,
+      "spDef": 98,
+      "spd": 106
+    },
+    "description": "SoulDoll Souldoll 20 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 123,
+    "baseExpReward": 356,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "volt_spark"
+      },
+      {
+        "level": 5,
+        "moveId": "shadow_sneak"
+      },
+      {
+        "level": 10,
+        "moveId": "astral_beam"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#facc15",
+      "secondary": "#4d2d00",
+      "glow": "#fde68a"
+    }
+  },
+  "souldoll_21": {
+    "id": "souldoll_21",
+    "name": "Souldoll 21",
+    "stage": 3,
+    "types": [
+      "Earth",
+      "Shadow"
+    ],
+    "baseStats": {
+      "hp": 76,
+      "atk": 86,
+      "def": 78,
+      "spAtk": 55,
+      "spDef": 60,
+      "spd": 60
+    },
+    "description": "SoulDoll Souldoll 21 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 124,
+    "baseExpReward": 363,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "pebble_barrage"
+      },
+      {
+        "level": 5,
+        "moveId": "icicle_lance"
+      },
+      {
+        "level": 10,
+        "moveId": "acid_spit"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#a78bfa",
+      "secondary": "#312e81",
+      "glow": "#ddd6fe"
+    }
+  },
+  "souldoll_22": {
+    "id": "souldoll_22",
+    "name": "Souldoll 22",
+    "stage": 1,
+    "types": [
+      "Frost",
+      "Fire"
+    ],
+    "baseStats": {
+      "hp": 83,
+      "atk": 97,
+      "def": 87,
+      "spAtk": 68,
+      "spDef": 70,
+      "spd": 72
+    },
+    "description": "SoulDoll Souldoll 22 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 125,
+    "baseExpReward": 370,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "shadow_sneak"
+      },
+      {
+        "level": 5,
+        "moveId": "sky_slash"
+      },
+      {
+        "level": 10,
+        "moveId": "ember"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#f472b6",
+      "secondary": "#831843",
+      "glow": "#fbcfe8"
+    }
+  },
+  "souldoll_23": {
+    "id": "souldoll_23",
+    "name": "Souldoll 23",
+    "stage": 2,
+    "types": [
+      "Wind",
+      "Electric"
+    ],
+    "baseStats": {
+      "hp": 50,
+      "atk": 58,
+      "def": 50,
+      "spAtk": 81,
+      "spDef": 80,
+      "spd": 84
+    },
+    "description": "SoulDoll Souldoll 23 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 126,
+    "baseExpReward": 377,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "icicle_lance"
+      },
+      {
+        "level": 5,
+        "moveId": "astral_beam"
+      },
+      {
+        "level": 10,
+        "moveId": "hydro_jet"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#fca5a5",
+      "secondary": "#7f1d1d",
+      "glow": "#fecaca"
+    }
+  },
+  "souldoll_24": {
+    "id": "souldoll_24",
+    "name": "Souldoll 24",
+    "stage": 3,
+    "types": [
+      "Shadow",
+      "Wind"
+    ],
+    "baseStats": {
+      "hp": 57,
+      "atk": 69,
+      "def": 59,
+      "spAtk": 94,
+      "spDef": 90,
+      "spd": 96
+    },
+    "description": "SoulDoll Souldoll 24 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 127,
+    "baseExpReward": 384,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "sky_slash"
+      },
+      {
+        "level": 5,
+        "moveId": "acid_spit"
+      },
+      {
+        "level": 10,
+        "moveId": "leaf_shuriken"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#93c5fd",
+      "secondary": "#1d4ed8",
+      "glow": "#dbeafe"
+    }
+  },
+  "souldoll_25": {
+    "id": "souldoll_25",
+    "name": "Souldoll 25",
+    "stage": 1,
+    "types": [
+      "Light",
+      "Poison"
+    ],
+    "baseStats": {
+      "hp": 64,
+      "atk": 80,
+      "def": 68,
+      "spAtk": 55,
+      "spDef": 52,
+      "spd": 108
+    },
+    "description": "SoulDoll Souldoll 25 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 128,
+    "baseExpReward": 391,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "astral_beam"
+      },
+      {
+        "level": 5,
+        "moveId": "ember"
+      },
+      {
+        "level": 10,
+        "moveId": "volt_spark"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#c084fc",
+      "secondary": "#581c87",
+      "glow": "#f3e8ff"
+    }
+  },
+  "souldoll_26": {
+    "id": "souldoll_26",
+    "name": "Souldoll 26",
+    "stage": 2,
+    "types": [
+      "Poison",
+      "Nature"
+    ],
+    "baseStats": {
+      "hp": 71,
+      "atk": 91,
+      "def": 77,
+      "spAtk": 68,
+      "spDef": 62,
+      "spd": 62
+    },
+    "description": "SoulDoll Souldoll 26 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 129,
+    "baseExpReward": 398,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "acid_spit"
+      },
+      {
+        "level": 5,
+        "moveId": "hydro_jet"
+      },
+      {
+        "level": 10,
+        "moveId": "pebble_barrage"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#fda4af",
+      "secondary": "#9f1239",
+      "glow": "#ffe4e6"
+    }
+  },
+  "souldoll_27": {
+    "id": "souldoll_27",
+    "name": "Souldoll 27",
+    "stage": 3,
+    "types": [
+      "Fire",
+      "Frost"
+    ],
+    "baseStats": {
+      "hp": 78,
+      "atk": 52,
+      "def": 86,
+      "spAtk": 81,
+      "spDef": 72,
+      "spd": 74
+    },
+    "description": "SoulDoll Souldoll 27 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 130,
+    "baseExpReward": 405,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "ember"
+      },
+      {
+        "level": 5,
+        "moveId": "leaf_shuriken"
+      },
+      {
+        "level": 10,
+        "moveId": "shadow_sneak"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#f97316",
+      "secondary": "#7c2d12",
+      "glow": "#fbbf24"
+    }
+  },
+  "souldoll_28": {
+    "id": "souldoll_28",
+    "name": "Souldoll 28",
+    "stage": 1,
+    "types": [
+      "Water",
+      "Light"
+    ],
+    "baseStats": {
+      "hp": 85,
+      "atk": 63,
+      "def": 95,
+      "spAtk": 94,
+      "spDef": 82,
+      "spd": 86
+    },
+    "description": "SoulDoll Souldoll 28 recién incorporado al equipo. Conquista la senda con su estilo propio y su energía elemental única.",
+    "catchRate": 131,
+    "baseExpReward": 412,
+    "learnset": [
+      {
+        "level": 1,
+        "moveId": "hydro_jet"
+      },
+      {
+        "level": 5,
+        "moveId": "volt_spark"
+      },
+      {
+        "level": 10,
+        "moveId": "icicle_lance"
+      }
+    ],
+    "colorTheme": {
+      "primary": "#38bdf8",
+      "secondary": "#0f172a",
+      "glow": "#a5f3fc"
+    }
   }
 }
